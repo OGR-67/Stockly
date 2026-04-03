@@ -78,7 +78,14 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
         return () => {
             hasScannedRef.current = true
             controlsRef.current?.stop()
-            streamRef.current?.getTracks().forEach(track => track.stop())
+            if (videoRef.current) {
+                videoRef.current.pause()
+                videoRef.current.srcObject = null
+            }
+            streamRef.current?.getTracks().forEach(track => {
+                track.enabled = false
+                track.stop()
+            })
             streamRef.current = null
         }
     }, [])
