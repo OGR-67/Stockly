@@ -18,7 +18,8 @@ obj/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -136,6 +137,7 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
+dev-dist
 
 # Gatsby files
 .cache/
@@ -205,4 +207,3 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,macos,dotnetcore,node
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
-

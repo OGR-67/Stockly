@@ -42,6 +42,19 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
             delayBetweenScanSuccess: 2000,
         })
 
+        function stopCamera() {
+            controlsRef.current?.stop()
+            if (videoRef.current) {
+                videoRef.current.pause()
+                videoRef.current.srcObject = null
+            }
+            streamRef.current?.getTracks().forEach(track => {
+                track.enabled = false
+                track.stop()
+            })
+            streamRef.current = null
+        }
+
         async function startScan() {
             try {
                 controlsRef.current = await reader.decodeFromVideoDevice(
@@ -50,6 +63,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
                     (result) => {
                         if (result && !hasScannedRef.current) {
                             hasScannedRef.current = true
+                            stopCamera()
                             onScanRef.current(result.getText())
                             onCloseRef.current()
                         }
@@ -77,16 +91,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
 
         return () => {
             hasScannedRef.current = true
-            controlsRef.current?.stop()
-            if (videoRef.current) {
-                videoRef.current.pause()
-                videoRef.current.srcObject = null
-            }
-            streamRef.current?.getTracks().forEach(track => {
-                track.enabled = false
-                track.stop()
-            })
-            streamRef.current = null
+            stopCamera()
         }
     }, [])
 
