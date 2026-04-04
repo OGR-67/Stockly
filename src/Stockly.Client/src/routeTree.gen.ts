@@ -16,6 +16,9 @@ import { Route as DevIndexRouteImport } from './routes/dev/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as StoreLocationIdRouteImport } from './routes/store/$locationId'
 import { Route as StockLocationIdRouteImport } from './routes/stock/$locationId'
+import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index'
+import { Route as AdminLocationsIndexRouteImport } from './routes/admin/locations/index'
+import { Route as AdminCategoriesIndexRouteImport } from './routes/admin/categories/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +55,21 @@ const StockLocationIdRoute = StockLocationIdRouteImport.update({
   path: '/stock/$locationId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
+  id: '/admin/products/',
+  path: '/admin/products/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLocationsIndexRoute = AdminLocationsIndexRouteImport.update({
+  id: '/admin/locations/',
+  path: '/admin/locations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCategoriesIndexRoute = AdminCategoriesIndexRouteImport.update({
+  id: '/admin/categories/',
+  path: '/admin/categories/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +79,9 @@ export interface FileRoutesByFullPath {
   '/dev/': typeof DevIndexRoute
   '/stock/': typeof StockIndexRoute
   '/store/': typeof StoreIndexRoute
+  '/admin/categories/': typeof AdminCategoriesIndexRoute
+  '/admin/locations/': typeof AdminLocationsIndexRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +91,9 @@ export interface FileRoutesByTo {
   '/dev': typeof DevIndexRoute
   '/stock': typeof StockIndexRoute
   '/store': typeof StoreIndexRoute
+  '/admin/categories': typeof AdminCategoriesIndexRoute
+  '/admin/locations': typeof AdminLocationsIndexRoute
+  '/admin/products': typeof AdminProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +104,9 @@ export interface FileRoutesById {
   '/dev/': typeof DevIndexRoute
   '/stock/': typeof StockIndexRoute
   '/store/': typeof StoreIndexRoute
+  '/admin/categories/': typeof AdminCategoriesIndexRoute
+  '/admin/locations/': typeof AdminLocationsIndexRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +118,9 @@ export interface FileRouteTypes {
     | '/dev/'
     | '/stock/'
     | '/store/'
+    | '/admin/categories/'
+    | '/admin/locations/'
+    | '/admin/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +130,9 @@ export interface FileRouteTypes {
     | '/dev'
     | '/stock'
     | '/store'
+    | '/admin/categories'
+    | '/admin/locations'
+    | '/admin/products'
   id:
     | '__root__'
     | '/'
@@ -109,6 +142,9 @@ export interface FileRouteTypes {
     | '/dev/'
     | '/stock/'
     | '/store/'
+    | '/admin/categories/'
+    | '/admin/locations/'
+    | '/admin/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +155,9 @@ export interface RootRouteChildren {
   DevIndexRoute: typeof DevIndexRoute
   StockIndexRoute: typeof StockIndexRoute
   StoreIndexRoute: typeof StoreIndexRoute
+  AdminCategoriesIndexRoute: typeof AdminCategoriesIndexRoute
+  AdminLocationsIndexRoute: typeof AdminLocationsIndexRoute
+  AdminProductsIndexRoute: typeof AdminProductsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +211,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StockLocationIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/products/': {
+      id: '/admin/products/'
+      path: '/admin/products'
+      fullPath: '/admin/products/'
+      preLoaderRoute: typeof AdminProductsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/locations/': {
+      id: '/admin/locations/'
+      path: '/admin/locations'
+      fullPath: '/admin/locations/'
+      preLoaderRoute: typeof AdminLocationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/categories/': {
+      id: '/admin/categories/'
+      path: '/admin/categories'
+      fullPath: '/admin/categories/'
+      preLoaderRoute: typeof AdminCategoriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +243,9 @@ const rootRouteChildren: RootRouteChildren = {
   DevIndexRoute: DevIndexRoute,
   StockIndexRoute: StockIndexRoute,
   StoreIndexRoute: StoreIndexRoute,
+  AdminCategoriesIndexRoute: AdminCategoriesIndexRoute,
+  AdminLocationsIndexRoute: AdminLocationsIndexRoute,
+  AdminProductsIndexRoute: AdminProductsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
