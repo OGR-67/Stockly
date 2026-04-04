@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { ICategoryService } from '../interfaces/ICategoryService'
-import type { Category } from '../../models/categoryModel'
+import type { Category } from '../../models/CategoryModel'
 
 const mockData: Category[] = [
     {

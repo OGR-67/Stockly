@@ -1,4 +1,4 @@
-import type { ProductDetail } from "./productModel"
+import type { ProductDetail } from "./ProductModel"
 import type { StorageLocation } from "./StorageLocationModel"
 
 export interface StockUnit {

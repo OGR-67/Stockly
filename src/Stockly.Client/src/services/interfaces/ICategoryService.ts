@@ -1,4 +1,4 @@
-import type { Category } from "../../models/categoryModel"
+import type { Category } from "../../models/CategoryModel"
 
 export interface ICategoryService {
     getAll(): Promise<Category[]>

@@ -1,4 +1,4 @@
-import type { Product, ProductDetail } from "../../models/productModel"
+import type { Product, ProductDetail } from "../../models/ProductModel"
 
 export interface IProductService {
     getAll(): Promise<ProductDetail[]>

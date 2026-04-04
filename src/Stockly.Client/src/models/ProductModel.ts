@@ -1,5 +1,5 @@
-import type { Barcode } from "./barcodeModel"
-import type { Category } from "./categoryModel"
+import type { Barcode } from "./BarcodeModel"
+import type { Category } from "./CategoryModel"
 
 export interface Product {
     id: string
