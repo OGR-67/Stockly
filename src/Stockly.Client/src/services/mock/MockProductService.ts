@@ -3,6 +3,7 @@ import type { IProductService } from '../interfaces/IProductService'
 import type { ICategoryService } from '../interfaces/ICategoryService'
 import type { Barcode } from '../../models/BarcodeModel'
 import type { Product, ProductDetail } from '../../models/ProductModel'
+import { mockCategories } from './MockCategoryService'
 
 const mockBarcodes: Barcode[] = [
     { code: '3017620422003', productId: '1' },
@@ -10,9 +11,9 @@ const mockBarcodes: Barcode[] = [
 ]
 
 const mockProducts: Product[] = [
-    { id: '1', categoryId: 'cat-epicerie', name: 'Nutella', freeText: null },
-    { id: '2', categoryId: 'cat-charcuterie', name: 'Jambon blanc', freeText: null },
-    { id: '3', categoryId: 'cat-prep-maison', name: 'Soupe maison', freeText: '15 min à feu doux' },
+    { id: '1', categoryId: mockCategories[13].id, name: 'Nutella', freeText: null },
+    { id: '2', categoryId: mockCategories[0].id, name: 'Jambon blanc', freeText: null },
+    { id: '3', categoryId: mockCategories[10].id, name: 'Soupe maison', freeText: '15 min à feu doux' },
 ]
 
 export class MockProductService implements IProductService {

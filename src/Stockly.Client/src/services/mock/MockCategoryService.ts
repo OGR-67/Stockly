@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import type { ICategoryService } from '../interfaces/ICategoryService'
 import type { Category } from '../../models/CategoryModel'
 
-const mockData: Category[] = [
+export const mockCategories: Category[] = [
     {
         id: uuidv4(),
         name: 'Jambon cuit / charcuterie tranchée',
@@ -156,7 +156,7 @@ const mockData: Category[] = [
 ]
 
 export class MockCategoryService implements ICategoryService {
-    private data: Category[] = [...mockData]
+    private data: Category[] = [...mockCategories]
 
     async getAll(): Promise<Category[]> {
         return this.data

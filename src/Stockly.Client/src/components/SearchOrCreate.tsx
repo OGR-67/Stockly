@@ -16,7 +16,7 @@ interface SearchOrCreateProps<T> {
     value?: T
 }
 
-export function SearchOrCreate<T extends Record<string, unknown>>({
+export function SearchOrCreate<T extends object>({
     items,
     onSelect,
     onClear,
@@ -65,7 +65,7 @@ export function SearchOrCreate<T extends Record<string, unknown>>({
 
     return (
         <div ref={containerRef} className="relative w-full">
-            <div className="flex items-center border border-stone-300 rounded-lg px-3 py-2 gap-2">
+            <div className="flex items-center border border-stone-300 rounded-lg px-3 py-2 gap-2 bg-cream">
                 {onScan && onScanRequest && (
                     <button onClick={() => onScanRequest()} className="text-stone-400 hover:text-earth">
                         <FontAwesomeIcon icon={faBarcode} />
@@ -87,7 +87,7 @@ export function SearchOrCreate<T extends Record<string, unknown>>({
             </div>
 
             {isOpen && (
-                <div className="absolute w-full z-10 mt-1 border border-stone-200 rounded-lg bg-sage-light/20 shadow-lg">
+                <div className="absolute w-full z-40 mt-1 border border-stone-200 rounded-lg bg-cream shadow-lg">
                     <ul className="max-h-64 overflow-y-auto">
                         {results.map((item, index) => (
                             <li
