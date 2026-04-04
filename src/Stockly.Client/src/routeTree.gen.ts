@@ -14,6 +14,7 @@ import { Route as StoreIndexRouteImport } from './routes/store/index'
 import { Route as StockIndexRouteImport } from './routes/stock/index'
 import { Route as DevIndexRouteImport } from './routes/dev/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as StoreLocationIdRouteImport } from './routes/store/$locationId'
 import { Route as StockLocationIdRouteImport } from './routes/stock/$locationId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StoreLocationIdRoute = StoreLocationIdRouteImport.update({
+  id: '/store/$locationId',
+  path: '/store/$locationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StockLocationIdRoute = StockLocationIdRouteImport.update({
   id: '/stock/$locationId',
   path: '/stock/$locationId',
@@ -50,6 +56,7 @@ const StockLocationIdRoute = StockLocationIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
+  '/store/$locationId': typeof StoreLocationIdRoute
   '/admin/': typeof AdminIndexRoute
   '/dev/': typeof DevIndexRoute
   '/stock/': typeof StockIndexRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
+  '/store/$locationId': typeof StoreLocationIdRoute
   '/admin': typeof AdminIndexRoute
   '/dev': typeof DevIndexRoute
   '/stock': typeof StockIndexRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
+  '/store/$locationId': typeof StoreLocationIdRoute
   '/admin/': typeof AdminIndexRoute
   '/dev/': typeof DevIndexRoute
   '/stock/': typeof StockIndexRoute
@@ -77,16 +86,25 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/stock/$locationId'
+    | '/store/$locationId'
     | '/admin/'
     | '/dev/'
     | '/stock/'
     | '/store/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/stock/$locationId' | '/admin' | '/dev' | '/stock' | '/store'
+  to:
+    | '/'
+    | '/stock/$locationId'
+    | '/store/$locationId'
+    | '/admin'
+    | '/dev'
+    | '/stock'
+    | '/store'
   id:
     | '__root__'
     | '/'
     | '/stock/$locationId'
+    | '/store/$locationId'
     | '/admin/'
     | '/dev/'
     | '/stock/'
@@ -96,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StockLocationIdRoute: typeof StockLocationIdRoute
+  StoreLocationIdRoute: typeof StoreLocationIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   DevIndexRoute: typeof DevIndexRoute
   StockIndexRoute: typeof StockIndexRoute
@@ -139,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/store/$locationId': {
+      id: '/store/$locationId'
+      path: '/store/$locationId'
+      fullPath: '/store/$locationId'
+      preLoaderRoute: typeof StoreLocationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stock/$locationId': {
       id: '/stock/$locationId'
       path: '/stock/$locationId'
@@ -152,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StockLocationIdRoute: StockLocationIdRoute,
+  StoreLocationIdRoute: StoreLocationIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   DevIndexRoute: DevIndexRoute,
   StockIndexRoute: StockIndexRoute,
