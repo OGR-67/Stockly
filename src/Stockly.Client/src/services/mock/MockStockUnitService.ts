@@ -3,12 +3,13 @@ import type { IStockUnitService } from '../interfaces/IStockUnitService'
 import type { IProductService } from '../interfaces/IProductService'
 import type { IStorageLocationService } from '../interfaces/IStorageLocationService'
 import type { StockUnit, StockUnitDetail } from '../../models/StockUnitModel'
+import { mockLocations } from './MockStorageLocationService'
 
 const mockStockUnits: StockUnit[] = [
     {
         id: '1',
         productId: '2',
-        locationId: '1',
+        locationId: mockLocations[0].id,
         expirationDate: new Date('2026-04-10'),
         isOpened: false,
         createdAt: new Date('2026-04-01'),
@@ -18,7 +19,7 @@ const mockStockUnits: StockUnit[] = [
     {
         id: '2',
         productId: '2',
-        locationId: '1',
+        locationId: mockLocations[0].id,
         expirationDate: new Date('2026-04-15'),
         isOpened: false,
         createdAt: new Date('2026-04-01'),
@@ -28,7 +29,7 @@ const mockStockUnits: StockUnit[] = [
     {
         id: '3',
         productId: '3',
-        locationId: '2',
+        locationId: mockLocations[1].id,
         expirationDate: new Date('2026-04-05'),
         isOpened: true,
         createdAt: new Date('2026-03-28'),

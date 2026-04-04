@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import type { IStorageLocationService } from '../interfaces/IStorageLocationService'
 import type { StorageLocation } from '../../models/StorageLocationModel'
 
-const mockData: StorageLocation[] = [
+export const mockLocations: StorageLocation[] = [
     { id: uuidv4(), name: 'Frigo', type: 'fridge' },
     { id: uuidv4(), name: 'Congélateur', type: 'freezer' },
     { id: uuidv4(), name: 'Placard cuisine', type: 'normal' },
@@ -10,7 +10,7 @@ const mockData: StorageLocation[] = [
 ]
 
 export class MockStorageLocationService implements IStorageLocationService {
-    private data: StorageLocation[] = [...mockData]
+    private data: StorageLocation[] = [...mockLocations]
 
     async getAll(): Promise<StorageLocation[]> {
         return this.data
