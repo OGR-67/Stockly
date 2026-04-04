@@ -1,22 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUtensils,
-  faBoxOpen,
-  faArrowRightArrowLeft,
-} from "@fortawesome/free-solid-svg-icons";
+import { faUtensils, faBoxOpen, faArrowRightArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { StackPage } from "../../components/layout/StackPage";
+import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
 import { Scanner } from "../../components/Scanner";
 import { SearchOrCreate } from "../../components/SearchOrCreate";
 import { OpenModal } from "../../components/stock/OpenModal";
 import { TransferModal } from "../../components/stock/TransferModal";
-import {
-  locationService,
-  stockUnitService,
-  productService,
-} from "../../services";
-import type { StorageLocation } from "../../models/StorageLocationModel";
+import { productService } from "../../services";
+import { useLocation, useLocations } from "../../hooks/queries/useLocations";
+import { useStockUnits, useStockUnitMutations } from "../../hooks/queries/useStockUnits";
+import { useSettings } from "../../hooks/useSettings";
 import type { StockUnitDetail } from "../../models/StockUnitModel";
 
 export const Route = createFileRoute("/stock/$locationId")({
@@ -30,42 +25,21 @@ interface ProductOption {
 
 function RouteComponent() {
   const { locationId } = Route.useParams();
+  const { settings } = useSettings();
 
-  const [location, setLocation] = useState<StorageLocation | null>(null);
-  const [allLocations, setAllLocations] = useState<StorageLocation[]>([]);
-  const [stockUnits, setStockUnits] = useState<StockUnitDetail[]>([]);
+  const { data: location } = useLocation(locationId);
+  const { data: allLocations = [] } = useLocations();
+  const { data: stockUnits = [], isLoading, isError } = useStockUnits(locationId);
+  const { consume, open, move } = useStockUnitMutations(locationId);
 
-  const [scannerOpen, setScannerOpen] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<
-    ProductOption | undefined
-  >();
+  const [scannerOpen, setScannerOpen] = useState(settings.cameraEnabled);
+  const [selectedProduct, setSelectedProduct] = useState<ProductOption | undefined>();
   const [toast, setToast] = useState<string | null>(null);
-
-  const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(
-    null,
-  );
-  const [transferModalUnit, setTransferModalUnit] =
-    useState<StockUnitDetail | null>(null);
-
-  useEffect(() => {
-    Promise.all([
-      locationService.getById(locationId),
-      locationService.getAll(),
-      stockUnitService.getByLocation(locationId),
-    ]).then(([loc, allLocs, units]) => {
-      setLocation(loc);
-      setAllLocations(allLocs);
-      setStockUnits(units);
-    });
-  }, [locationId]);
+  const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(null);
+  const [transferModalUnit, setTransferModalUnit] = useState<StockUnitDetail | null>(null);
 
   const productOptions: ProductOption[] = [
-    ...new Map(
-      stockUnits.map((u) => [
-        u.productId,
-        { id: u.productId, name: u.product.name },
-      ]),
-    ).values(),
+    ...new Map(stockUnits.map((u) => [u.productId, { id: u.productId, name: u.product.name }])).values(),
   ];
 
   function showToast(message: string) {
@@ -83,41 +57,17 @@ function RouteComponent() {
     }
   }
 
-  async function handleConsume(id: string) {
-    await stockUnitService.consume(id);
-    setStockUnits((prev) => prev.filter((u) => u.id !== id));
-  }
-
-  async function handleOpen(
-    newExpirationDate: Date | null,
-    newLocationId: string | null,
-  ) {
+  async function handleOpen(_newExpirationDate: Date | null, newLocationId: string | null) {
     const unit = openModalUnit!;
-    await stockUnitService.open(unit.id);
+    await open.mutateAsync(unit.id);
     if (newLocationId) {
-      await stockUnitService.move(unit.id, newLocationId);
-      setStockUnits((prev) => prev.filter((u) => u.id !== unit.id));
-    } else {
-      setStockUnits((prev) =>
-        prev.map((u) =>
-          u.id === unit.id
-            ? {
-                ...u,
-                isOpened: true,
-                openedAt: new Date(),
-                expirationDate: newExpirationDate,
-              }
-            : u,
-        ),
-      );
+      await move.mutateAsync({ id: unit.id, targetLocationId: newLocationId });
     }
     setOpenModalUnit(null);
   }
 
   async function handleTransfer(destinationLocationId: string) {
-    const unit = transferModalUnit!;
-    await stockUnitService.move(unit.id, destinationLocationId);
-    setStockUnits((prev) => prev.filter((u) => u.id !== unit.id));
+    await move.mutateAsync({ id: transferModalUnit!.id, targetLocationId: destinationLocationId });
     setTransferModalUnit(null);
   }
 
@@ -145,25 +95,22 @@ function RouteComponent() {
           value={selectedProduct}
           onSelect={setSelectedProduct}
           onClear={() => setSelectedProduct(undefined)}
-          onScanRequest={() => setScannerOpen(true)}
+          onScanRequest={settings.cameraEnabled ? () => setScannerOpen(true) : undefined}
           onScan={handleScan}
-          onCreate={() => {
-            /* TODO: ouvrir modale ajout article */
-          }}
+          autoFocus={!settings.cameraEnabled}
+          onCreate={() => {}}
           placeholder="Rechercher un article..."
         />
       </div>
 
+      {isLoading && <LoadingSpinner />}
+      {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
+
       <div className="flex flex-col gap-3">
         {displayedUnits.map((unit) => (
-          <div
-            key={unit.id}
-            className="flex items-center gap-3 p-3 bg-cream rounded-xl shadow-sm border border-sage/30"
-          >
+          <div key={unit.id} className="flex items-center gap-3 p-3 bg-cream rounded-xl shadow-sm border border-sage/30">
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-bark truncate">
-                {unit.product.name}
-              </p>
+              <p className="font-medium text-bark truncate">{unit.product.name}</p>
               <p className="text-xs text-stone-500">
                 DLC :{" "}
                 {unit.expirationDate
@@ -178,14 +125,11 @@ function RouteComponent() {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => handleConsume(unit.id)}
+                onClick={() => consume.mutate(unit.id)}
                 className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center"
                 title="Consommer"
               >
-                <FontAwesomeIcon
-                  icon={faUtensils}
-                  className="text-stone-600 text-sm"
-                />
+                <FontAwesomeIcon icon={faUtensils} className="text-stone-600 text-sm" />
               </button>
               {!unit.isOpened && unit.product.category.defaultOpenedDays !== null && (
                 <button
@@ -193,10 +137,7 @@ function RouteComponent() {
                   className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center"
                   title="Ouvrir"
                 >
-                  <FontAwesomeIcon
-                    icon={faBoxOpen}
-                    className="text-earth text-sm"
-                  />
+                  <FontAwesomeIcon icon={faBoxOpen} className="text-earth text-sm" />
                 </button>
               )}
               <button
@@ -204,15 +145,12 @@ function RouteComponent() {
                 className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center"
                 title="Transférer"
               >
-                <FontAwesomeIcon
-                  icon={faArrowRightArrowLeft}
-                  className="text-earth text-sm"
-                />
+                <FontAwesomeIcon icon={faArrowRightArrowLeft} className="text-earth text-sm" />
               </button>
             </div>
           </div>
         ))}
-        {displayedUnits.length === 0 && (
+        {!isLoading && displayedUnits.length === 0 && (
           <p className="text-center text-stone-400 py-8">Aucun article</p>
         )}
       </div>

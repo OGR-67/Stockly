@@ -1,13 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { StackPage } from "../../components/layout/StackPage";
+import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
 import { Scanner } from "../../components/Scanner";
 import { SearchOrCreate } from "../../components/SearchOrCreate";
 import { AddStockModal } from "../../components/store/AddStockModal";
-import { locationService, productService, stockUnitService } from "../../services";
-import type { StorageLocation } from "../../models/StorageLocationModel";
+import { productService } from "../../services";
+import { useLocation } from "../../hooks/queries/useLocations";
+import { useProducts } from "../../hooks/queries/useProducts";
+import { useStockUnitMutations } from "../../hooks/queries/useStockUnits";
+import { useSettings } from "../../hooks/useSettings";
 import type { ProductDetail } from "../../models/ProductModel";
 
 export const Route = createFileRoute("/store/$locationId")({
@@ -16,23 +20,16 @@ export const Route = createFileRoute("/store/$locationId")({
 
 function RouteComponent() {
   const { locationId } = Route.useParams();
+  const { settings } = useSettings();
 
-  const [location, setLocation] = useState<StorageLocation | null>(null);
-  const [allProducts, setAllProducts] = useState<ProductDetail[]>([]);
-  const [scannerOpen, setScannerOpen] = useState(true);
+  const { data: location } = useLocation(locationId);
+  const { data: allProducts = [], isLoading } = useProducts();
+  const { add } = useStockUnitMutations(locationId);
+
+  const [scannerOpen, setScannerOpen] = useState(settings.cameraEnabled);
   const [pendingBarcode, setPendingBarcode] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-
-  useEffect(() => {
-    Promise.all([
-      locationService.getById(locationId),
-      productService.getAll(),
-    ]).then(([loc, products]) => {
-      setLocation(loc);
-      setAllProducts(products);
-    });
-  }, [locationId]);
 
   function showToast(message: string) {
     setToast(message);
@@ -42,7 +39,7 @@ function RouteComponent() {
   function cancelAndRescan() {
     setPendingBarcode(null);
     setSelectedProduct(null);
-    setScannerOpen(true);
+    setScannerOpen(settings.cameraEnabled);
   }
 
   async function handleScan(barcode: string) {
@@ -64,14 +61,14 @@ function RouteComponent() {
   }
 
   async function handleConfirm(expirationDate: Date | null) {
-    await stockUnitService.add({
+    await add.mutateAsync({
       productId: selectedProduct!.id,
       locationId,
       expirationDate,
     });
     setSelectedProduct(null);
     setPendingBarcode(null);
-    setScannerOpen(true);
+    setScannerOpen(settings.cameraEnabled);
   }
 
   return (
@@ -93,17 +90,20 @@ function RouteComponent() {
               Code-barres non trouvé : <span className="font-mono font-medium">{pendingBarcode}</span>
             </div>
           )}
-          <SearchOrCreate
-            items={allProducts}
-            displayKey="name"
-            searchKeys={["name"]}
-            onSelect={handleProductSelect}
-            onClear={() => {}}
-            onCreate={() => showToast("Création de produit à venir")}
-            onScanRequest={() => setScannerOpen(true)}
-            onScan={handleScan}
-            placeholder="Rechercher un article..."
-          />
+          {isLoading ? <LoadingSpinner /> : (
+            <SearchOrCreate
+              items={allProducts}
+              displayKey="name"
+              searchKeys={["name"]}
+              onSelect={handleProductSelect}
+              onClear={() => {}}
+              onCreate={() => showToast("Création de produit à venir")}
+              onScanRequest={settings.cameraEnabled ? () => setScannerOpen(true) : undefined}
+              onScan={handleScan}
+              autoFocus={!settings.cameraEnabled}
+              placeholder="Rechercher un article..."
+            />
+          )}
           {pendingBarcode && (
             <button
               onClick={cancelAndRescan}
