@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Fuse from 'fuse.js'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBarcode, faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
 
 interface SearchOrCreateProps<T> {
     items: T[]
@@ -63,10 +65,10 @@ export function SearchOrCreate<T extends Record<string, unknown>>({
 
     return (
         <div ref={containerRef} className="relative w-full">
-            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 gap-2">
+            <div className="flex items-center border border-stone-300 rounded-lg px-3 py-2 gap-2">
                 {onScan && onScanRequest && (
-                    <button onClick={() => onScanRequest()} className="text-gray-400 hover:text-gray-600">
-                        📷
+                    <button onClick={() => onScanRequest()} className="text-stone-400 hover:text-earth">
+                        <FontAwesomeIcon icon={faBarcode} />
                     </button>
                 )}
                 <input
@@ -79,35 +81,36 @@ export function SearchOrCreate<T extends Record<string, unknown>>({
                     }}
                     onFocus={() => setIsOpen(true)}
                 />
-                <button onClick={handleClear} className="text-gray-400 hover:text-gray-600">
-                    ✕
+                <button onClick={handleClear} className="text-stone-400 hover:text-stone-600">
+                    <FontAwesomeIcon icon={faXmark} />
                 </button>
             </div>
 
             {isOpen && (
-                <div className="absolute w-full z-10 mt-1 border border-gray-200 rounded-lg bg-white shadow-lg">
+                <div className="absolute w-full z-10 mt-1 border border-stone-200 rounded-lg bg-sage-light/20 shadow-lg">
                     <ul className="max-h-64 overflow-y-auto">
                         {results.map((item, index) => (
                             <li
                                 key={index}
                                 onClick={() => handleSelect(item)}
-                                className="px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer"
+                                className="px-4 py-2 text-sm hover:bg-sage-light cursor-pointer"
                             >
                                 {String(item[displayKey])}
                             </li>
                         ))}
                         {results.length === 0 && (
-                            <li className="px-4 py-2 text-sm text-gray-400">
+                            <li className="px-4 py-2 text-sm text-sage-light">
                                 Aucun résultat
                             </li>
                         )}
                     </ul>
-                    <div className="border-t border-gray-200">
+                    <div className="border-t border-stone-200">
                         <button
                             onClick={onCreate}
-                            className="w-full px-4 py-2 text-sm text-left text-blue-600 hover:bg-gray-50"
+                            className="w-full px-4 py-2 text-sm text-left text-earth hover:bg-sage-light flex items-center gap-2 cursor-pointer"
                         >
-                            + Créer nouveau
+                            <FontAwesomeIcon icon={faPlus} />
+                            Créer nouveau
                         </button>
                     </div>
                 </div>

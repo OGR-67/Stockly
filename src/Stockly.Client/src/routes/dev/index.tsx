@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { SearchOrCreate } from '../../components/SearchOrCreate'
 import { Scanner } from '../../components/Scanner'
+import { RootPage } from '../../components/layout/RootPage'
 
 const mockCategories = [
     { id: '1', name: 'Charcuterie tranchée' },
@@ -25,8 +26,7 @@ function DevPage() {
     const [scannerOpen, setScannerOpen] = useState(false)
 
     return (
-        <div className="p-4 flex flex-col gap-8">
-            <h1 className="text-xl font-bold">Dev Sandbox</h1>
+        <RootPage title="Dev Sandbox">
             {scannerOpen && (
                 <Scanner
                     onScan={(barcode) => {
@@ -50,8 +50,8 @@ function DevPage() {
                     onCreate={() => alert('Créer nouveau')}
                     placeholder="Rechercher une catégorie..."
                 />
-                {selected && <p className="mt-2 text-sm text-gray-500">Sélectionné : {selected.name}</p>}
+                {selected && <p className="mt-2 text-sm text-stone-500">Sélectionné : {selected.name}</p>}
             </div>
-        </div>
+        </RootPage>
     )
 }

@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import type { IStockUnitService } from '../interfaces/IStockUnitService'
 import type { IProductService } from '../interfaces/IProductService'
 import type { IStorageLocationService } from '../interfaces/IStorageLocationService'
-import type { StockUnit, StockUnitDetail } from '../../models/stockUnitModel'
+import type { StockUnit, StockUnitDetail } from '../../models/StockUnitModel'
 
 const mockStockUnits: StockUnit[] = [
     {

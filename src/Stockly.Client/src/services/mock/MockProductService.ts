@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { IProductService } from '../interfaces/IProductService'
 import type { ICategoryService } from '../interfaces/ICategoryService'
-import type { Barcode } from '../../models/barcodeModel'
-import type { Product, ProductDetail } from '../../models/productModel'
+import type { Barcode } from '../../models/BarcodeModel'
+import type { Product, ProductDetail } from '../../models/ProductModel'
 
 const mockBarcodes: Barcode[] = [
     { code: '3017620422003', productId: '1' },

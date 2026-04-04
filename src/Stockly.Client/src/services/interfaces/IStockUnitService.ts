@@ -1,4 +1,4 @@
-import type { StockUnit, StockUnitDetail } from "../../models/stockUnitModel"
+import type { StockUnit, StockUnitDetail } from "../../models/StockUnitModel"
 
 export interface IStockUnitService {
     getAll(): Promise<StockUnitDetail[]>

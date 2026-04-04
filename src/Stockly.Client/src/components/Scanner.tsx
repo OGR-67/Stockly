@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { BrowserMultiFormatReader, BarcodeFormat } from '@zxing/browser'
 import type { IScannerControls } from '@zxing/browser'
 import { DecodeHintType } from '@zxing/library'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faXmark, faBolt, faLightbulb } from '@fortawesome/free-solid-svg-icons'
 
 interface ScannerProps {
     onScan: (barcode: string) => void
@@ -110,11 +112,11 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
                 </p>
                 <button
                     onClick={() => window.location.reload()}
-                    className="px-4 py-2 bg-white text-black rounded-lg"
+                    className="px-4 py-2 bg-earth text-white rounded-lg"
                 >
                     Autoriser la caméra
                 </button>
-                <button onClick={onClose} className="text-white underline text-sm">
+                <button onClick={onClose} className="text-stone-400 text-sm">
                     Annuler
                 </button>
             </div>
@@ -127,7 +129,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
                 <p className="text-white text-center px-8">
                     Aucune caméra détectée sur cet appareil.
                 </p>
-                <button onClick={onClose} className="px-4 py-2 bg-white text-black rounded-lg">
+                <button onClick={onClose} className="px-4 py-2 bg-earth text-white rounded-lg">
                     Fermer
                 </button>
             </div>
@@ -138,9 +140,9 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
         <div className="fixed inset-0 bg-black z-50">
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-10 text-white text-2xl"
+                className="absolute top-4 right-4 z-10 text-white text-xl w-9 h-9 flex items-center justify-center rounded-full bg-black/40"
             >
-                ✕
+                <FontAwesomeIcon icon={faXmark} />
             </button>
 
             <video ref={videoRef} className="w-full h-full object-cover" />
@@ -152,9 +154,9 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
             {torchAvailable && (
                 <button
                     onClick={toggleTorch}
-                    className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white text-3xl"
+                    className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white text-2xl w-12 h-12 flex items-center justify-center rounded-full bg-black/40"
                 >
-                    {torchOn ? '🔦' : '💡'}
+                    <FontAwesomeIcon icon={torchOn ? faBolt : faLightbulb} />
                 </button>
             )}
         </div>
