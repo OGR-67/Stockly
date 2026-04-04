@@ -187,7 +187,7 @@ function RouteComponent() {
                   className="text-stone-600 text-sm"
                 />
               </button>
-              {!unit.isOpened && (
+              {!unit.isOpened && unit.product.category.defaultOpenedDays !== null && (
                 <button
                   onClick={() => setOpenModalUnit(unit)}
                   className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center"
