@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { Toggle } from './Toggle'
 import type { Category } from '../../models/CategoryModel'
 
 interface CategoryModalProps {
@@ -15,19 +16,6 @@ function parseNullableInt(value: string): number | null {
     return isNaN(n) ? null : n
 }
 
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-    return (
-        <label className="flex items-center justify-between py-2 cursor-pointer">
-            <span className="text-sm text-stone-700">{label}</span>
-            <div
-                onClick={() => onChange(!checked)}
-                className={`w-11 h-6 rounded-full transition-colors flex items-center px-1 ${checked ? 'bg-earth' : 'bg-stone-300'}`}
-            >
-                <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform ${checked ? 'translate-x-5' : ''}`} />
-            </div>
-        </label>
-    )
-}
 
 function DaysInput({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number | null) => void }) {
     return (

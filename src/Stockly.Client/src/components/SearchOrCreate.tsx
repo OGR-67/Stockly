@@ -14,6 +14,7 @@ interface SearchOrCreateProps<T> {
     searchKeys: (keyof T)[]
     placeholder?: string
     value?: T
+    autoFocus?: boolean
 }
 
 export function SearchOrCreate<T extends object>({
@@ -27,6 +28,7 @@ export function SearchOrCreate<T extends object>({
     searchKeys,
     placeholder = 'Rechercher...',
     value,
+    autoFocus,
 }: SearchOrCreateProps<T>) {
     const [query, setQuery] = useState('')
     const [isOpen, setIsOpen] = useState(false)
@@ -75,11 +77,18 @@ export function SearchOrCreate<T extends object>({
                     className="flex-1 outline-none text-sm"
                     placeholder={value ? String(value[displayKey]) : placeholder}
                     value={value ? String(value[displayKey]) : query}
+                    autoFocus={autoFocus}
                     onChange={(e) => {
                         setQuery(e.target.value)
                         setIsOpen(true)
                     }}
                     onFocus={() => setIsOpen(true)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && query.trim() && onScan) {
+                            onScan(query.trim())
+                            setQuery('')
+                        }
+                    }}
                 />
                 <button onClick={handleClear} className="text-stone-400 hover:text-stone-600">
                     <FontAwesomeIcon icon={faXmark} />

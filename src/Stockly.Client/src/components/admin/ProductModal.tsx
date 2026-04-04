@@ -4,7 +4,7 @@ import { faCheck, faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
 import { SearchOrCreate } from '../SearchOrCreate'
 import { CategoryModal } from './CategoryModal'
-import { categoryService } from '../../services'
+import { useCategoryMutations } from '../../hooks/queries/useCategories'
 import type { Product, ProductDetail } from '../../models/ProductModel'
 import type { Category } from '../../models/CategoryModel'
 
@@ -27,9 +27,10 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
     const [freeText, setFreeText] = useState(initial?.freeText ?? '')
     const [newBarcode, setNewBarcode] = useState('')
     const [showCategoryModal, setShowCategoryModal] = useState(false)
+    const { create: createCategory } = useCategoryMutations()
 
     async function handleCreateCategory(data: Omit<Category, 'id'>) {
-        const created = await categoryService.create(data)
+        const created = await createCategory.mutateAsync(data)
         const newCat: Category = { id: created.id, ...data }
         setCats(prev => [...prev, newCat])
         setSelectedCategory(newCat)
