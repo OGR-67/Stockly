@@ -98,7 +98,7 @@ function RouteComponent() {
           onScanRequest={settings.cameraEnabled ? () => setScannerOpen(true) : undefined}
           onScan={handleScan}
           autoFocus={!settings.cameraEnabled}
-          onCreate={() => {}}
+
           placeholder="Rechercher un article..."
         />
       </div>

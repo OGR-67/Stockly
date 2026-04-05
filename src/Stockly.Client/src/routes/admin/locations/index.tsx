@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import Fuse from 'fuse.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
+import { SearchInput } from '../../../components/SearchInput'
 import { LocationModal } from '../../../components/admin/LocationModal'
 import { locationIcon } from '../../../utils/locationIcons'
 import { useLocations, useLocationMutations } from '../../../hooks/queries/useLocations'
@@ -17,6 +19,10 @@ function RouteComponent() {
     const { data: locations = [], isLoading, isError } = useLocations()
     const { create, update, remove } = useLocationMutations()
     const [editTarget, setEditTarget] = useState<StorageLocation | 'new' | null>(null)
+    const [query, setQuery] = useState('')
+
+    const fuse = new Fuse(locations, { keys: ['name'], threshold: 0.3 })
+    const filtered = query ? fuse.search(query).map(r => r.item) : locations
 
     async function handleSave(data: Omit<StorageLocation, 'id'>) {
         if (editTarget === 'new') {
@@ -41,11 +47,13 @@ function RouteComponent() {
                 </button>
             }
         >
+            <SearchInput value={query} onChange={setQuery} placeholder="Rechercher un emplacement..." className="mb-4" />
+
             {isLoading && <LoadingSpinner />}
             {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
 
             <div className="flex flex-col gap-3">
-                {locations.map(location => (
+                {filtered.map(location => (
                     <div key={location.id} className="flex items-center gap-3 p-3 bg-cream rounded-xl border border-sage/30">
                         <div className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center shrink-0">
                             <FontAwesomeIcon icon={locationIcon(location.type)} className="text-earth" />
@@ -59,7 +67,7 @@ function RouteComponent() {
                         </button>
                     </div>
                 ))}
-                {!isLoading && locations.length === 0 && (
+                {!isLoading && filtered.length === 0 && (
                     <p className="text-center text-stone-400 py-8">Aucun emplacement</p>
                 )}
             </div>
