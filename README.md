@@ -23,7 +23,7 @@ Plutôt qu'une gestion des stocks hardcore à l'unité, le stock sera géré en 
 
 ## Installation
 
-À venir — un `docker-compose` sera fourni pour simplifier le déploiement.
+Voir [`docs/onboarding.md`](./docs/onboarding.md) pour démarrer en dev et déployer en production.
 
 ## Documentation
 
