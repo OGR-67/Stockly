@@ -1,0 +1,6 @@
+**/.git
+**/.gitignore
+**/bin
+**/obj
+**/node_modules
+src/Stockly.Client
