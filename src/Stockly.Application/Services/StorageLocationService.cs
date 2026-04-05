@@ -1,4 +1,5 @@
 using Stockly.Application.DTOs.StorageLocations;
+using Stockly.Application.Exceptions;
 using Stockly.Application.Interfaces.Repositories;
 using Stockly.Application.Interfaces.Services;
 using Stockly.Core.Entities;
@@ -13,10 +14,11 @@ public class StorageLocationService(IStorageLocationRepository repository) : ISt
         return locations.Select(ToResponse);
     }
 
-    public async Task<StorageLocationResponse?> GetByIdAsync(Guid id)
+    public async Task<StorageLocationResponse> GetByIdAsync(Guid id)
     {
-        var location = await repository.GetByIdAsync(id);
-        return location is null ? null : ToResponse(location);
+        var location = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"StorageLocation {id} not found.");
+        return ToResponse(location);
     }
 
     public async Task<StorageLocationResponse> CreateAsync(SaveStorageLocationRequest request)
@@ -31,10 +33,10 @@ public class StorageLocationService(IStorageLocationRepository repository) : ISt
         return ToResponse(created);
     }
 
-    public async Task<StorageLocationResponse?> UpdateAsync(Guid id, SaveStorageLocationRequest request)
+    public async Task<StorageLocationResponse> UpdateAsync(Guid id, SaveStorageLocationRequest request)
     {
-        var existing = await repository.GetByIdAsync(id);
-        if (existing is null) return null;
+        var existing = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"StorageLocation {id} not found.");
 
         existing.Name = request.Name;
         existing.Type = request.Type;
@@ -43,12 +45,11 @@ public class StorageLocationService(IStorageLocationRepository repository) : ISt
         return ToResponse(updated);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        var existing = await repository.GetByIdAsync(id);
-        if (existing is null) return false;
+        _ = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"StorageLocation {id} not found.");
         await repository.DeleteAsync(id);
-        return true;
     }
 
     private static StorageLocationResponse ToResponse(StorageLocation l) => new(l.Id, l.Name, l.Type);

@@ -1,4 +1,5 @@
 using Stockly.Application.DTOs.Categories;
+using Stockly.Application.Exceptions;
 using Stockly.Application.Interfaces.Repositories;
 using Stockly.Application.Interfaces.Services;
 using Stockly.Core.Entities;
@@ -13,10 +14,11 @@ public class CategoryService(ICategoryRepository repository) : ICategoryService
         return categories.Select(ToResponse);
     }
 
-    public async Task<CategoryResponse?> GetByIdAsync(Guid id)
+    public async Task<CategoryResponse> GetByIdAsync(Guid id)
     {
-        var category = await repository.GetByIdAsync(id);
-        return category is null ? null : ToResponse(category);
+        var category = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Category {id} not found.");
+        return ToResponse(category);
     }
 
     public async Task<CategoryResponse> CreateAsync(SaveCategoryRequest request)
@@ -36,10 +38,10 @@ public class CategoryService(ICategoryRepository repository) : ICategoryService
         return ToResponse(created);
     }
 
-    public async Task<CategoryResponse?> UpdateAsync(Guid id, SaveCategoryRequest request)
+    public async Task<CategoryResponse> UpdateAsync(Guid id, SaveCategoryRequest request)
     {
-        var existing = await repository.GetByIdAsync(id);
-        if (existing is null) return null;
+        var existing = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Category {id} not found.");
 
         existing.Name = request.Name;
         existing.IsPerishable = request.IsPerishable;
@@ -53,12 +55,11 @@ public class CategoryService(ICategoryRepository repository) : ICategoryService
         return ToResponse(updated);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        var existing = await repository.GetByIdAsync(id);
-        if (existing is null) return false;
+        _ = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Category {id} not found.");
         await repository.DeleteAsync(id);
-        return true;
     }
 
     private static CategoryResponse ToResponse(Category c) => new(

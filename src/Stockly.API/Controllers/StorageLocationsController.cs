@@ -12,11 +12,7 @@ public class StorageLocationsController(IStorageLocationService service) : Contr
     public async Task<IActionResult> GetAll() => Ok(await service.GetAllAsync());
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
-    {
-        var result = await service.GetByIdAsync(id);
-        return result is null ? NotFound() : Ok(result);
-    }
+    public async Task<IActionResult> GetById(Guid id) => Ok(await service.GetByIdAsync(id));
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] SaveStorageLocationRequest request)
@@ -26,16 +22,13 @@ public class StorageLocationsController(IStorageLocationService service) : Contr
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] SaveStorageLocationRequest request)
-    {
-        var result = await service.UpdateAsync(id, request);
-        return result is null ? NotFound() : Ok(result);
-    }
+    public async Task<IActionResult> Update(Guid id, [FromBody] SaveStorageLocationRequest request) =>
+        Ok(await service.UpdateAsync(id, request));
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await service.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        await service.DeleteAsync(id);
+        return NoContent();
     }
 }

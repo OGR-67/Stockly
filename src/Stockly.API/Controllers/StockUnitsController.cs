@@ -23,30 +23,19 @@ public class StockUnitsController(IStockUnitService service) : ControllerBase
     }
 
     [HttpPut("{id:guid}/open")]
-    public async Task<IActionResult> Open(Guid id)
-    {
-        var result = await service.OpenAsync(id);
-        return result is null ? NotFound() : Ok(result);
-    }
+    public async Task<IActionResult> Open(Guid id) => Ok(await service.OpenAsync(id));
 
     [HttpPut("{id:guid}/move")]
-    public async Task<IActionResult> Move(Guid id, [FromBody] MoveStockUnitRequest request)
-    {
-        var result = await service.MoveAsync(id, request);
-        return result is null ? NotFound() : Ok(result);
-    }
+    public async Task<IActionResult> Move(Guid id, [FromBody] MoveStockUnitRequest request) =>
+        Ok(await service.MoveAsync(id, request));
 
     [HttpPut("{id:guid}/consume")]
-    public async Task<IActionResult> Consume(Guid id)
-    {
-        var result = await service.ConsumeAsync(id);
-        return result is null ? NotFound() : Ok(result);
-    }
+    public async Task<IActionResult> Consume(Guid id) => Ok(await service.ConsumeAsync(id));
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await service.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        await service.DeleteAsync(id);
+        return NoContent();
     }
 }
