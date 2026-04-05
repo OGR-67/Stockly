@@ -7,6 +7,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        // Repository and printing service implementations will be registered here.
         return services;
     }
 }
