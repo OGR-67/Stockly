@@ -12,18 +12,10 @@ public class ProductsController(IProductService service) : ControllerBase
     public async Task<IActionResult> GetAll() => Ok(await service.GetAllAsync());
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
-    {
-        var result = await service.GetByIdAsync(id);
-        return result is null ? NotFound() : Ok(result);
-    }
+    public async Task<IActionResult> GetById(Guid id) => Ok(await service.GetByIdAsync(id));
 
     [HttpGet("barcode/{barcode}")]
-    public async Task<IActionResult> GetByBarcode(string barcode)
-    {
-        var result = await service.GetByBarcodeAsync(barcode);
-        return result is null ? NotFound() : Ok(result);
-    }
+    public async Task<IActionResult> GetByBarcode(string barcode) => Ok(await service.GetByBarcodeAsync(barcode));
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] SaveProductRequest request)
@@ -33,24 +25,21 @@ public class ProductsController(IProductService service) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] SaveProductRequest request)
-    {
-        var result = await service.UpdateAsync(id, request);
-        return result is null ? NotFound() : Ok(result);
-    }
+    public async Task<IActionResult> Update(Guid id, [FromBody] SaveProductRequest request) =>
+        Ok(await service.UpdateAsync(id, request));
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await service.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        await service.DeleteAsync(id);
+        return NoContent();
     }
 
     [HttpPost("{id:guid}/barcodes")]
     public async Task<IActionResult> AddBarcode(Guid id, [FromBody] AddBarcodeRequest request)
     {
-        var success = await service.AddBarcodeAsync(id, request.Barcode);
-        return success ? NoContent() : NotFound();
+        await service.AddBarcodeAsync(id, request.Barcode);
+        return NoContent();
     }
 
     [HttpDelete("barcodes/{barcode}")]

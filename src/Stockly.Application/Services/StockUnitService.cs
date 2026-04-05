@@ -2,6 +2,7 @@ using Stockly.Application.DTOs.Categories;
 using Stockly.Application.DTOs.Products;
 using Stockly.Application.DTOs.StockUnits;
 using Stockly.Application.DTOs.StorageLocations;
+using Stockly.Application.Exceptions;
 using Stockly.Application.Interfaces.Repositories;
 using Stockly.Application.Interfaces.Services;
 using Stockly.Core.Entities;
@@ -40,10 +41,10 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         return ToDetailResponse(withDetails);
     }
 
-    public async Task<StockUnitDetailResponse?> OpenAsync(Guid id)
+    public async Task<StockUnitDetailResponse> OpenAsync(Guid id)
     {
-        var unit = await repository.GetByIdAsync(id);
-        if (unit is null) return null;
+        var unit = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"StockUnit {id} not found.");
 
         unit.IsOpened = true;
         unit.OpenedAt = DateTime.UtcNow;
@@ -52,10 +53,10 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         return ToDetailResponse(updated);
     }
 
-    public async Task<StockUnitDetailResponse?> MoveAsync(Guid id, MoveStockUnitRequest request)
+    public async Task<StockUnitDetailResponse> MoveAsync(Guid id, MoveStockUnitRequest request)
     {
-        var unit = await repository.GetByIdWithDetailsAsync(id);
-        if (unit is null) return null;
+        var unit = await repository.GetByIdWithDetailsAsync(id)
+            ?? throw new NotFoundException($"StockUnit {id} not found.");
 
         await UpdateDLC(unit, request);
         unit.LocationId = request.LocationId;
@@ -64,10 +65,10 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         return ToDetailResponse(updated);
     }
 
-    public async Task<StockUnitDetailResponse?> ConsumeAsync(Guid id)
+    public async Task<StockUnitDetailResponse> ConsumeAsync(Guid id)
     {
-        var unit = await repository.GetByIdAsync(id);
-        if (unit is null) return null;
+        var unit = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"StockUnit {id} not found.");
 
         unit.ConsumedAt = DateTime.UtcNow;
 
@@ -75,12 +76,11 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         return ToDetailResponse(updated);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        var unit = await repository.GetByIdAsync(id);
-        if (unit is null) return false;
+        _ = await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"StockUnit {id} not found.");
         await repository.DeleteAsync(id);
-        return true;
     }
 
     private static StockUnitDetailResponse ToDetailResponse(StockUnit u) => new(

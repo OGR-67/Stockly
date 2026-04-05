@@ -1,5 +1,6 @@
 using Stockly.Application.DTOs.Categories;
 using Stockly.Application.DTOs.Products;
+using Stockly.Application.Exceptions;
 using Stockly.Application.Interfaces.Repositories;
 using Stockly.Application.Interfaces.Services;
 using Stockly.Core.Entities;
@@ -14,16 +15,18 @@ public class ProductService(IProductRepository repository) : IProductService
         return products.Select(ToDetailResponse);
     }
 
-    public async Task<ProductDetailResponse?> GetByIdAsync(Guid id)
+    public async Task<ProductDetailResponse> GetByIdAsync(Guid id)
     {
-        var product = await repository.GetByIdWithDetailsAsync(id);
-        return product is null ? null : ToDetailResponse(product);
+        var product = await repository.GetByIdWithDetailsAsync(id)
+            ?? throw new NotFoundException($"Product {id} not found.");
+        return ToDetailResponse(product);
     }
 
-    public async Task<ProductDetailResponse?> GetByBarcodeAsync(string barcode)
+    public async Task<ProductDetailResponse> GetByBarcodeAsync(string barcode)
     {
-        var product = await repository.GetByBarcodeAsync(barcode);
-        return product is null ? null : ToDetailResponse(product);
+        var product = await repository.GetByBarcodeAsync(barcode)
+            ?? throw new NotFoundException($"Product with barcode '{barcode}' not found.");
+        return ToDetailResponse(product);
     }
 
     public async Task<ProductResponse> CreateAsync(SaveProductRequest request)
@@ -39,10 +42,10 @@ public class ProductService(IProductRepository repository) : IProductService
         return ToResponse(created);
     }
 
-    public async Task<ProductResponse?> UpdateAsync(Guid id, SaveProductRequest request)
+    public async Task<ProductResponse> UpdateAsync(Guid id, SaveProductRequest request)
     {
-        var existing = await repository.GetByIdWithDetailsAsync(id);
-        if (existing is null) return null;
+        var existing = await repository.GetByIdWithDetailsAsync(id)
+            ?? throw new NotFoundException($"Product {id} not found.");
 
         existing.CategoryId = request.CategoryId;
         existing.Name = request.Name;
@@ -52,26 +55,23 @@ public class ProductService(IProductRepository repository) : IProductService
         return ToResponse(updated);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        var existing = await repository.GetByIdWithDetailsAsync(id);
-        if (existing is null) return false;
+        _ = await repository.GetByIdWithDetailsAsync(id)
+            ?? throw new NotFoundException($"Product {id} not found.");
         await repository.DeleteAsync(id);
-        return true;
     }
 
-    public async Task<bool> AddBarcodeAsync(Guid productId, string barcode)
+    public async Task AddBarcodeAsync(Guid productId, string barcode)
     {
-        var existing = await repository.GetByIdWithDetailsAsync(productId);
-        if (existing is null) return false;
+        _ = await repository.GetByIdWithDetailsAsync(productId)
+            ?? throw new NotFoundException($"Product {productId} not found.");
         await repository.AddBarcodeAsync(productId, barcode);
-        return true;
     }
 
-    public async Task<bool> DeleteBarcodeAsync(string barcode)
+    public async Task DeleteBarcodeAsync(string barcode)
     {
         await repository.DeleteBarcodeAsync(barcode);
-        return true;
     }
 
     private static ProductResponse ToResponse(Product p) => new(p.Id, p.CategoryId, p.Name, p.FreeText);
