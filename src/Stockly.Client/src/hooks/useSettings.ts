@@ -4,9 +4,11 @@ const STORAGE_KEY = 'stockly_settings'
 
 interface AppSettings {
     cameraEnabled: boolean
+    defaultPrinterId: string | null
+    defaultFormatId: string | null
 }
 
-const defaults: AppSettings = { cameraEnabled: true }
+const defaults: AppSettings = { cameraEnabled: true, defaultPrinterId: null, defaultFormatId: null }
 
 function loadSettings(): AppSettings {
     try {
