@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faPrint } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { PrintModal } from '../PrintModal'
 import { SearchOrCreate } from '../SearchOrCreate'
+import { useSettings } from '../../hooks/useSettings'
 import type { StockUnitDetail } from '../../models/StockUnitModel'
 import type { StorageLocation, LocationType } from '../../models/StorageLocationModel'
 import type { Category } from '../../models/CategoryModel'
@@ -32,6 +34,8 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
     const [dateValue, setDateValue] = useState(() =>
         computeSuggestedDlc(category, stockUnit.location.type)
     )
+    const [showPrintModal, setShowPrintModal] = useState(false)
+    const { settings } = useSettings()
 
     useEffect(() => {
         if (selectedLocation) {
@@ -42,52 +46,64 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
     const movedToNewLocation = selectedLocation && selectedLocation.id !== stockUnit.locationId
 
     return (
-        <Modal title="Ouvrir" onClose={onClose}>
-            <p className="font-medium text-bark">{stockUnit.product.name}</p>
+        <>
+            <Modal title="Ouvrir" onClose={onClose}>
+                <p className="font-medium text-bark">{stockUnit.product.name}</p>
 
-            <div className="mt-3">
-                <label className="block text-sm text-stone-500 mb-1">Nouvelle DLC</label>
-                <input
-                    type="date"
-                    value={dateValue}
-                    onChange={(e) => setDateValue(e.target.value)}
-                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                />
-            </div>
+                <div className="mt-3">
+                    <label className="block text-sm text-stone-500 mb-1">Nouvelle DLC</label>
+                    <input
+                        type="date"
+                        value={dateValue}
+                        onChange={(e) => setDateValue(e.target.value)}
+                        className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
+                    />
+                </div>
 
-            <div className="mt-3">
-                <label className="block text-sm text-stone-500 mb-1">Emplacement</label>
-                <SearchOrCreate
-                    items={locations}
-                    displayKey="name"
-                    searchKeys={['name']}
-                    value={selectedLocation}
-                    onSelect={setSelectedLocation}
-                    onClear={() => setSelectedLocation(stockUnit.location)}
-                    onCreate={() => {}}
-                    placeholder="Rechercher un emplacement..."
-                />
-            </div>
+                <div className="mt-3">
+                    <label className="block text-sm text-stone-500 mb-1">Emplacement</label>
+                    <SearchOrCreate
+                        items={locations}
+                        displayKey="name"
+                        searchKeys={['name']}
+                        value={selectedLocation}
+                        onSelect={setSelectedLocation}
+                        onClear={() => setSelectedLocation(stockUnit.location)}
+                        onCreate={() => {}}
+                        placeholder="Rechercher un emplacement..."
+                    />
+                </div>
 
-            <div className="mt-4 flex flex-col gap-3">
-                <button
-                    disabled
-                    className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border border-stone-200 text-stone-400 cursor-not-allowed"
-                >
-                    <FontAwesomeIcon icon={faPrint} />
-                    Imprimer l'étiquette
-                </button>
-                <button
-                    onClick={() => onConfirm(
-                        dateValue ? new Date(dateValue) : null,
-                        movedToNewLocation ? selectedLocation.id : null,
+                <div className="mt-4 flex flex-col gap-3">
+                    {settings.defaultPrinterId && (
+                        <button
+                            onClick={() => setShowPrintModal(true)}
+                            className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border border-stone-200 text-earth hover:bg-sage-light/50"
+                        >
+                            <FontAwesomeIcon icon={faPrint} />
+                            Imprimer l'étiquette
+                        </button>
                     )}
-                    className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium"
-                >
-                    <FontAwesomeIcon icon={faCheck} />
-                    Confirmer
-                </button>
-            </div>
-        </Modal>
+                    <button
+                        onClick={() => onConfirm(
+                            dateValue ? new Date(dateValue) : null,
+                            movedToNewLocation ? selectedLocation.id : null,
+                        )}
+                        className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium"
+                    >
+                        <FontAwesomeIcon icon={faCheck} />
+                        Confirmer
+                    </button>
+                </div>
+            </Modal>
+
+            {showPrintModal && (
+                <PrintModal
+                    product={stockUnit.product}
+                    expirationDate={dateValue ? new Date(dateValue) : null}
+                    onClose={() => setShowPrintModal(false)}
+                />
+            )}
+        </>
     )
 }
