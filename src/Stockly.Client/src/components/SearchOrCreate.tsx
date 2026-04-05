@@ -7,7 +7,7 @@ interface SearchOrCreateProps<T> {
     items: T[]
     onSelect: (item: T) => void
     onClear: () => void
-    onCreate: () => void
+    onCreate?: () => void
     onScanRequest?: () => void
     onScan?: (barcode: string) => void
     displayKey: keyof T
@@ -113,15 +113,17 @@ export function SearchOrCreate<T extends object>({
                             </li>
                         )}
                     </ul>
-                    <div className="border-t border-stone-200">
-                        <button
-                            onClick={onCreate}
-                            className="w-full px-4 py-2 text-sm text-left text-earth hover:bg-sage-light flex items-center gap-2 cursor-pointer"
-                        >
-                            <FontAwesomeIcon icon={faPlus} />
-                            Créer nouveau
-                        </button>
-                    </div>
+                    {onCreate && (
+                        <div className="border-t border-stone-200">
+                            <button
+                                onClick={onCreate}
+                                className="w-full px-4 py-2 text-sm text-left text-earth hover:bg-sage-light flex items-center gap-2 cursor-pointer"
+                            >
+                                <FontAwesomeIcon icon={faPlus} />
+                                Créer nouveau
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

@@ -7,12 +7,15 @@ import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
 import { Scanner } from "../../components/Scanner";
 import { SearchOrCreate } from "../../components/SearchOrCreate";
 import { AddStockModal } from "../../components/store/AddStockModal";
+import { ProductModal } from "../../components/admin/ProductModal";
 import { productService } from "../../services";
 import { useLocation } from "../../hooks/queries/useLocations";
-import { useProducts } from "../../hooks/queries/useProducts";
+import { useProducts, useProductMutations } from "../../hooks/queries/useProducts";
+import { useCategories } from "../../hooks/queries/useCategories";
 import { useStockUnitMutations } from "../../hooks/queries/useStockUnits";
 import { useSettings } from "../../hooks/useSettings";
 import type { ProductDetail } from "../../models/ProductModel";
+import type { Product } from "../../models/ProductModel";
 
 export const Route = createFileRoute("/store/$locationId")({
   component: RouteComponent,
@@ -24,17 +27,15 @@ function RouteComponent() {
 
   const { data: location } = useLocation(locationId);
   const { data: allProducts = [], isLoading } = useProducts();
+  const { data: categories = [] } = useCategories();
+  const { create: createProduct } = useProductMutations();
   const { add } = useStockUnitMutations(locationId);
 
   const [scannerOpen, setScannerOpen] = useState(settings.cameraEnabled);
   const [pendingBarcode, setPendingBarcode] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
-
-  function showToast(message: string) {
-    setToast(message);
-    setTimeout(() => setToast(null), 3000);
-  }
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [toast] = useState<string | null>(null);
 
   function cancelAndRescan() {
     setPendingBarcode(null);
@@ -50,6 +51,22 @@ function RouteComponent() {
     } else {
       setPendingBarcode(barcode);
     }
+  }
+
+  async function handleCreateProduct(data: Omit<Product, 'id'>) {
+    const created = await createProduct.mutateAsync(data);
+    // Fetch the full product detail from the updated cache via refetch
+    const fresh = allProducts.find(p => p.id === created.id) ?? {
+      ...created,
+      category: categories.find(c => c.id === data.categoryId)!,
+      barcodes: [],
+    } as ProductDetail;
+    if (pendingBarcode) {
+      await productService.addBarcode(created.id, pendingBarcode);
+      setPendingBarcode(null);
+    }
+    setSelectedProduct(fresh);
+    setShowProductModal(false);
   }
 
   async function handleProductSelect(product: ProductDetail) {
@@ -97,7 +114,7 @@ function RouteComponent() {
               searchKeys={["name"]}
               onSelect={handleProductSelect}
               onClear={() => {}}
-              onCreate={() => showToast("Création de produit à venir")}
+              onCreate={() => setShowProductModal(true)}
               onScanRequest={settings.cameraEnabled ? () => setScannerOpen(true) : undefined}
               onScan={handleScan}
               autoFocus={!settings.cameraEnabled}
@@ -114,6 +131,16 @@ function RouteComponent() {
             </button>
           )}
         </div>
+      )}
+
+      {showProductModal && (
+        <ProductModal
+          categories={categories}
+          onConfirm={handleCreateProduct}
+          onAddBarcode={() => {}}
+          onDeleteBarcode={() => {}}
+          onClose={() => setShowProductModal(false)}
+        />
       )}
 
       {selectedProduct && location && (

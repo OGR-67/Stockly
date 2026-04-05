@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import Fuse from 'fuse.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
+import { SearchInput } from '../../../components/SearchInput'
 import { CategoryModal } from '../../../components/admin/CategoryModal'
 import { useCategories, useCategoryMutations } from '../../../hooks/queries/useCategories'
 import type { Category } from '../../../models/CategoryModel'
@@ -16,6 +18,10 @@ function RouteComponent() {
     const { data: categories = [], isLoading, isError } = useCategories()
     const { create, update, remove } = useCategoryMutations()
     const [editTarget, setEditTarget] = useState<Category | 'new' | null>(null)
+    const [query, setQuery] = useState('')
+
+    const fuse = new Fuse(categories, { keys: ['name'], threshold: 0.3 })
+    const filtered = query ? fuse.search(query).map(r => r.item) : categories
 
     async function handleSave(data: Omit<Category, 'id'>) {
         if (editTarget === 'new') {
@@ -40,11 +46,13 @@ function RouteComponent() {
                 </button>
             }
         >
+            <SearchInput value={query} onChange={setQuery} placeholder="Rechercher une catégorie..." className="mb-4" />
+
             {isLoading && <LoadingSpinner />}
             {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
 
             <div className="flex flex-col gap-3">
-                {categories.map(category => (
+                {filtered.map(category => (
                     <div key={category.id} className="flex items-center gap-3 p-3 bg-cream rounded-xl border border-sage/30">
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-bark truncate">{category.name}</p>
@@ -65,7 +73,7 @@ function RouteComponent() {
                         </button>
                     </div>
                 ))}
-                {!isLoading && categories.length === 0 && (
+                {!isLoading && filtered.length === 0 && (
                     <p className="text-center text-stone-400 py-8">Aucune catégorie</p>
                 )}
             </div>

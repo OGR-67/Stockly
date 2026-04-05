@@ -4,7 +4,9 @@ import { faCheck, faPrint } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
 import { PrintModal } from '../PrintModal'
 import { SearchOrCreate } from '../SearchOrCreate'
+import { LocationModal } from '../admin/LocationModal'
 import { useSettings } from '../../hooks/useSettings'
+import { useLocationMutations } from '../../hooks/queries/useLocations'
 import type { StockUnitDetail } from '../../models/StockUnitModel'
 import type { StorageLocation, LocationType } from '../../models/StorageLocationModel'
 import type { Category } from '../../models/CategoryModel'
@@ -35,7 +37,9 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
         computeSuggestedDlc(category, stockUnit.location.type)
     )
     const [showPrintModal, setShowPrintModal] = useState(false)
+    const [showLocationModal, setShowLocationModal] = useState(false)
     const { settings } = useSettings()
+    const { create: createLocation } = useLocationMutations()
 
     useEffect(() => {
         if (selectedLocation) {
@@ -69,7 +73,7 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                         value={selectedLocation}
                         onSelect={setSelectedLocation}
                         onClear={() => setSelectedLocation(stockUnit.location)}
-                        onCreate={() => {}}
+                        onCreate={() => setShowLocationModal(true)}
                         placeholder="Rechercher un emplacement..."
                     />
                 </div>
@@ -102,6 +106,18 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                     product={stockUnit.product}
                     expirationDate={dateValue ? new Date(dateValue) : null}
                     onClose={() => setShowPrintModal(false)}
+                />
+            )}
+
+            {showLocationModal && (
+                <LocationModal
+                    onConfirm={async (data) => {
+                        const created = await createLocation.mutateAsync(data)
+                        const newLoc = { id: created.id, ...data }
+                        setSelectedLocation(newLoc)
+                        setShowLocationModal(false)
+                    }}
+                    onClose={() => setShowLocationModal(false)}
                 />
             )}
         </>
