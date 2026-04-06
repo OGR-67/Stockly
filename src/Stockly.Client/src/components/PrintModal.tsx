@@ -18,6 +18,7 @@ import type { ProductDetail } from "../models/ProductModel";
 interface PrintModalProps {
   product: ProductDetail;
   expirationDate: Date | null;
+  copies?: number;
   onClose: () => void;
 }
 
@@ -26,6 +27,7 @@ const PREVIEW_SCALE = 4; // px per mm
 export function PrintModal({
   product,
   expirationDate,
+  copies = 1,
   onClose,
 }: PrintModalProps) {
   const queryClient = useQueryClient();
@@ -82,16 +84,18 @@ export function PrintModal({
 
   async function handlePrint() {
     if (!selectedPrinterId || !selectedFormatId || !barcode) return;
-    await print.mutateAsync({
-      printerId: selectedPrinterId,
-      formatId: selectedFormatId,
-      job: {
-        productName: product.name,
-        expirationDate,
-        barcode,
-        note: note || null,
-      },
-    });
+    for (let i = 0; i < copies; i++) {
+      await print.mutateAsync({
+        printerId: selectedPrinterId,
+        formatId: selectedFormatId,
+        job: {
+          productName: product.name,
+          expirationDate,
+          barcode,
+          note: note || null,
+        },
+      });
+    }
     onClose();
   }
 
@@ -198,7 +202,7 @@ export function PrintModal({
           className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium disabled:opacity-50"
         >
           <FontAwesomeIcon icon={faPrint} />
-          {print.isPending ? "Impression..." : "Imprimer"}
+          {print.isPending ? "Impression..." : copies > 1 ? `Imprimer ×${copies}` : "Imprimer"}
         </button>
       </div>
     </Modal>

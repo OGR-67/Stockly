@@ -8,10 +8,10 @@ namespace Stockly.Infrastructure.Repositories;
 public class StockUnitRepository(StocklyDbContext context) : IStockUnitRepository
 {
     public async Task<IEnumerable<StockUnit>> GetAllWithDetailsAsync() =>
-        await WithDetails().ToListAsync();
+        await WithDetails().Where(s => s.ConsumedAt == null).ToListAsync();
 
     public async Task<IEnumerable<StockUnit>> GetByLocationWithDetailsAsync(Guid locationId) =>
-        await WithDetails().Where(s => s.LocationId == locationId).ToListAsync();
+        await WithDetails().Where(s => s.LocationId == locationId && s.ConsumedAt == null).ToListAsync();
 
     public async Task<StockUnit?> GetByIdAsync(Guid id) =>
         await context.StockUnits.FindAsync(id);

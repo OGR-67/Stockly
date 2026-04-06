@@ -84,9 +84,13 @@ export function SearchOrCreate<T extends object>({
                     }}
                     onFocus={() => setIsOpen(true)}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' && query.trim() && onScan) {
-                            onScan(query.trim())
-                            setQuery('')
+                        if (e.key === 'Enter' && query.trim()) {
+                            if (results.length > 0) {
+                                handleSelect(results[0])
+                            } else if (onScan) {
+                                onScan(query.trim())
+                                setQuery('')
+                            }
                         }
                     }}
                 />

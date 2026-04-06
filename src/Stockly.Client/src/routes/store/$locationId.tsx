@@ -35,7 +35,7 @@ function RouteComponent() {
   const [pendingBarcode, setPendingBarcode] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
   const [showProductModal, setShowProductModal] = useState(false);
-  const [toast] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   function cancelAndRescan() {
     setPendingBarcode(null);
@@ -77,15 +77,16 @@ function RouteComponent() {
     setSelectedProduct(product);
   }
 
-  async function handleConfirm(expirationDate: Date | null) {
-    await add.mutateAsync({
-      productId: selectedProduct!.id,
-      locationId,
-      expirationDate,
-    });
+  async function handleConfirm(expirationDate: Date | null, quantity: number) {
+    for (let i = 0; i < quantity; i++) {
+      await add.mutateAsync({ productId: selectedProduct!.id, locationId, expirationDate });
+    }
+    const name = selectedProduct!.name;
     setSelectedProduct(null);
     setPendingBarcode(null);
     setScannerOpen(settings.cameraEnabled);
+    setToast(`${quantity > 1 ? `${quantity}× ` : ''}${name} rangé`);
+    setTimeout(() => setToast(null), 2500);
   }
 
   return (
@@ -95,7 +96,7 @@ function RouteComponent() {
       )}
 
       {toast && (
-        <div className="fixed bottom-20 left-4 right-4 z-40 bg-bark text-white text-sm text-center py-3 px-4 rounded-xl shadow-lg">
+        <div className="fixed bottom-20 left-4 right-4 z-[60] bg-bark text-white text-sm text-center py-3 px-4 rounded-xl shadow-lg">
           {toast}
         </div>
       )}

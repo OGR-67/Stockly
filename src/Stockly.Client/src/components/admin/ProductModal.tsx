@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faXmark, faPlus, faBarcode } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { Scanner } from '../Scanner'
 import { SearchOrCreate } from '../SearchOrCreate'
 import { CategoryModal } from './CategoryModal'
 import { useCategoryMutations } from '../../hooks/queries/useCategories'
+import { useSettings } from '../../hooks/useSettings'
 import type { Product, ProductDetail } from '../../models/ProductModel'
 import type { Category } from '../../models/CategoryModel'
 
@@ -26,8 +28,10 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
     )
     const [freeText, setFreeText] = useState(initial?.freeText ?? '')
     const [newBarcode, setNewBarcode] = useState('')
+    const [showScanner, setShowScanner] = useState(false)
     const [showCategoryModal, setShowCategoryModal] = useState(false)
     const { create: createCategory } = useCategoryMutations()
+    const { settings } = useSettings()
 
     async function handleCreateCategory(data: Omit<Category, 'id'>) {
         const created = await createCategory.mutateAsync(data)
@@ -103,6 +107,14 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                                             }
                                         }}
                                     />
+                                    {settings.cameraEnabled && (
+                                        <button
+                                            onClick={() => setShowScanner(true)}
+                                            className="px-3 py-2 bg-sage-light rounded-lg text-earth"
+                                        >
+                                            <FontAwesomeIcon icon={faBarcode} />
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => { if (newBarcode.trim()) { onAddBarcode(newBarcode.trim()); setNewBarcode('') } }}
                                         className="px-3 py-2 bg-sage-light rounded-lg text-earth"
@@ -110,6 +122,15 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                                         <FontAwesomeIcon icon={faPlus} />
                                     </button>
                                 </div>
+                                {showScanner && (
+                                    <Scanner
+                                        onScan={(code) => {
+                                            onAddBarcode(code)
+                                            setShowScanner(false)
+                                        }}
+                                        onClose={() => setShowScanner(false)}
+                                    />
+                                )}
                             </div>
                         </div>
                     )}
