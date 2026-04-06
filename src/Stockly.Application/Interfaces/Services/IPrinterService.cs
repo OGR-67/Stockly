@@ -6,5 +6,7 @@ public interface IPrinterService
 {
     Task<IEnumerable<PrinterResponse>> GetAllAsync();
     Task<IEnumerable<PrinterFormatResponse>> GetFormatsAsync(Guid printerId);
+    Task<PrinterResponse> RegisterAsync(RegisterPrinterRequest request);
+    Task DeleteAsync(Guid id);
     Task PrintAsync(Guid printerId, PrintRequest request);
 }

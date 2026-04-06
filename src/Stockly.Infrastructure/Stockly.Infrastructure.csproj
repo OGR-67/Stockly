@@ -12,6 +12,9 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <PackageReference Include="SharpIpp" Version="0.10.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="Zeroconf" Version="3.7.16" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,15 +1,21 @@
+using Stockly.Application.Interfaces.Services;
+using Zeroconf;
+
 namespace Stockly.Infrastructure.Printing;
 
-/// <summary>
-/// Découverte des imprimantes IPP sur le réseau local via mDNS (_ipp._tcp.local).
-/// À implémenter avec Makaretu.Dns.Multicast (pure C#, cross-platform).
-/// </summary>
-public class PrinterDiscoveryService
+public class PrinterDiscoveryService : IPrinterDiscoveryService
 {
-    public Task<IReadOnlyList<DiscoveredPrinter>> DiscoverAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<DiscoveredPrinterDto>> DiscoverAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Printer discovery not yet implemented.");
+        var results = await ZeroconfResolver.ResolveAsync("_ipp._tcp.local.", cancellationToken: cancellationToken);
+
+        return results
+            .Select(host =>
+            {
+                var service = host.Services.Values.FirstOrDefault();
+                var port = service?.Port ?? 631;
+                return new DiscoveredPrinterDto(host.DisplayName, host.IPAddress, port);
+            })
+            .ToList();
     }
 }
-
-public record DiscoveredPrinter(string Name, string IpAddress, int Port);

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SharpIpp;
 using Stockly.Application.Interfaces.Repositories;
 using Stockly.Application.Interfaces.Services;
 using Stockly.Infrastructure.Persistence;
@@ -22,8 +23,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStockUnitRepository, StockUnitRepository>();
         services.AddScoped<IPrinterRepository, PrinterRepository>();
 
-        services.AddHttpClient<IPrintingService, IppPrintingService>();
-        services.AddTransient<PrinterDiscoveryService>();
+        services.AddScoped<ISharpIppClient, SharpIppClient>();
+        services.AddScoped<IPrintingService, IppPrintingService>();
+        services.AddScoped<IPrinterDiscoveryService, PrinterDiscoveryService>();
 
         return services;
     }
