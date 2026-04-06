@@ -5,9 +5,10 @@ import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'
 interface StackPageProps {
     title: string
     children: React.ReactNode
+    action?: React.ReactNode
 }
 
-export function StackPage({ title, children }: StackPageProps) {
+export function StackPage({ title, children, action }: StackPageProps) {
     const router = useRouter()
 
     return (
@@ -16,7 +17,8 @@ export function StackPage({ title, children }: StackPageProps) {
                 <button onClick={() => router.history.back()} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faChevronLeft} />
                 </button>
-                <h1 className="text-xl font-semibold text-white text-center">{title}</h1>
+                <h1 className="flex-1 text-xl font-semibold text-white">{title}</h1>
+                {action}
             </header>
             <div className="flex-1 overflow-y-auto p-4">
                 {children}

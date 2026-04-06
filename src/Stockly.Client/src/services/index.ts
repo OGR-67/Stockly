@@ -1,11 +1,13 @@
-import { MockCategoryService } from "./mock/MockCategoryService"
-import { MockProductService } from "./mock/MockProductService"
-import { MockStockUnitService } from "./mock/MockStockUnitService"
-import { MockStorageLocationService } from "./mock/MockStorageLocationService"
+import { ApiCategoryService } from './api/ApiCategoryService'
+import { ApiStorageLocationService } from './api/ApiStorageLocationService'
+import { ApiProductService } from './api/ApiProductService'
+import { ApiStockUnitService } from './api/ApiStockUnitService'
+import { ApiPrinterService } from './api/ApiPrinterService'
 
-const categoryService = new MockCategoryService()
-const locationService = new MockStorageLocationService()
-const productService = new MockProductService(categoryService)
-const stockUnitService = new MockStockUnitService(productService, locationService)
+const categoryService = new ApiCategoryService()
+const locationService = new ApiStorageLocationService()
+const productService = new ApiProductService()
+const stockUnitService = new ApiStockUnitService()
+const printerService = new ApiPrinterService()
 
-export { categoryService, locationService, productService, stockUnitService }
+export { categoryService, locationService, productService, stockUnitService, printerService }

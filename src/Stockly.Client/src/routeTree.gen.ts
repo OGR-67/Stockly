@@ -14,7 +14,12 @@ import { Route as StoreIndexRouteImport } from './routes/store/index'
 import { Route as StockIndexRouteImport } from './routes/stock/index'
 import { Route as DevIndexRouteImport } from './routes/dev/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as StoreLocationIdRouteImport } from './routes/store/$locationId'
 import { Route as StockLocationIdRouteImport } from './routes/stock/$locationId'
+import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
+import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index'
+import { Route as AdminLocationsIndexRouteImport } from './routes/admin/locations/index'
+import { Route as AdminCategoriesIndexRouteImport } from './routes/admin/categories/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,65 +46,131 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StoreLocationIdRoute = StoreLocationIdRouteImport.update({
+  id: '/store/$locationId',
+  path: '/store/$locationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StockLocationIdRoute = StockLocationIdRouteImport.update({
   id: '/stock/$locationId',
   path: '/stock/$locationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
+  id: '/admin/settings/',
+  path: '/admin/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
+  id: '/admin/products/',
+  path: '/admin/products/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLocationsIndexRoute = AdminLocationsIndexRouteImport.update({
+  id: '/admin/locations/',
+  path: '/admin/locations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCategoriesIndexRoute = AdminCategoriesIndexRouteImport.update({
+  id: '/admin/categories/',
+  path: '/admin/categories/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
+  '/store/$locationId': typeof StoreLocationIdRoute
   '/admin/': typeof AdminIndexRoute
   '/dev/': typeof DevIndexRoute
   '/stock/': typeof StockIndexRoute
   '/store/': typeof StoreIndexRoute
+  '/admin/categories/': typeof AdminCategoriesIndexRoute
+  '/admin/locations/': typeof AdminLocationsIndexRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
+  '/store/$locationId': typeof StoreLocationIdRoute
   '/admin': typeof AdminIndexRoute
   '/dev': typeof DevIndexRoute
   '/stock': typeof StockIndexRoute
   '/store': typeof StoreIndexRoute
+  '/admin/categories': typeof AdminCategoriesIndexRoute
+  '/admin/locations': typeof AdminLocationsIndexRoute
+  '/admin/products': typeof AdminProductsIndexRoute
+  '/admin/settings': typeof AdminSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
+  '/store/$locationId': typeof StoreLocationIdRoute
   '/admin/': typeof AdminIndexRoute
   '/dev/': typeof DevIndexRoute
   '/stock/': typeof StockIndexRoute
   '/store/': typeof StoreIndexRoute
+  '/admin/categories/': typeof AdminCategoriesIndexRoute
+  '/admin/locations/': typeof AdminLocationsIndexRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/stock/$locationId'
+    | '/store/$locationId'
     | '/admin/'
     | '/dev/'
     | '/stock/'
     | '/store/'
+    | '/admin/categories/'
+    | '/admin/locations/'
+    | '/admin/products/'
+    | '/admin/settings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/stock/$locationId' | '/admin' | '/dev' | '/stock' | '/store'
+  to:
+    | '/'
+    | '/stock/$locationId'
+    | '/store/$locationId'
+    | '/admin'
+    | '/dev'
+    | '/stock'
+    | '/store'
+    | '/admin/categories'
+    | '/admin/locations'
+    | '/admin/products'
+    | '/admin/settings'
   id:
     | '__root__'
     | '/'
     | '/stock/$locationId'
+    | '/store/$locationId'
     | '/admin/'
     | '/dev/'
     | '/stock/'
     | '/store/'
+    | '/admin/categories/'
+    | '/admin/locations/'
+    | '/admin/products/'
+    | '/admin/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StockLocationIdRoute: typeof StockLocationIdRoute
+  StoreLocationIdRoute: typeof StoreLocationIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   DevIndexRoute: typeof DevIndexRoute
   StockIndexRoute: typeof StockIndexRoute
   StoreIndexRoute: typeof StoreIndexRoute
+  AdminCategoriesIndexRoute: typeof AdminCategoriesIndexRoute
+  AdminLocationsIndexRoute: typeof AdminLocationsIndexRoute
+  AdminProductsIndexRoute: typeof AdminProductsIndexRoute
+  AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -139,11 +210,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/store/$locationId': {
+      id: '/store/$locationId'
+      path: '/store/$locationId'
+      fullPath: '/store/$locationId'
+      preLoaderRoute: typeof StoreLocationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stock/$locationId': {
       id: '/stock/$locationId'
       path: '/stock/$locationId'
       fullPath: '/stock/$locationId'
       preLoaderRoute: typeof StockLocationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/settings/': {
+      id: '/admin/settings/'
+      path: '/admin/settings'
+      fullPath: '/admin/settings/'
+      preLoaderRoute: typeof AdminSettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/products/': {
+      id: '/admin/products/'
+      path: '/admin/products'
+      fullPath: '/admin/products/'
+      preLoaderRoute: typeof AdminProductsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/locations/': {
+      id: '/admin/locations/'
+      path: '/admin/locations'
+      fullPath: '/admin/locations/'
+      preLoaderRoute: typeof AdminLocationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/categories/': {
+      id: '/admin/categories/'
+      path: '/admin/categories'
+      fullPath: '/admin/categories/'
+      preLoaderRoute: typeof AdminCategoriesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -152,10 +258,15 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StockLocationIdRoute: StockLocationIdRoute,
+  StoreLocationIdRoute: StoreLocationIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   DevIndexRoute: DevIndexRoute,
   StockIndexRoute: StockIndexRoute,
   StoreIndexRoute: StoreIndexRoute,
+  AdminCategoriesIndexRoute: AdminCategoriesIndexRoute,
+  AdminLocationsIndexRoute: AdminLocationsIndexRoute,
+  AdminProductsIndexRoute: AdminProductsIndexRoute,
+  AdminSettingsIndexRoute: AdminSettingsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

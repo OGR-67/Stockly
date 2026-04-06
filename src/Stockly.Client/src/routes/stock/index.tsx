@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Fuse from "fuse.js";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { RootPage } from "../../components/layout/RootPage";
-import { locationService } from "../../services";
+import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
+import { SearchInput } from "../../components/SearchInput";
 import { locationIcon } from "../../utils/locationIcons";
-import type { StorageLocation } from "../../models/StorageLocationModel";
+import { useLocations } from "../../hooks/queries/useLocations";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const Route = createFileRoute("/stock/")({
   component: RouteComponent,
@@ -14,32 +14,25 @@ export const Route = createFileRoute("/stock/")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const [locations, setLocations] = useState<StorageLocation[]>([]);
+  const { data: locations = [], isLoading, isError } = useLocations();
   const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    locationService.getAll().then(setLocations);
-  }, []);
 
   const fuse = new Fuse(locations, { keys: ["name"], threshold: 0.3 });
   const filtered = query ? fuse.search(query).map((r) => r.item) : locations;
 
   return (
     <RootPage title="Stock">
-      <div className="mb-4">
-        <div className="flex items-center border border-stone-300 rounded-lg px-3 py-2 gap-2 bg-cream">
-          <FontAwesomeIcon
-            icon={faMagnifyingGlass}
-            className="text-stone-400"
-          />
-          <input
-            className="flex-1 outline-none text-sm bg-transparent"
-            placeholder="Rechercher un emplacement..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <SearchInput
+        value={query}
+        onChange={setQuery}
+        placeholder="Rechercher un emplacement..."
+        className="mb-4"
+      />
+
+      {isLoading && <LoadingSpinner />}
+      {isError && (
+        <p className="text-center text-stone-400 py-8">Erreur de chargement</p>
+      )}
 
       <div className="flex flex-col gap-3">
         {filtered.map((location) => (

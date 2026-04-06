@@ -1,0 +1,14 @@
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=stockly;Username=stockly;Password=stockly"
+    ports:
+      - "5050:8080"
+
+  db:
+    environment:
+      POSTGRES_USER: stockly
+      POSTGRES_PASSWORD: stockly
+    ports:
+      - "5432:5432"

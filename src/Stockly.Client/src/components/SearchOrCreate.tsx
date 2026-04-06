@@ -7,13 +7,14 @@ interface SearchOrCreateProps<T> {
     items: T[]
     onSelect: (item: T) => void
     onClear: () => void
-    onCreate: () => void
+    onCreate?: () => void
     onScanRequest?: () => void
     onScan?: (barcode: string) => void
     displayKey: keyof T
     searchKeys: (keyof T)[]
     placeholder?: string
     value?: T
+    autoFocus?: boolean
 }
 
 export function SearchOrCreate<T extends object>({
@@ -27,6 +28,7 @@ export function SearchOrCreate<T extends object>({
     searchKeys,
     placeholder = 'Rechercher...',
     value,
+    autoFocus,
 }: SearchOrCreateProps<T>) {
     const [query, setQuery] = useState('')
     const [isOpen, setIsOpen] = useState(false)
@@ -75,11 +77,22 @@ export function SearchOrCreate<T extends object>({
                     className="flex-1 outline-none text-sm"
                     placeholder={value ? String(value[displayKey]) : placeholder}
                     value={value ? String(value[displayKey]) : query}
+                    autoFocus={autoFocus}
                     onChange={(e) => {
                         setQuery(e.target.value)
                         setIsOpen(true)
                     }}
                     onFocus={() => setIsOpen(true)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && query.trim()) {
+                            if (results.length > 0) {
+                                handleSelect(results[0])
+                            } else if (onScan) {
+                                onScan(query.trim())
+                                setQuery('')
+                            }
+                        }
+                    }}
                 />
                 <button onClick={handleClear} className="text-stone-400 hover:text-stone-600">
                     <FontAwesomeIcon icon={faXmark} />
@@ -104,15 +117,17 @@ export function SearchOrCreate<T extends object>({
                             </li>
                         )}
                     </ul>
-                    <div className="border-t border-stone-200">
-                        <button
-                            onClick={onCreate}
-                            className="w-full px-4 py-2 text-sm text-left text-earth hover:bg-sage-light flex items-center gap-2 cursor-pointer"
-                        >
-                            <FontAwesomeIcon icon={faPlus} />
-                            Créer nouveau
-                        </button>
-                    </div>
+                    {onCreate && (
+                        <div className="border-t border-stone-200">
+                            <button
+                                onClick={onCreate}
+                                className="w-full px-4 py-2 text-sm text-left text-earth hover:bg-sage-light flex items-center gap-2 cursor-pointer"
+                            >
+                                <FontAwesomeIcon icon={faPlus} />
+                                Créer nouveau
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
