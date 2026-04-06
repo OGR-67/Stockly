@@ -8,6 +8,7 @@ import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
 import { ProductModal } from '../../../components/admin/ProductModal'
 import { useProducts, useProductMutations } from '../../../hooks/queries/useProducts'
+import { stockUnitService } from '../../../services'
 import { useCategories } from '../../../hooks/queries/useCategories'
 import type { ProductDetail } from '../../../models/ProductModel'
 
@@ -35,7 +36,12 @@ function RouteComponent() {
     }
 
     async function handleDelete(id: string) {
-        if (!window.confirm('Supprimer cet article ?')) return
+        const units = await stockUnitService.getAll()
+        const count = units.filter(u => u.productId === id).length
+        const message = count > 0
+            ? `Cet article a ${count} unité${count > 1 ? 's' : ''} en stock. Supprimer quand même ?`
+            : 'Supprimer cet article ?'
+        if (!window.confirm(message)) return
         await remove.mutateAsync(id)
     }
 
@@ -81,9 +87,15 @@ function RouteComponent() {
                     onAddBarcode={(barcode) => {
                         if (editTarget !== 'new' && editTarget) {
                             addBarcode.mutate({ productId: editTarget.id, barcode })
+                            setEditTarget({ ...editTarget, barcodes: [...editTarget.barcodes, { code: barcode, productId: editTarget.id }] })
                         }
                     }}
-                    onDeleteBarcode={(barcode) => deleteBarcode.mutate(barcode)}
+                    onDeleteBarcode={(barcode) => {
+                        deleteBarcode.mutate(barcode)
+                        if (editTarget !== 'new' && editTarget) {
+                            setEditTarget({ ...editTarget, barcodes: editTarget.barcodes.filter(b => b.code !== barcode) })
+                        }
+                    }}
                     onClose={() => setEditTarget(null)}
                 />
             )}

@@ -13,7 +13,7 @@ public class StockUnitConfiguration : IEntityTypeConfiguration<StockUnit>
         builder.HasOne(s => s.Product)
             .WithMany()
             .HasForeignKey(s => s.ProductId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(s => s.Location)
             .WithMany()

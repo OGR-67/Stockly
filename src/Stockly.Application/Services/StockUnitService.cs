@@ -37,13 +37,13 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
             ConsumedAt = null
         };
         var created = await repository.CreateAsync(unit);
-        var withDetails = await repository.GetByIdAsync(created.Id) ?? created;
+        var withDetails = await repository.GetByIdWithDetailsAsync(created.Id) ?? created;
         return ToDetailResponse(withDetails);
     }
 
     public async Task<StockUnitDetailResponse> OpenAsync(Guid id)
     {
-        var unit = await repository.GetByIdAsync(id)
+        var unit = await repository.GetByIdWithDetailsAsync(id)
             ?? throw new NotFoundException($"StockUnit {id} not found.");
 
         unit.IsOpened = true;
@@ -67,7 +67,7 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
 
     public async Task<StockUnitDetailResponse> ConsumeAsync(Guid id)
     {
-        var unit = await repository.GetByIdAsync(id)
+        var unit = await repository.GetByIdWithDetailsAsync(id)
             ?? throw new NotFoundException($"StockUnit {id} not found.");
 
         unit.ConsumedAt = DateTime.UtcNow;
