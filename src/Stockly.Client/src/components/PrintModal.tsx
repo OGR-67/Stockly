@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Barcode from "react-barcode";
+import { toJpeg } from "html-to-image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPrint } from "@fortawesome/free-solid-svg-icons";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,6 +33,7 @@ export function PrintModal({
 }: PrintModalProps) {
   const queryClient = useQueryClient();
   const { settings } = useSettings();
+  const previewRef = useRef<HTMLDivElement>(null);
 
   const [barcode, setBarcode] = useState<string | null>(
     product.barcodes.length > 0 ? product.barcodes[0].code : null,
@@ -40,6 +42,7 @@ export function PrintModal({
   const [selectedPrinterId, setSelectedPrinterId] = useState<string | null>(
     settings.defaultPrinterId,
   );
+  const [printing, setPrinting] = useState(false);
   const [selectedFormatId, setSelectedFormatId] = useState<string | null>(
     settings.defaultFormatId,
   );
@@ -51,7 +54,7 @@ export function PrintModal({
   // Auto-generate barcode if product has none
   useEffect(() => {
     if (product.barcodes.length === 0) {
-      const generated = crypto.randomUUID();
+      const generated = String(Math.floor(Math.random() * 9_000_000_000_000) + 1_000_000_000_000);
       productService.addBarcode(product.id, generated).then(() => {
         queryClient.invalidateQueries({ queryKey: queryKeys.products });
         setBarcode(generated);
@@ -67,46 +70,59 @@ export function PrintModal({
     }
   }, [printers]);
 
-  // Fallback: set first format if no setting saved yet
+  // Set first format if none selected or selected format no longer exists
   useEffect(() => {
-    if (formats.length > 0 && !selectedFormatId) {
-      setSelectedFormatId(formats[0].id);
+    if (formats.length > 0) {
+      const valid = formats.find(f => f.id === selectedFormatId);
+      if (!valid) setSelectedFormatId(formats[0].id);
     }
   }, [formats]);
 
   const selectedFormat = formats.find((f) => f.id === selectedFormatId);
-  const previewWidth = selectedFormat
-    ? selectedFormat.widthMm * PREVIEW_SCALE
-    : 240;
-  const previewHeight = selectedFormat
-    ? selectedFormat.heightMm * PREVIEW_SCALE
-    : 120;
+  const previewWidth = selectedFormat ? selectedFormat.widthMm * PREVIEW_SCALE : 240;
+  const previewHeight = selectedFormat ? selectedFormat.heightMm * PREVIEW_SCALE : 120;
+  const maxDisplayWidth = 280;
+  const maxDisplayHeight = 220;
+  const scale = Math.min(1, maxDisplayWidth / previewWidth, maxDisplayHeight / previewHeight);
+  const displayWidth = previewWidth * scale;
+  const displayHeight = previewHeight * scale;
 
   async function handlePrint() {
-    if (!selectedPrinterId || !selectedFormatId || !barcode) return;
-    for (let i = 0; i < copies; i++) {
-      await print.mutateAsync({
-        printerId: selectedPrinterId,
-        formatId: selectedFormatId,
-        job: {
-          productName: product.name,
-          expirationDate,
-          barcode,
-          note: note || null,
-        },
-      });
+    if (!selectedPrinterId || !selectedFormatId || !barcode || !previewRef.current) return;
+    setPrinting(true);
+    try {
+      const dataUrl = await toJpeg(previewRef.current, { pixelRatio: 3, backgroundColor: '#ffffff', quality: 0.95 });
+      const imageBase64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+      for (let i = 0; i < copies; i++) {
+        await print.mutateAsync({ printerId: selectedPrinterId, formatId: selectedFormatId, imageBase64 });
+      }
+      onClose();
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('api-error', { detail: (e as Error).message }));
+    } finally {
+      setPrinting(false);
     }
-    onClose();
   }
 
   return (
     <Modal title="Imprimer l'étiquette" onClose={onClose}>
       <div className="flex flex-col gap-4">
         {/* Label preview */}
-        <div
-          style={{ width: previewWidth, height: previewHeight }}
-          className="bg-white border-2 border-stone-300 rounded flex flex-col items-center justify-between p-2 mx-auto overflow-hidden"
-        >
+        <div style={{ width: displayWidth, height: displayHeight, position: 'relative', margin: '0 auto', flexShrink: 0 }}>
+          <div
+            ref={previewRef}
+            style={{
+              width: previewWidth,
+              minHeight: previewHeight,
+              transformOrigin: 'top left',
+              transform: `scale(${scale})`,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              padding: Math.max(8, previewWidth * 0.05),
+            }}
+            className="bg-white border-2 border-stone-300 rounded flex flex-col items-center justify-between"
+          >
           <p className="font-bold text-center text-sm leading-tight w-full truncate">
             {product.name}
           </p>
@@ -116,13 +132,15 @@ export function PrintModal({
             </p>
           )}
           {barcode ? (
-            <Barcode
-              value={barcode}
-              height={30}
-              displayValue={false}
-              margin={0}
-              width={1.2}
-            />
+            <div style={{ width: '100%', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
+              <Barcode
+                value={barcode}
+                height={30}
+                displayValue={false}
+                margin={0}
+                width={1.2}
+              />
+            </div>
           ) : (
             <LoadingSpinner />
           )}
@@ -131,6 +149,7 @@ export function PrintModal({
               {note}
             </p>
           )}
+          </div>
         </div>
 
         {/* Note */}
@@ -197,12 +216,12 @@ export function PrintModal({
             !barcode ||
             !selectedPrinterId ||
             !selectedFormatId ||
-            print.isPending
+            printing
           }
           className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium disabled:opacity-50"
         >
           <FontAwesomeIcon icon={faPrint} />
-          {print.isPending ? "Impression..." : copies > 1 ? `Imprimer ×${copies}` : "Imprimer"}
+          {printing ? "Impression..." : copies > 1 ? `Imprimer ×${copies}` : "Imprimer"}
         </button>
       </div>
     </Modal>

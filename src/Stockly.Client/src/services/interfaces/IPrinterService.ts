@@ -1,7 +1,10 @@
-import type { Printer, PrinterFormat, PrintJob } from '../../models/PrinterModel'
+import type { Printer, PrinterFormat, DiscoveredPrinter } from '../../models/PrinterModel'
 
 export interface IPrinterService {
     getAll(): Promise<Printer[]>
     getFormats(printerId: string): Promise<PrinterFormat[]>
-    print(printerId: string, formatId: string, job: PrintJob): Promise<void>
+    discover(): Promise<DiscoveredPrinter[]>
+    register(name: string, ipAddress: string, port: number, isDefault: boolean): Promise<Printer>
+    delete(id: string): Promise<void>
+    print(printerId: string, formatId: string, imageBase64: string): Promise<void>
 }

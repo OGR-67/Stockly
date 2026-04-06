@@ -1,6 +1,8 @@
 export interface Printer {
     id: string
     name: string
+    ipAddress: string
+    port: number
     isDefault: boolean
 }
 
@@ -11,9 +13,8 @@ export interface PrinterFormat {
     heightMm: number
 }
 
-export interface PrintJob {
-    productName: string
-    expirationDate: Date | null
-    barcode: string
-    note: string | null
+export interface DiscoveredPrinter {
+    name: string
+    ipAddress: string
+    port: number
 }

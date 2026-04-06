@@ -18,6 +18,8 @@
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
     "fuse.js": "^7.2.0",
+    "html-to-image": "^1.11.13",
+    "html2canvas": "^1.4.1",
     "react": "^19.2.4",
     "react-barcode": "^1.6.1",
     "react-dom": "^19.2.4",
