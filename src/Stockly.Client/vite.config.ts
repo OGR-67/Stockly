@@ -10,6 +10,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   server: {
     host: true,
+    proxy: {
+      '/api': 'http://localhost:5050',
+    },
   },
   plugins: [
     VitePWA({
@@ -42,7 +45,7 @@ export default defineConfig({
         ],
       },
     }),
-    mkcert(),
+    mkcert({ hosts: ['localhost', '192.168.1.28'] }),
     tanstackRouter(),
     react(),
     tailwindcss(),
