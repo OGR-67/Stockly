@@ -3,6 +3,7 @@ import { Outlet, createRootRoute, Link, useLocation } from '@tanstack/react-rout
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faWarehouse, faCartShopping, faGear, faCode, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/free-solid-svg-icons'
+import { LoginModal } from '../components/LoginModal'
 
 export const Route = createRootRoute({
     component: RootComponent,
@@ -46,8 +47,17 @@ function ErrorToast() {
 }
 
 function RootComponent() {
+    const [showLogin, setShowLogin] = useState(false)
+
+    useEffect(() => {
+        function handler() { setShowLogin(true) }
+        window.addEventListener('auth-required', handler)
+        return () => window.removeEventListener('auth-required', handler)
+    }, [])
+
     return (
         <div className="flex flex-col h-screen bg-sage-light/40">
+            {showLogin && <LoginModal onSuccess={() => setShowLogin(false)} />}
             <main className="flex-1 overflow-y-auto">
                 <Outlet />
             </main>

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Stockly.API.Exceptions;
+using Stockly.API.Middleware;
 using Stockly.DI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,9 +38,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler();
-app.UseHttpsRedirection();
 app.UseCors();
-app.UseAuthorization();
+app.UseMiddleware<AuthMiddleware>();
 app.MapControllers();
 
 app.Run();
