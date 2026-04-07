@@ -3,9 +3,17 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? ''
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
     const response = await fetch(`${BASE_URL}${path}`, {
         method,
+        credentials: 'include',
         headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
         body: body !== undefined ? JSON.stringify(body) : undefined,
     })
+
+    if (response.status === 401) {
+        window.dispatchEvent(new CustomEvent('auth-required'))
+        const error = new Error('Non authentifié') as Error & { status: number }
+        error.status = 401
+        throw error
+    }
 
     if (!response.ok) {
         let message = response.statusText

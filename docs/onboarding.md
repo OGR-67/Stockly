@@ -30,8 +30,8 @@ npm install && npm run dev
 
 | Service    | URL                                      |
 | ---------- | ---------------------------------------- |
-| API        | http://localhost:5000                    |
-| OpenAPI    | http://localhost:5000/openapi            |
+| API        | http://localhost:8080                    |
+| OpenAPI    | http://localhost:8080/openapi            |
 | Frontend   | http://localhost:5173                    |
 | PostgreSQL | postgresql://localhost:5432/stockly      |
 
@@ -84,19 +84,6 @@ dotnet ef migrations list \
 
 ---
 
-## Production
-
-```bash
-cp .env.example .env
-# Renseigner POSTGRES_USER, POSTGRES_PASSWORD, ConnectionStrings__Default
-
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-```
-
-En prod : port 5432 non exposé, restart `unless-stopped`, variables d'env requises (pas de defaults).
-
----
-
 ## Troubleshooting
 
 **"Connection to database failed"** — L'API a démarré avant Postgres. Un healthcheck est en place normalement, mais en cas de problème :
@@ -131,3 +118,6 @@ docker compose ps
 
 L'API communique avec l'imprimante via IPP (port 631), découverte mDNS (`_ipp._tcp.local`).
 L'implémentation est en cours — ajouter une imprimante via `/admin/settings`.
+
+> **Dev** : quand l'API tourne dans Docker (réseau bridge), la découverte mDNS ne fonctionne pas.
+> Pour tester l'imprimante en local, lancer l'API nativement avec `dotnet run`.
