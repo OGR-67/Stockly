@@ -5,6 +5,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Default: ${CONNECTION_STRING}
+      Auth__ApiKey: ${Auth__ApiKey}
 
   db:
     restart: unless-stopped
