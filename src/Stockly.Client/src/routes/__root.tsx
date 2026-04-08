@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useWindowEvent } from "../hooks/useWindowEvent";
+import { useToast } from "../hooks/useToast";
 import {
   Outlet,
   createRootRoute,
@@ -43,38 +45,22 @@ function NavLink({
 }
 
 function ErrorToast() {
-  const [message, setMessage] = useState<string | null>(null);
+  const { toast, showToast } = useToast(4000);
+  useWindowEvent<string>('api-error', showToast);
 
-  useEffect(() => {
-    function handler(e: Event) {
-      const msg = (e as CustomEvent<string>).detail;
-      setMessage(msg);
-      setTimeout(() => setMessage(null), 4000);
-    }
-    window.addEventListener("api-error", handler);
-    return () => window.removeEventListener("api-error", handler);
-  }, []);
-
-  if (!message) return null;
+  if (!toast) return null;
 
   return (
     <div className="fixed bottom-20 left-4 right-4 z-60 flex items-center gap-3 bg-red-600 text-white text-sm py-3 px-4 rounded-xl shadow-lg">
       <FontAwesomeIcon icon={faTriangleExclamation} className="shrink-0" />
-      <span>{message}</span>
+      <span>{toast}</span>
     </div>
   );
 }
 
 function RootComponent() {
   const [showLogin, setShowLogin] = useState(false);
-
-  useEffect(() => {
-    function handler() {
-      setShowLogin(true);
-    }
-    window.addEventListener("auth-required", handler);
-    return () => window.removeEventListener("auth-required", handler);
-  }, []);
+  useWindowEvent('auth-required', () => setShowLogin(true));
 
   return (
     <div className="flex flex-col h-screen bg-sage-light/40">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
+import { FieldWrapper } from '../FieldWrapper'
 import { ConfirmButton } from '../ConfirmButton'
 import { Toggle } from './Toggle'
 import type { Category } from '../../models/CategoryModel'
@@ -19,8 +20,7 @@ function parseNullableInt(value: string): number | null {
 
 function DaysInput({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number | null) => void }) {
     return (
-        <div>
-            <label className="block text-sm text-stone-500 mb-1">{label}</label>
+        <FieldWrapper label={label}>
             <input
                 type="number"
                 min="0"
@@ -29,7 +29,7 @@ function DaysInput({ label, value, onChange }: { label: string; value: number | 
                 placeholder="—"
                 className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
             />
-        </div>
+        </FieldWrapper>
     )
 }
 

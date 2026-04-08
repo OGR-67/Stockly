@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus, faBarcode } from '@fortawesome/free-solid-svg-icons'
 import { Scanner } from '../Scanner'
 import { IconButton } from '../IconButton'
+import { FieldWrapper } from '../FieldWrapper'
 import { useSettings } from '../../hooks/useSettings'
 import type { Barcode } from '../../models/BarcodeModel'
 
@@ -24,8 +25,7 @@ export function BarcodeManager({ barcodes, onAdd, onDelete }: BarcodeManagerProp
     }
 
     return (
-        <div>
-            <label className="block text-sm text-stone-500 mb-2">Codes-barres</label>
+        <FieldWrapper label="Codes-barres">
             <div className="flex flex-col gap-2">
                 {barcodes.map((b) => (
                     <div key={b.code} className="flex items-center gap-2 px-3 py-2 bg-stone-50 rounded-lg border border-stone-200">
@@ -56,6 +56,6 @@ export function BarcodeManager({ barcodes, onAdd, onDelete }: BarcodeManagerProp
                     />
                 )}
             </div>
-        </div>
+        </FieldWrapper>
     )
 }

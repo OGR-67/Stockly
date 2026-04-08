@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
+import { FieldWrapper } from '../FieldWrapper'
 import { ConfirmButton } from '../ConfirmButton'
 import { SearchOrCreate } from '../SearchOrCreate'
 import { BarcodeManager } from './BarcodeManager'
@@ -44,8 +45,7 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                 <div className="flex flex-col gap-3">
                     <FormField label="Nom" value={name} onChange={setName} placeholder="Ex: Jambon blanc" />
 
-                    <div>
-                        <label className="block text-sm text-stone-500 mb-1">Catégorie</label>
+                    <FieldWrapper label="Catégorie">
                         <SearchOrCreate
                             items={cats}
                             displayKey="name"
@@ -56,7 +56,7 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                             onCreate={() => setShowCategoryModal(true)}
                             placeholder="Rechercher une catégorie..."
                         />
-                    </div>
+                    </FieldWrapper>
 
                     <FormField label="Note (optionnel)" value={freeText} onChange={setFreeText} />
 

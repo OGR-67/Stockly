@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPrint } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
+import { FieldWrapper } from '../FieldWrapper'
 import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { SearchOrCreate } from '../SearchOrCreate'
@@ -58,8 +59,7 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
 
                 <FormField label="Nouvelle DLC" type="date" value={dateValue} onChange={setDateValue} className="mt-3" />
 
-                <div className="mt-3">
-                    <label className="block text-sm text-stone-500 mb-1">Emplacement</label>
+                <FieldWrapper label="Emplacement" className="mt-3">
                     <SearchOrCreate
                         items={locations}
                         displayKey="name"
@@ -70,7 +70,7 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                         onCreate={() => setShowLocationModal(true)}
                         placeholder="Rechercher un emplacement..."
                     />
-                </div>
+                </FieldWrapper>
 
                 <div className="mt-4 flex flex-col gap-3">
                     {settings.defaultPrinterId && (

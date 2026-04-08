@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
+import { FieldWrapper } from '../FieldWrapper'
 import { ConfirmButton } from '../ConfirmButton'
 import { locationIcon } from '../../utils/locationIcons'
 import type { StorageLocation, LocationType } from '../../models/StorageLocationModel'
@@ -27,8 +28,7 @@ export function LocationModal({ initial, onConfirm, onClose }: LocationModalProp
             <div className="flex flex-col gap-4">
                 <FormField label="Nom" value={name} onChange={setName} placeholder="Ex: Frigo cuisine" />
 
-                <div>
-                    <label className="block text-sm text-stone-500 mb-2">Type</label>
+                <FieldWrapper label="Type">
                     <div className="flex flex-col gap-2">
                         {LOCATION_TYPES.map(({ type: t, label }) => (
                             <button
@@ -41,7 +41,7 @@ export function LocationModal({ initial, onConfirm, onClose }: LocationModalProp
                             </button>
                         ))}
                     </div>
-                </div>
+                </FieldWrapper>
 
                 <ConfirmButton onClick={() => onConfirm({ name, type })} disabled={!name.trim()} />
             </div>

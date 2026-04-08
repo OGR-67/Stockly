@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPrint, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
+import { FieldWrapper } from '../FieldWrapper'
 import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { useSettings } from '../../hooks/useSettings'
@@ -50,8 +51,7 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                 )}
 
                 <div className="mt-4 flex flex-col gap-3">
-                    <div>
-                        <label className="block text-sm text-stone-500 mb-1">Quantité</label>
+                    <FieldWrapper label="Quantité">
                         <div className="flex items-center gap-2">
                             <button onClick={() => adjust(-5)} disabled={quantity <= 5} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 text-sm disabled:opacity-30">-5</button>
                             <button onClick={() => adjust(-1)} disabled={quantity <= 1} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 disabled:opacity-30">
@@ -63,7 +63,7 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                             </button>
                             <button onClick={() => adjust(5)} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 text-sm">+5</button>
                         </div>
-                    </div>
+                    </FieldWrapper>
 
                     {settings.defaultPrinterId && (
                         <button
