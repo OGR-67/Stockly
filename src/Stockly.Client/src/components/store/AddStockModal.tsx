@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPrint, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { FormField } from '../FormField'
 import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { useSettings } from '../../hooks/useSettings'
@@ -45,15 +46,7 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                 <p className="text-sm text-stone-500">{location.name}</p>
 
                 {product.category.isPerishable && (
-                    <div className="mt-3">
-                        <label className="block text-sm text-stone-500 mb-1">DLC</label>
-                        <input
-                            type="date"
-                            value={dateValue}
-                            onChange={(e) => setDateValue(e.target.value)}
-                            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                        />
-                    </div>
+                    <FormField label="DLC" type="date" value={dateValue} onChange={setDateValue} className="mt-3" />
                 )}
 
                 <div className="mt-4 flex flex-col gap-3">

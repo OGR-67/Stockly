@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPrint } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { FormField } from '../FormField'
 import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { SearchOrCreate } from '../SearchOrCreate'
@@ -55,15 +56,7 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
             <Modal title="Ouvrir" onClose={onClose}>
                 <p className="font-medium text-bark">{stockUnit.product.name}</p>
 
-                <div className="mt-3">
-                    <label className="block text-sm text-stone-500 mb-1">Nouvelle DLC</label>
-                    <input
-                        type="date"
-                        value={dateValue}
-                        onChange={(e) => setDateValue(e.target.value)}
-                        className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                    />
-                </div>
+                <FormField label="Nouvelle DLC" type="date" value={dateValue} onChange={setDateValue} className="mt-3" />
 
                 <div className="mt-3">
                     <label className="block text-sm text-stone-500 mb-1">Emplacement</label>

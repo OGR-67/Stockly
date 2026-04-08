@@ -6,6 +6,8 @@ import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
+import { Card } from '../../../components/Card'
+import { IconButton } from '../../../components/IconButton'
 import { ProductModal } from '../../../components/admin/ProductModal'
 import { useProducts, useProductMutations } from '../../../hooks/queries/useProducts'
 import { stockUnitService } from '../../../services'
@@ -61,18 +63,14 @@ function RouteComponent() {
 
             <div className="flex flex-col gap-3">
                 {filtered.map(product => (
-                    <div key={product.id} className="flex items-center gap-3 p-3 bg-cream rounded-xl border border-sage/30">
+                    <Card key={product.id}>
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-bark truncate">{product.name}</p>
                             <p className="text-xs text-stone-500 truncate">{product.category.name}</p>
                         </div>
-                        <button onClick={() => setEditTarget(product)} className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center shrink-0">
-                            <FontAwesomeIcon icon={faPencil} className="text-stone-500 text-sm" />
-                        </button>
-                        <button onClick={() => handleDelete(product.id)} className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center shrink-0">
-                            <FontAwesomeIcon icon={faTrash} className="text-stone-500 text-sm" />
-                        </button>
-                    </div>
+                        <IconButton icon={faPencil} onClick={() => setEditTarget(product)} title="Modifier" />
+                        <IconButton icon={faTrash} onClick={() => handleDelete(product.id)} title="Supprimer" />
+                    </Card>
                 ))}
                 {!isLoading && filtered.length === 0 && (
                     <p className="text-center text-stone-400 py-8">Aucun article</p>

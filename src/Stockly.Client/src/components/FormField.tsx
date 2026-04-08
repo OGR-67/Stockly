@@ -4,11 +4,12 @@ interface FormFieldProps {
     onChange: (value: string) => void
     placeholder?: string
     type?: string
+    className?: string
 }
 
-export function FormField({ label, value, onChange, placeholder, type = 'text' }: FormFieldProps) {
+export function FormField({ label, value, onChange, placeholder, type = 'text', className }: FormFieldProps) {
     return (
-        <div>
+        <div className={className}>
             <label className="block text-sm text-stone-500 mb-1">{label}</label>
             <input
                 type={type}
