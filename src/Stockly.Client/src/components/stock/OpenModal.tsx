@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faPrint } from '@fortawesome/free-solid-svg-icons'
+import { faPrint } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { SearchOrCreate } from '../SearchOrCreate'
 import { LocationModal } from '../admin/LocationModal'
@@ -88,16 +89,12 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                             Imprimer l'étiquette
                         </button>
                     )}
-                    <button
+                    <ConfirmButton
                         onClick={() => onConfirm(
                             dateValue ? new Date(dateValue) : null,
                             movedToNewLocation ? selectedLocation.id : null,
                         )}
-                        className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium"
-                    >
-                        <FontAwesomeIcon icon={faCheck} />
-                        Confirmer
-                    </button>
+                    />
                 </div>
             </Modal>
 

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { FormField } from '../FormField'
+import { ConfirmButton } from '../ConfirmButton'
 import { locationIcon } from '../../utils/locationIcons'
 import type { StorageLocation, LocationType } from '../../models/StorageLocationModel'
 
@@ -24,16 +25,7 @@ export function LocationModal({ initial, onConfirm, onClose }: LocationModalProp
     return (
         <Modal title={initial ? 'Modifier l\'emplacement' : 'Nouvel emplacement'} onClose={onClose}>
             <div className="flex flex-col gap-4">
-                <div>
-                    <label className="block text-sm text-stone-500 mb-1">Nom</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                        placeholder="Ex: Frigo cuisine"
-                    />
-                </div>
+                <FormField label="Nom" value={name} onChange={setName} placeholder="Ex: Frigo cuisine" />
 
                 <div>
                     <label className="block text-sm text-stone-500 mb-2">Type</label>
@@ -51,14 +43,7 @@ export function LocationModal({ initial, onConfirm, onClose }: LocationModalProp
                     </div>
                 </div>
 
-                <button
-                    onClick={() => onConfirm({ name, type })}
-                    disabled={!name.trim()}
-                    className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium disabled:opacity-50"
-                >
-                    <FontAwesomeIcon icon={faCheck} />
-                    Confirmer
-                </button>
+                <ConfirmButton onClick={() => onConfirm({ name, type })} disabled={!name.trim()} />
             </div>
         </Modal>
     )

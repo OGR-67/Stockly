@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faXmark, faPlus, faBarcode } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faPlus, faBarcode } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { FormField } from '../FormField'
+import { ConfirmButton } from '../ConfirmButton'
 import { Scanner } from '../Scanner'
 import { SearchOrCreate } from '../SearchOrCreate'
 import { CategoryModal } from './CategoryModal'
@@ -46,16 +48,7 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
         <>
             <Modal title={initial ? "Modifier l'article" : 'Nouvel article'} onClose={onClose}>
                 <div className="flex flex-col gap-3">
-                    <div>
-                        <label className="block text-sm text-stone-500 mb-1">Nom</label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                            placeholder="Ex: Jambon blanc"
-                        />
-                    </div>
+                    <FormField label="Nom" value={name} onChange={setName} placeholder="Ex: Jambon blanc" />
 
                     <div>
                         <label className="block text-sm text-stone-500 mb-1">Catégorie</label>
@@ -71,15 +64,7 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm text-stone-500 mb-1">Note (optionnel)</label>
-                        <input
-                            type="text"
-                            value={freeText}
-                            onChange={(e) => setFreeText(e.target.value)}
-                            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                        />
-                    </div>
+                    <FormField label="Note (optionnel)" value={freeText} onChange={setFreeText} />
 
                     {initial && (
                         <div>
@@ -135,14 +120,10 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                         </div>
                     )}
 
-                    <button
+                    <ConfirmButton
                         onClick={() => onConfirm({ name, categoryId: selectedCategory!.id, freeText: freeText || null })}
                         disabled={!name.trim() || !selectedCategory}
-                        className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium disabled:opacity-50"
-                    >
-                        <FontAwesomeIcon icon={faCheck} />
-                        Confirmer
-                    </button>
+                    />
                 </div>
             </Modal>
 

@@ -6,12 +6,14 @@ import { StackPage } from "../../components/layout/StackPage";
 import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
 import { Scanner } from "../../components/Scanner";
 import { SearchOrCreate } from "../../components/SearchOrCreate";
+import { Toast } from "../../components/Toast";
 import { OpenModal } from "../../components/stock/OpenModal";
 import { TransferModal } from "../../components/stock/TransferModal";
 import { productService } from "../../services";
 import { useLocation, useLocations } from "../../hooks/queries/useLocations";
 import { useStockUnits, useStockUnitMutations } from "../../hooks/queries/useStockUnits";
 import { useSettings } from "../../hooks/useSettings";
+import { useToast } from "../../hooks/useToast";
 import type { StockUnitDetail } from "../../models/StockUnitModel";
 
 export const Route = createFileRoute("/stock/$locationId")({
@@ -34,18 +36,13 @@ function RouteComponent() {
 
   const [scannerOpen, setScannerOpen] = useState(settings.cameraEnabled);
   const [selectedProduct, setSelectedProduct] = useState<ProductOption | undefined>();
-  const [toast, setToast] = useState<string | null>(null);
+  const { toast, showToast } = useToast();
   const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(null);
   const [transferModalUnit, setTransferModalUnit] = useState<StockUnitDetail | null>(null);
 
   const productOptions: ProductOption[] = [
     ...new Map(stockUnits.map((u) => [u.productId, { id: u.productId, name: u.product.name }])).values(),
   ];
-
-  function showToast(message: string) {
-    setToast(message);
-    setTimeout(() => setToast(null), 3000);
-  }
 
   async function handleScan(barcode: string) {
     setScannerOpen(false);
@@ -81,11 +78,7 @@ function RouteComponent() {
         <Scanner onScan={handleScan} onClose={() => setScannerOpen(false)} />
       )}
 
-      {toast && (
-        <div className="fixed bottom-20 left-4 right-4 z-40 bg-bark text-white text-sm text-center py-3 px-4 rounded-xl shadow-lg">
-          {toast}
-        </div>
-      )}
+      <Toast message={toast} />
 
       <div className="mb-4">
         <SearchOrCreate

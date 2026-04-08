@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { FormField } from '../FormField'
+import { ConfirmButton } from '../ConfirmButton'
 import { Toggle } from './Toggle'
 import type { Category } from '../../models/CategoryModel'
 
@@ -45,16 +45,7 @@ export function CategoryModal({ initial, onConfirm, onClose }: CategoryModalProp
     return (
         <Modal title={initial ? 'Modifier la catégorie' : 'Nouvelle catégorie'} onClose={onClose}>
             <div className="flex flex-col gap-3">
-                <div>
-                    <label className="block text-sm text-stone-500 mb-1">Nom</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                        placeholder="Ex: Viande cuite"
-                    />
-                </div>
+                <FormField label="Nom" value={name} onChange={setName} placeholder="Ex: Viande cuite" />
 
                 <div className="border border-stone-200 rounded-lg px-3 divide-y divide-stone-100">
                     <Toggle label="Périssable" checked={isPerishable} onChange={setIsPerishable} />
@@ -65,24 +56,12 @@ export function CategoryModal({ initial, onConfirm, onClose }: CategoryModalProp
                 <DaysInput label="Jours ouvert" value={defaultOpenedDays} onChange={setDefaultOpenedDays} />
                 <DaysInput label="Jours congelé" value={defaultFrozenDays} onChange={setDefaultFrozenDays} />
 
-                <div>
-                    <label className="block text-sm text-stone-500 mb-1">Note (optionnel)</label>
-                    <input
-                        type="text"
-                        value={freeText}
-                        onChange={(e) => setFreeText(e.target.value)}
-                        className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                    />
-                </div>
+                <FormField label="Note (optionnel)" value={freeText} onChange={setFreeText} />
 
-                <button
+                <ConfirmButton
                     onClick={() => onConfirm({ name, isPerishable, isFresh, defaultClosedDays, defaultOpenedDays, defaultFrozenDays, freeText: freeText || null })}
                     disabled={!name.trim()}
-                    className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium disabled:opacity-50"
-                >
-                    <FontAwesomeIcon icon={faCheck} />
-                    Confirmer
-                </button>
+                />
             </div>
         </Modal>
     )

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faPrint, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faPrint, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { useSettings } from '../../hooks/useSettings'
 import type { ProductDetail } from '../../models/ProductModel'
@@ -80,13 +81,10 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                             Imprimer {quantity > 1 ? `${quantity} étiquettes` : "l'étiquette"}
                         </button>
                     )}
-                    <button
+                    <ConfirmButton
                         onClick={() => onConfirm(dateValue ? new Date(dateValue) : null, quantity)}
-                        className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium"
-                    >
-                        <FontAwesomeIcon icon={faCheck} />
-                        Confirmer {quantity > 1 ? `(×${quantity})` : ''}
-                    </button>
+                        label={`Confirmer${quantity > 1 ? ` (×${quantity})` : ''}`}
+                    />
                 </div>
             </Modal>
 
