@@ -1,36 +1,15 @@
 import { useState } from 'react'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
-import { FieldWrapper } from '../FieldWrapper'
 import { ConfirmButton } from '../ConfirmButton'
 import { Toggle } from './Toggle'
+import { DaysInput } from './DaysInput'
 import type { Category } from '../../models/CategoryModel'
 
 interface CategoryModalProps {
     initial?: Category
     onConfirm: (data: Omit<Category, 'id'>) => void
     onClose: () => void
-}
-
-function parseNullableInt(value: string): number | null {
-    const n = parseInt(value, 10)
-    return isNaN(n) ? null : n
-}
-
-
-function DaysInput({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number | null) => void }) {
-    return (
-        <FieldWrapper label={label}>
-            <input
-                type="number"
-                min="0"
-                value={value ?? ''}
-                onChange={(e) => onChange(parseNullableInt(e.target.value))}
-                placeholder="—"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-            />
-        </FieldWrapper>
-    )
 }
 
 export function CategoryModal({ initial, onConfirm, onClose }: CategoryModalProps) {

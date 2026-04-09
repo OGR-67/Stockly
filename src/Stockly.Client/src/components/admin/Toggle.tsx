@@ -1,4 +1,10 @@
-export function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+interface ToggleProps {
+    label: string
+    checked: boolean
+    onChange: (v: boolean) => void
+}
+
+export function Toggle({ label, checked, onChange }: ToggleProps) {
     return (
         <label className="flex items-center justify-between py-2 cursor-pointer">
             <span className="text-sm text-stone-700">{label}</span>
