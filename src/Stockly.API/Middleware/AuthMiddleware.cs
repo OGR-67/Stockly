@@ -17,6 +17,12 @@ public class AuthMiddleware(RequestDelegate next)
         var expectedToken = context.RequestServices
             .GetRequiredService<IConfiguration>()["Auth:ApiKey"];
 
+        if (string.IsNullOrEmpty(expectedToken))
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            return;
+        }
+
         if (string.IsNullOrEmpty(sessionToken) || sessionToken != expectedToken)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;

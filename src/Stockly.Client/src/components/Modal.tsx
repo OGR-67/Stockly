@@ -9,17 +9,21 @@ interface ModalProps {
 
 export function Modal({ title, children, onClose }: ModalProps) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-            <div className="relative bg-cream rounded-2xl p-6 mx-4 w-full max-w-sm shadow-xl max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-bark">{title}</h2>
-                    <button onClick={onClose} className="text-stone-400 hover:text-stone-600">
-                        <FontAwesomeIcon icon={faXmark} />
-                    </button>
+        <>
+            <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
+            <div className="fixed inset-0 z-50 overflow-y-auto pointer-events-none">
+                <div className="flex min-h-full items-center justify-center p-4">
+                    <div className="relative bg-cream rounded-2xl p-6 w-full max-w-sm shadow-xl pointer-events-auto">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-lg font-semibold text-bark">{title}</h2>
+                            <button onClick={onClose} className="text-stone-400 hover:text-stone-600">
+                                <FontAwesomeIcon icon={faXmark} />
+                            </button>
+                        </div>
+                        {children}
+                    </div>
                 </div>
-                {children}
             </div>
-        </div>
+        </>
     )
 }

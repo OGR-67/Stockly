@@ -1,17 +1,21 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUtensils, faBoxOpen, faArrowRightArrowLeft } from "@fortawesome/free-solid-svg-icons";
+
 import { StackPage } from "../../components/layout/StackPage";
 import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
 import { Scanner } from "../../components/Scanner";
 import { SearchOrCreate } from "../../components/SearchOrCreate";
+import { Toast } from "../../components/Toast";
+import { Card } from "../../components/Card";
+import { IconButton } from "../../components/IconButton";
 import { OpenModal } from "../../components/stock/OpenModal";
 import { TransferModal } from "../../components/stock/TransferModal";
 import { productService } from "../../services";
 import { useLocation, useLocations } from "../../hooks/queries/useLocations";
 import { useStockUnits, useStockUnitMutations } from "../../hooks/queries/useStockUnits";
 import { useSettings } from "../../hooks/useSettings";
+import { useToast } from "../../hooks/useToast";
 import type { StockUnitDetail } from "../../models/StockUnitModel";
 
 export const Route = createFileRoute("/stock/$locationId")({
@@ -34,18 +38,13 @@ function RouteComponent() {
 
   const [scannerOpen, setScannerOpen] = useState(settings.cameraEnabled);
   const [selectedProduct, setSelectedProduct] = useState<ProductOption | undefined>();
-  const [toast, setToast] = useState<string | null>(null);
+  const { toast, showToast } = useToast();
   const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(null);
   const [transferModalUnit, setTransferModalUnit] = useState<StockUnitDetail | null>(null);
 
   const productOptions: ProductOption[] = [
     ...new Map(stockUnits.map((u) => [u.productId, { id: u.productId, name: u.product.name }])).values(),
   ];
-
-  function showToast(message: string) {
-    setToast(message);
-    setTimeout(() => setToast(null), 3000);
-  }
 
   async function handleScan(barcode: string) {
     setScannerOpen(false);
@@ -81,11 +80,7 @@ function RouteComponent() {
         <Scanner onScan={handleScan} onClose={() => setScannerOpen(false)} />
       )}
 
-      {toast && (
-        <div className="fixed bottom-20 left-4 right-4 z-40 bg-bark text-white text-sm text-center py-3 px-4 rounded-xl shadow-lg">
-          {toast}
-        </div>
-      )}
+      <Toast message={toast} />
 
       <div className="mb-4">
         <SearchOrCreate
@@ -108,7 +103,7 @@ function RouteComponent() {
 
       <div className="flex flex-col gap-3">
         {displayedUnits.map((unit) => (
-          <div key={unit.id} className="flex items-center gap-3 p-3 bg-cream rounded-xl shadow-sm border border-sage/30">
+          <Card key={unit.id}>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-bark truncate">{unit.product.name}</p>
               <p className="text-xs text-stone-500">
@@ -124,31 +119,13 @@ function RouteComponent() {
               )}
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => consume.mutate(unit.id)}
-                className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center"
-                title="Consommer"
-              >
-                <FontAwesomeIcon icon={faUtensils} className="text-stone-600 text-sm" />
-              </button>
+              <IconButton icon={faUtensils} onClick={() => consume.mutate(unit.id)} title="Consommer" />
               {!unit.isOpened && unit.product.category.defaultOpenedDays !== null && (
-                <button
-                  onClick={() => setOpenModalUnit(unit)}
-                  className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center"
-                  title="Ouvrir"
-                >
-                  <FontAwesomeIcon icon={faBoxOpen} className="text-earth text-sm" />
-                </button>
+                <IconButton icon={faBoxOpen} onClick={() => setOpenModalUnit(unit)} variant="primary" title="Ouvrir" />
               )}
-              <button
-                onClick={() => setTransferModalUnit(unit)}
-                className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center"
-                title="Transférer"
-              >
-                <FontAwesomeIcon icon={faArrowRightArrowLeft} className="text-earth text-sm" />
-              </button>
+              <IconButton icon={faArrowRightArrowLeft} onClick={() => setTransferModalUnit(unit)} variant="primary" title="Transférer" />
             </div>
-          </div>
+          </Card>
         ))}
         {!isLoading && displayedUnits.length === 0 && (
           <p className="text-center text-stone-400 py-8">Aucun article</p>

@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faPrint, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faPrint, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { FormField } from '../FormField'
+import { FieldWrapper } from '../FieldWrapper'
+import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { useSettings } from '../../hooks/useSettings'
+import { toInputDate, addDays } from '../../utils/dateUtils'
 import type { ProductDetail } from '../../models/ProductModel'
 import type { StorageLocation } from '../../models/StorageLocationModel'
 
@@ -14,17 +18,13 @@ interface AddStockModalProps {
     onClose: () => void
 }
 
-function toInputDate(date: Date): string {
-    return date.toISOString().split('T')[0]
-}
-
 function computeSuggestedDlc(product: ProductDetail, location: StorageLocation): string {
     const { category } = product
     if (!category.isPerishable) return ''
     const days = location.type === 'freezer'
         ? category.defaultFrozenDays
         : (category.defaultClosedDays ?? category.defaultOpenedDays)
-    return toInputDate(new Date(Date.now() + (days ?? 0) * 86400000)) // 86400000 ms in a day
+    return toInputDate(addDays(days ?? 0))
 }
 
 export function AddStockModal({ product, location, onConfirm, onClose }: AddStockModalProps) {
@@ -44,20 +44,11 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                 <p className="text-sm text-stone-500">{location.name}</p>
 
                 {product.category.isPerishable && (
-                    <div className="mt-3">
-                        <label className="block text-sm text-stone-500 mb-1">DLC</label>
-                        <input
-                            type="date"
-                            value={dateValue}
-                            onChange={(e) => setDateValue(e.target.value)}
-                            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                        />
-                    </div>
+                    <FormField label="DLC" type="date" value={dateValue} onChange={setDateValue} className="mt-3" />
                 )}
 
                 <div className="mt-4 flex flex-col gap-3">
-                    <div>
-                        <label className="block text-sm text-stone-500 mb-1">Quantité</label>
+                    <FieldWrapper label="Quantité">
                         <div className="flex items-center gap-2">
                             <button onClick={() => adjust(-5)} disabled={quantity <= 5} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 text-sm disabled:opacity-30">-5</button>
                             <button onClick={() => adjust(-1)} disabled={quantity <= 1} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 disabled:opacity-30">
@@ -69,7 +60,7 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                             </button>
                             <button onClick={() => adjust(5)} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 text-sm">+5</button>
                         </div>
-                    </div>
+                    </FieldWrapper>
 
                     {settings.defaultPrinterId && (
                         <button
@@ -80,13 +71,10 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                             Imprimer {quantity > 1 ? `${quantity} étiquettes` : "l'étiquette"}
                         </button>
                     )}
-                    <button
+                    <ConfirmButton
                         onClick={() => onConfirm(dateValue ? new Date(dateValue) : null, quantity)}
-                        className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium"
-                    >
-                        <FontAwesomeIcon icon={faCheck} />
-                        Confirmer {quantity > 1 ? `(×${quantity})` : ''}
-                    </button>
+                        label={`Confirmer${quantity > 1 ? ` (×${quantity})` : ''}`}
+                    />
                 </div>
             </Modal>
 
