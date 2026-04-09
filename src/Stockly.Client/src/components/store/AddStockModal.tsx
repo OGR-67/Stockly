@@ -7,6 +7,7 @@ import { FieldWrapper } from '../FieldWrapper'
 import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { useSettings } from '../../hooks/useSettings'
+import { toInputDate, addDays } from '../../utils/dateUtils'
 import type { ProductDetail } from '../../models/ProductModel'
 import type { StorageLocation } from '../../models/StorageLocationModel'
 
@@ -17,17 +18,13 @@ interface AddStockModalProps {
     onClose: () => void
 }
 
-function toInputDate(date: Date): string {
-    return date.toISOString().split('T')[0]
-}
-
 function computeSuggestedDlc(product: ProductDetail, location: StorageLocation): string {
     const { category } = product
     if (!category.isPerishable) return ''
     const days = location.type === 'freezer'
         ? category.defaultFrozenDays
         : (category.defaultClosedDays ?? category.defaultOpenedDays)
-    return toInputDate(new Date(Date.now() + (days ?? 0) * 86400000)) // 86400000 ms in a day
+    return toInputDate(addDays(days ?? 0))
 }
 
 export function AddStockModal({ product, location, onConfirm, onClose }: AddStockModalProps) {

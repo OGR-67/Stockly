@@ -1,6 +1,4 @@
-import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import Fuse from 'fuse.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { StackPage } from '../../../components/layout/StackPage'
@@ -10,6 +8,7 @@ import { Card } from '../../../components/Card'
 import { IconButton } from '../../../components/IconButton'
 import { CategoryModal } from '../../../components/admin/CategoryModal'
 import { useCategories, useCategoryMutations } from '../../../hooks/queries/useCategories'
+import { useCrudList } from '../../../hooks/useCrudList'
 import type { Category } from '../../../models/CategoryModel'
 
 export const Route = createFileRoute('/admin/categories/')({
@@ -19,11 +18,7 @@ export const Route = createFileRoute('/admin/categories/')({
 function RouteComponent() {
     const { data: categories = [], isLoading, isError } = useCategories()
     const { create, update, remove } = useCategoryMutations()
-    const [editTarget, setEditTarget] = useState<Category | 'new' | null>(null)
-    const [query, setQuery] = useState('')
-
-    const fuse = new Fuse(categories, { keys: ['name'], threshold: 0.3 })
-    const filtered = query ? fuse.search(query).map(r => r.item) : categories
+    const { editTarget, setEditTarget, query, setQuery, filtered } = useCrudList(categories, ['name'])
 
     async function handleSave(data: Omit<Category, 'id'>) {
         if (editTarget === 'new') {

@@ -10,6 +10,7 @@ import { SearchOrCreate } from '../SearchOrCreate'
 import { LocationModal } from '../admin/LocationModal'
 import { useSettings } from '../../hooks/useSettings'
 import { useLocationMutations } from '../../hooks/queries/useLocations'
+import { toInputDate, addDays } from '../../utils/dateUtils'
 import type { StockUnitDetail } from '../../models/StockUnitModel'
 import type { StorageLocation, LocationType } from '../../models/StorageLocationModel'
 import type { Category } from '../../models/CategoryModel'
@@ -21,16 +22,12 @@ interface OpenModalProps {
     onClose: () => void
 }
 
-function toInputDate(date: Date): string {
-    return date.toISOString().split('T')[0]
-}
-
 function computeSuggestedDlc(category: Category, locationType: LocationType): string {
     const days = locationType === 'freezer'
         ? category.defaultFrozenDays
         : category.defaultOpenedDays
     if (!days) return ''
-    return toInputDate(new Date(Date.now() + days * 86400000)) // 86400000 ms in a day
+    return toInputDate(addDays(days))
 }
 
 export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModalProps) {

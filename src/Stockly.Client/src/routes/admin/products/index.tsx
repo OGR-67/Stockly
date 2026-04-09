@@ -1,6 +1,4 @@
-import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import Fuse from 'fuse.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { StackPage } from '../../../components/layout/StackPage'
@@ -12,7 +10,7 @@ import { ProductModal } from '../../../components/admin/ProductModal'
 import { useProducts, useProductMutations } from '../../../hooks/queries/useProducts'
 import { stockUnitService } from '../../../services'
 import { useCategories } from '../../../hooks/queries/useCategories'
-import type { ProductDetail } from '../../../models/ProductModel'
+import { useCrudList } from '../../../hooks/useCrudList'
 
 export const Route = createFileRoute('/admin/products/')({
     component: RouteComponent,
@@ -22,11 +20,7 @@ function RouteComponent() {
     const { data: products = [], isLoading, isError } = useProducts()
     const { data: categories = [] } = useCategories()
     const { create, update, remove, addBarcode, deleteBarcode } = useProductMutations()
-    const [editTarget, setEditTarget] = useState<ProductDetail | 'new' | null>(null)
-    const [query, setQuery] = useState('')
-
-    const fuse = new Fuse(products, { keys: ['name', 'category.name'], threshold: 0.3 })
-    const filtered = query ? fuse.search(query).map(r => r.item) : products
+    const { editTarget, setEditTarget, query, setQuery, filtered } = useCrudList(products, ['name', 'category.name'])
 
     async function handleSave(data: Omit<import('../../../models/ProductModel').Product, 'id'>) {
         if (editTarget === 'new') {

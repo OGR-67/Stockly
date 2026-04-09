@@ -1,6 +1,4 @@
-import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import Fuse from 'fuse.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { StackPage } from '../../../components/layout/StackPage'
@@ -11,6 +9,7 @@ import { IconButton } from '../../../components/IconButton'
 import { LocationModal } from '../../../components/admin/LocationModal'
 import { locationIcon } from '../../../utils/locationIcons'
 import { useLocations, useLocationMutations } from '../../../hooks/queries/useLocations'
+import { useCrudList } from '../../../hooks/useCrudList'
 import type { StorageLocation } from '../../../models/StorageLocationModel'
 
 export const Route = createFileRoute('/admin/locations/')({
@@ -20,11 +19,7 @@ export const Route = createFileRoute('/admin/locations/')({
 function RouteComponent() {
     const { data: locations = [], isLoading, isError } = useLocations()
     const { create, update, remove } = useLocationMutations()
-    const [editTarget, setEditTarget] = useState<StorageLocation | 'new' | null>(null)
-    const [query, setQuery] = useState('')
-
-    const fuse = new Fuse(locations, { keys: ['name'], threshold: 0.3 })
-    const filtered = query ? fuse.search(query).map(r => r.item) : locations
+    const { editTarget, setEditTarget, query, setQuery, filtered } = useCrudList(locations, ['name'])
 
     async function handleSave(data: Omit<StorageLocation, 'id'>) {
         if (editTarget === 'new') {
