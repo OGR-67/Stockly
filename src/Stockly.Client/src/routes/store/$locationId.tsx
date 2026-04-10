@@ -79,9 +79,9 @@ function RouteComponent() {
     setSelectedProduct(product);
   }
 
-  async function handleConfirm(expirationDate: Date | null, quantity: number) {
+  async function handleConfirm(expirationDate: Date | null, quantity: number, freeText: string | null) {
     for (let i = 0; i < quantity; i++) {
-      await add.mutateAsync({ productId: selectedProduct!.id, locationId, expirationDate });
+      await add.mutateAsync({ productId: selectedProduct!.id, locationId, expirationDate, freeText });
     }
     const name = selectedProduct!.name;
     setSelectedProduct(null);

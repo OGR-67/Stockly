@@ -53,6 +53,7 @@ function RouteComponent() {
                     <Card key={category.id}>
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-bark truncate">{category.name}</p>
+                            {category.freeText && <p className="text-xs text-stone-400 truncate">{category.freeText}</p>}
                             <div className="flex gap-2 mt-1">
                                 {category.isPerishable && (
                                     <span className="text-xs px-2 py-0.5 rounded-full bg-earth/10 text-earth">Périssable</span>

@@ -51,7 +51,10 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                             displayKey="name"
                             searchKeys={['name']}
                             value={selectedCategory}
-                            onSelect={setSelectedCategory}
+                            onSelect={(cat) => {
+                                setSelectedCategory(cat)
+                                if (!freeText && cat.freeText) setFreeText(cat.freeText)
+                            }}
                             onClear={() => setSelectedCategory(undefined)}
                             onCreate={() => setShowCategoryModal(true)}
                             placeholder="Rechercher une catégorie..."

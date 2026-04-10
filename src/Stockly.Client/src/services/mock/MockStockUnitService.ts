@@ -14,6 +14,7 @@ const mockStockUnits: StockUnit[] = [
         isOpened: false,
         createdAt: new Date('2026-04-01'),
         openedAt: null,
+        freeText: null,
         consumedAt: null,
     },
     {
@@ -22,6 +23,7 @@ const mockStockUnits: StockUnit[] = [
         locationId: mockLocations[0].id,
         expirationDate: new Date('2026-04-15'),
         isOpened: false,
+        freeText: null,
         createdAt: new Date('2026-04-01'),
         openedAt: null,
         consumedAt: null,
@@ -32,6 +34,7 @@ const mockStockUnits: StockUnit[] = [
         locationId: mockLocations[1].id,
         expirationDate: new Date('2026-04-05'),
         isOpened: true,
+        freeText: null,
         createdAt: new Date('2026-03-28'),
         openedAt: new Date('2026-04-01'),
         consumedAt: null,

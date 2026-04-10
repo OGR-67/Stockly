@@ -11,5 +11,6 @@ public class StockUnit
     public DateTime? OpenedAt { get; set; }
     public DateTime? ConsumedAt { get; set; }
     public Product? Product { get; set; }
+    public string? FreeText { get; set; }
     public StorageLocation? Location { get; set; }
 }

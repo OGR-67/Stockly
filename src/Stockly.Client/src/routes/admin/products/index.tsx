@@ -61,6 +61,7 @@ function RouteComponent() {
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-bark truncate">{product.name}</p>
                             <p className="text-xs text-stone-500 truncate">{product.category.name}</p>
+                            {product.freeText && <p className="text-xs text-stone-400 truncate">{product.freeText}</p>}
                         </div>
                         <IconButton icon={faPencil} onClick={() => setEditTarget(product)} title="Modifier" />
                         <IconButton icon={faTrash} onClick={() => handleDelete(product.id)} title="Supprimer" />

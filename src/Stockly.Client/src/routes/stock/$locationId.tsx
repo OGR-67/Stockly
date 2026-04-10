@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { faUtensils, faBoxOpen, faArrowRightArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import {
+  faUtensils,
+  faBoxOpen,
+  faArrowRightArrowLeft,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { StackPage } from "../../components/layout/StackPage";
 import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
@@ -13,7 +17,10 @@ import { OpenModal } from "../../components/stock/OpenModal";
 import { TransferModal } from "../../components/stock/TransferModal";
 import { productService } from "../../services";
 import { useLocation, useLocations } from "../../hooks/queries/useLocations";
-import { useStockUnits, useStockUnitMutations } from "../../hooks/queries/useStockUnits";
+import {
+  useStockUnits,
+  useStockUnitMutations,
+} from "../../hooks/queries/useStockUnits";
 import { useSettings } from "../../hooks/useSettings";
 import { useToast } from "../../hooks/useToast";
 import type { StockUnitDetail } from "../../models/StockUnitModel";
@@ -33,17 +40,31 @@ function RouteComponent() {
 
   const { data: location } = useLocation(locationId);
   const { data: allLocations = [] } = useLocations();
-  const { data: stockUnits = [], isLoading, isError } = useStockUnits(locationId);
+  const {
+    data: stockUnits = [],
+    isLoading,
+    isError,
+  } = useStockUnits(locationId);
   const { consume, open, move } = useStockUnitMutations(locationId);
 
   const [scannerOpen, setScannerOpen] = useState(settings.cameraEnabled);
-  const [selectedProduct, setSelectedProduct] = useState<ProductOption | undefined>();
+  const [selectedProduct, setSelectedProduct] = useState<
+    ProductOption | undefined
+  >();
   const { toast, showToast } = useToast();
-  const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(null);
-  const [transferModalUnit, setTransferModalUnit] = useState<StockUnitDetail | null>(null);
+  const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(
+    null,
+  );
+  const [transferModalUnit, setTransferModalUnit] =
+    useState<StockUnitDetail | null>(null);
 
   const productOptions: ProductOption[] = [
-    ...new Map(stockUnits.map((u) => [u.productId, { id: u.productId, name: u.product.name }])).values(),
+    ...new Map(
+      stockUnits.map((u) => [
+        u.productId,
+        { id: u.productId, name: u.product.name },
+      ]),
+    ).values(),
   ];
 
   async function handleScan(barcode: string) {
@@ -56,7 +77,10 @@ function RouteComponent() {
     }
   }
 
-  async function handleOpen(_newExpirationDate: Date | null, newLocationId: string | null) {
+  async function handleOpen(
+    _newExpirationDate: Date | null,
+    newLocationId: string | null,
+  ) {
     const unit = openModalUnit!;
     await open.mutateAsync(unit.id);
     if (newLocationId) {
@@ -66,7 +90,10 @@ function RouteComponent() {
   }
 
   async function handleTransfer(destinationLocationId: string) {
-    await move.mutateAsync({ id: transferModalUnit!.id, targetLocationId: destinationLocationId });
+    await move.mutateAsync({
+      id: transferModalUnit!.id,
+      targetLocationId: destinationLocationId,
+    });
     setTransferModalUnit(null);
   }
 
@@ -90,22 +117,32 @@ function RouteComponent() {
           value={selectedProduct}
           onSelect={setSelectedProduct}
           onClear={() => setSelectedProduct(undefined)}
-          onScanRequest={settings.cameraEnabled ? () => setScannerOpen(true) : undefined}
+          onScanRequest={
+            settings.cameraEnabled ? () => setScannerOpen(true) : undefined
+          }
           onScan={handleScan}
           autoFocus={!settings.cameraEnabled}
-
           placeholder="Rechercher un article..."
         />
       </div>
 
       {isLoading && <LoadingSpinner />}
-      {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
+      {isError && (
+        <p className="text-center text-stone-400 py-8">Erreur de chargement</p>
+      )}
 
       <div className="flex flex-col gap-3">
         {displayedUnits.map((unit) => (
           <Card key={unit.id}>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-bark truncate">{unit.product.name}</p>
+              <p className="font-medium text-bark truncate">
+                {unit.product.name}
+              </p>
+              {(unit.freeText ?? unit.product.freeText) && (
+                <p className="text-sm text-stone-400 truncate">
+                  {unit.freeText ?? unit.product.freeText}
+                </p>
+              )}
               <p className="text-xs text-stone-500">
                 DLC :{" "}
                 {unit.expirationDate
@@ -119,11 +156,26 @@ function RouteComponent() {
               )}
             </div>
             <div className="flex gap-2">
-              <IconButton icon={faUtensils} onClick={() => consume.mutate(unit.id)} title="Consommer" />
-              {!unit.isOpened && unit.product.category.defaultOpenedDays !== null && (
-                <IconButton icon={faBoxOpen} onClick={() => setOpenModalUnit(unit)} variant="primary" title="Ouvrir" />
-              )}
-              <IconButton icon={faArrowRightArrowLeft} onClick={() => setTransferModalUnit(unit)} variant="primary" title="Transférer" />
+              <IconButton
+                icon={faUtensils}
+                onClick={() => consume.mutate(unit.id)}
+                title="Consommer"
+              />
+              {!unit.isOpened &&
+                unit.product.category.defaultOpenedDays !== null && (
+                  <IconButton
+                    icon={faBoxOpen}
+                    onClick={() => setOpenModalUnit(unit)}
+                    variant="primary"
+                    title="Ouvrir"
+                  />
+                )}
+              <IconButton
+                icon={faArrowRightArrowLeft}
+                onClick={() => setTransferModalUnit(unit)}
+                variant="primary"
+                title="Transférer"
+              />
             </div>
           </Card>
         ))}
