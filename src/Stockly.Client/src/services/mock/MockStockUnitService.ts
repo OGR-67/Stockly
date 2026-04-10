@@ -84,6 +84,13 @@ export class MockStockUnitService implements IStockUnitService {
         return newStockUnit
     }
 
+    async update(id: string, data: { expirationDate: Date | null; freeText: string | null }): Promise<StockUnit> {
+        const index = this.data.findIndex(s => s.id === id)
+        if (index === -1) throw new Error(`StockUnit ${id} not found`)
+        this.data[index] = { ...this.data[index], expirationDate: data.expirationDate, freeText: data.freeText }
+        return this.data[index]
+    }
+
     async open(id: string): Promise<StockUnit> {
         const index = this.data.findIndex(s => s.id === id)
         if (index === -1) throw new Error(`StockUnit ${id} not found`)
