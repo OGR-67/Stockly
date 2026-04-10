@@ -13,10 +13,15 @@ import { TransferModal } from "../../components/stock/TransferModal";
 import { StockUnitEditModal } from "../../components/stock/StockUnitEditModal";
 import { productService } from "../../services";
 import { useLocation, useLocations } from "../../hooks/queries/useLocations";
-import { useStockUnits, useStockUnitMutations } from "../../hooks/queries/useStockUnits";
+import {
+  useStockUnits,
+  useStockUnitMutations,
+} from "../../hooks/queries/useStockUnits";
 import { useSettings } from "../../hooks/useSettings";
 import { useToast } from "../../hooks/useToast";
 import { groupUnits } from "../../utils/stockGrouping";
+import { countExpiryStatus } from "../../utils/countExpiryStatus";
+import { ExpiryBadges } from "../../components/ExpiryBadges";
 import type { StockUnitDetail } from "../../models/StockUnitModel";
 
 export const Route = createFileRoute("/stock/$locationId")({
@@ -34,20 +39,34 @@ function RouteComponent() {
 
   const { data: location } = useLocation(locationId);
   const { data: allLocations = [] } = useLocations();
-  const { data: stockUnits = [], isLoading, isError } = useStockUnits(locationId);
+  const {
+    data: stockUnits = [],
+    isLoading,
+    isError,
+  } = useStockUnits(locationId);
   const { consume, open, move, update } = useStockUnitMutations(locationId);
 
   const [scannerOpen, setScannerOpen] = useState(settings.cameraEnabled);
-  const [selectedProduct, setSelectedProduct] = useState<ProductOption | undefined>();
+  const [selectedProduct, setSelectedProduct] = useState<
+    ProductOption | undefined
+  >();
   const { toast, showToast } = useToast();
-  const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(null);
-  const [transferModalUnit, setTransferModalUnit] = useState<StockUnitDetail | null>(null);
-  const [editModalUnit, setEditModalUnit] = useState<StockUnitDetail | null>(null);
+  const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(
+    null,
+  );
+  const [transferModalUnit, setTransferModalUnit] =
+    useState<StockUnitDetail | null>(null);
+  const [editModalUnit, setEditModalUnit] = useState<StockUnitDetail | null>(
+    null,
+  );
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const productOptions: ProductOption[] = [
     ...new Map(
-      stockUnits.map((u) => [u.productId, { id: u.productId, name: u.product.name }]),
+      stockUnits.map((u) => [
+        u.productId,
+        { id: u.productId, name: u.product.name },
+      ]),
     ).values(),
   ];
 
@@ -83,7 +102,10 @@ function RouteComponent() {
     }
   }
 
-  async function handleOpen(_newExpirationDate: Date | null, newLocationId: string | null) {
+  async function handleOpen(
+    _newExpirationDate: Date | null,
+    newLocationId: string | null,
+  ) {
     const unit = openModalUnit!;
     await open.mutateAsync(unit.id);
     if (newLocationId) {
@@ -95,7 +117,10 @@ function RouteComponent() {
   async function handleTransfer(destinationLocationId: string) {
     const unit = transferModalUnit ?? editModalUnit;
     if (!unit) return;
-    await move.mutateAsync({ id: unit.id, targetLocationId: destinationLocationId });
+    await move.mutateAsync({
+      id: unit.id,
+      targetLocationId: destinationLocationId,
+    });
     setTransferModalUnit(null);
   }
 
@@ -106,6 +131,8 @@ function RouteComponent() {
     onConsume: (id: string) => consume.mutate(id),
   };
 
+  const { expired, soon } = countExpiryStatus(stockUnits);
+
   return (
     <StackPage title={location?.name ?? "..."}>
       {scannerOpen && (
@@ -113,6 +140,16 @@ function RouteComponent() {
       )}
 
       <Toast message={toast} />
+
+      {(expired > 0 || soon > 0) && (
+        <div className="mb-4">
+          <ExpiryBadges
+            expiredCount={expired}
+            soonCount={soon}
+            variant="stacked"
+          />
+        </div>
+      )}
 
       <div className="mb-4">
         <SearchOrCreate
@@ -122,7 +159,9 @@ function RouteComponent() {
           value={selectedProduct}
           onSelect={setSelectedProduct}
           onClear={() => setSelectedProduct(undefined)}
-          onScanRequest={settings.cameraEnabled ? () => setScannerOpen(true) : undefined}
+          onScanRequest={
+            settings.cameraEnabled ? () => setScannerOpen(true) : undefined
+          }
           onScan={handleScan}
           autoFocus={!settings.cameraEnabled}
           placeholder="Rechercher un article..."
@@ -137,7 +176,11 @@ function RouteComponent() {
       <div className="flex flex-col gap-3">
         {groups.map((group) =>
           group.units.length === 1 ? (
-            <StockUnitCard key={group.key} unit={group.units[0]} {...unitCardHandlers} />
+            <StockUnitCard
+              key={group.key}
+              unit={group.units[0]}
+              {...unitCardHandlers}
+            />
           ) : (
             <StockGroupCard
               key={group.key}
@@ -174,12 +217,23 @@ function RouteComponent() {
           stockUnit={editModalUnit}
           locations={allLocations}
           onSave={async (expirationDate, freeText) => {
-            await update.mutateAsync({ id: editModalUnit.id, data: { expirationDate, freeText } });
+            await update.mutateAsync({
+              id: editModalUnit.id,
+              data: { expirationDate, freeText },
+            });
           }}
-          onOpen={(unit) => { setEditModalUnit(null); setOpenModalUnit(unit); }}
-          onConsume={(unit) => { consume.mutate(unit.id); }}
+          onOpen={(unit) => {
+            setEditModalUnit(null);
+            setOpenModalUnit(unit);
+          }}
+          onConsume={(unit) => {
+            consume.mutate(unit.id);
+          }}
           onTransfer={async (destinationLocationId) => {
-            await move.mutateAsync({ id: editModalUnit.id, targetLocationId: destinationLocationId });
+            await move.mutateAsync({
+              id: editModalUnit.id,
+              targetLocationId: destinationLocationId,
+            });
           }}
           onClose={() => setEditModalUnit(null)}
         />

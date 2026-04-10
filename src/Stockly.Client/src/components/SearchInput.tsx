@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
+import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 interface SearchInputProps {
     value: string
@@ -18,6 +18,15 @@ export function SearchInput({ value, onChange, placeholder = 'Rechercher...', cl
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
             />
+            {value && (
+                <button
+                    onClick={() => onChange('')}
+                    className="text-stone-400 hover:text-stone-600 transition-colors"
+                    title="Effacer"
+                >
+                    <FontAwesomeIcon icon={faXmark} />
+                </button>
+            )}
         </div>
     )
 }
