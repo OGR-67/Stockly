@@ -9,6 +9,7 @@ public record StockUnitDetailResponse(
     Guid LocationId,
     DateTime? ExpirationDate,
     bool IsOpened,
+    string? FreeText,
     DateTime CreatedAt,
     DateTime? OpenedAt,
     DateTime? ConsumedAt,

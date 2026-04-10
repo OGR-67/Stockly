@@ -14,7 +14,7 @@ import type { StorageLocation } from '../../models/StorageLocationModel'
 interface AddStockModalProps {
     product: ProductDetail
     location: StorageLocation
-    onConfirm: (expirationDate: Date | null, quantity: number) => void
+    onConfirm: (expirationDate: Date | null, quantity: number, freeText: string | null) => void
     onClose: () => void
 }
 
@@ -30,6 +30,7 @@ function computeSuggestedDlc(product: ProductDetail, location: StorageLocation):
 export function AddStockModal({ product, location, onConfirm, onClose }: AddStockModalProps) {
     const [dateValue, setDateValue] = useState(() => computeSuggestedDlc(product, location))
     const [quantity, setQuantity] = useState(1)
+    const [freeText, setFreeText] = useState(product.freeText ?? '')
     const [showPrintModal, setShowPrintModal] = useState(false)
     const { settings } = useSettings()
 
@@ -46,6 +47,8 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                 {product.category.isPerishable && (
                     <FormField label="DLC" type="date" value={dateValue} onChange={setDateValue} className="mt-3" />
                 )}
+
+                <FormField label="Note" value={freeText} onChange={setFreeText} placeholder="Note sur l'unité..." className="mt-3" />
 
                 <div className="mt-4 flex flex-col gap-3">
                     <FieldWrapper label="Quantité">
@@ -72,7 +75,7 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                         </button>
                     )}
                     <ConfirmButton
-                        onClick={() => onConfirm(dateValue ? new Date(dateValue) : null, quantity)}
+                        onClick={() => onConfirm(dateValue ? new Date(dateValue) : null, quantity, freeText || null)}
                         label={`Confirmer${quantity > 1 ? ` (×${quantity})` : ''}`}
                     />
                 </div>
