@@ -22,6 +22,10 @@ public class StockUnitsController(IStockUnitService service) : ControllerBase
         return CreatedAtAction(null, new { id = created.Id }, created);
     }
 
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateStockUnitRequest request) =>
+        Ok(await service.UpdateAsync(id, request));
+
     [HttpPut("{id:guid}/open")]
     public async Task<IActionResult> Open(Guid id) => Ok(await service.OpenAsync(id));
 

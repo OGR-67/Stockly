@@ -49,6 +49,13 @@ export class ApiStockUnitService implements IStockUnitService {
     });
   }
 
+  async update(id: string, data: { expirationDate: Date | null; freeText: string | null }): Promise<StockUnit> {
+    return apiClient.patch(`/api/stock-units/${id}`, {
+      expirationDate: data.expirationDate?.toISOString() ?? null,
+      freeText: data.freeText,
+    });
+  }
+
   async open(id: string): Promise<StockUnit> {
     return apiClient.put(`/api/stock-units/${id}/open`, {});
   }

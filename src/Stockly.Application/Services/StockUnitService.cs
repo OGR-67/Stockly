@@ -42,6 +42,18 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         return ToDetailResponse(withDetails);
     }
 
+    public async Task<StockUnitDetailResponse> UpdateAsync(Guid id, UpdateStockUnitRequest request)
+    {
+        var unit = await repository.GetByIdWithDetailsAsync(id)
+            ?? throw new NotFoundException($"StockUnit {id} not found.");
+
+        unit.ExpirationDate = request.ExpirationDate;
+        unit.FreeText = request.FreeText;
+
+        var updated = await repository.UpdateAsync(unit);
+        return ToDetailResponse(updated);
+    }
+
     public async Task<StockUnitDetailResponse> OpenAsync(Guid id)
     {
         var unit = await repository.GetByIdWithDetailsAsync(id)
