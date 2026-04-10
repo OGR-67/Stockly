@@ -8,6 +8,7 @@ import {
 import { StackPage } from "../../../components/layout/StackPage";
 import { LoadingSpinner } from "../../../components/layout/LoadingSpinner";
 import { SearchInput } from "../../../components/SearchInput";
+import { ExpiryBadges } from "../../../components/ExpiryBadges";
 import { StockUnitCard } from "../../../components/stock/StockUnitCard";
 import { OpenModal } from "../../../components/stock/OpenModal";
 import { TransferModal } from "../../../components/stock/TransferModal";
@@ -18,6 +19,7 @@ import {
 } from "../../../hooks/queries/useStockUnits";
 import { useLocations } from "../../../hooks/queries/useLocations";
 import { getExpiryStatus } from "../../../utils/expiryStatus";
+import { countExpiryStatus } from "../../../utils/countExpiryStatus";
 import { sortByExpiryDate } from "../../../utils/sortByExpiry";
 import type { StockUnitDetail } from "../../../models/StockUnitModel";
 
@@ -143,6 +145,7 @@ function RouteComponent() {
         {[...byLocation.entries()].map(([locationId, units]) => {
           const locationName = units[0].location.name;
           const expanded = expandedLocations.has(locationId);
+          const { expired, soon } = countExpiryStatus(units);
           return (
             <div key={locationId}>
               <div
@@ -150,12 +153,15 @@ function RouteComponent() {
                 className="flex items-center gap-3 p-3 bg-cream rounded-xl shadow-sm border-2 border-sage/50 cursor-pointer"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-bark truncate">
-                    {locationName}{" "}
-                    <span className="text-stone-400 font-normal">
-                      ({units.length})
-                    </span>
-                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-bark truncate">
+                      {locationName}{" "}
+                      <span className="text-stone-400 font-normal">
+                        ({units.length})
+                      </span>
+                    </p>
+                    <ExpiryBadges expiredCount={expired} soonCount={soon} />
+                  </div>
                 </div>
                 <FontAwesomeIcon
                   icon={expanded ? faChevronDown : faChevronRight}
