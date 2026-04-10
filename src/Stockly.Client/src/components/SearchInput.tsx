@@ -10,10 +10,10 @@ interface SearchInputProps {
 
 export function SearchInput({ value, onChange, placeholder = 'Rechercher...', className = '' }: SearchInputProps) {
     return (
-        <div className={`flex items-center border border-stone-300 rounded-lg px-3 py-2 gap-2 bg-cream ${className}`}>
+        <div className={`flex items-center border border-stone-300 rounded-lg px-3 py-2 gap-2 bg-cream min-w-0 ${className}`}>
             <FontAwesomeIcon icon={faMagnifyingGlass} className="text-stone-400" />
             <input
-                className="flex-1 outline-none text-sm bg-transparent"
+                className="flex-1 min-w-0 outline-none text-sm bg-transparent"
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}

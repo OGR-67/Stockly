@@ -25,7 +25,7 @@ export function FormField({
 
   return (
     <FieldWrapper label={label} className={className}>
-      <div className="relative">
+      <div className="relative min-w-0">
         <input
           ref={inputRef}
           type={type}
@@ -36,9 +36,9 @@ export function FormField({
               inputRef.current.showPicker();
             }
           }}
-          className={`w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none ${
+          className={`w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none box-border ${
             isDate
-              ? "[&::-webkit-calendar-picker-indicator]:hidden" // hide native calendar icon
+              ? "[-webkit-appearance:none] [&::-webkit-calendar-picker-indicator]:hidden" // iOS styling + hide native calendar icon
               : ""
           }`}
           placeholder={placeholder}

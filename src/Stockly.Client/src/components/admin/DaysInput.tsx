@@ -16,7 +16,7 @@ function parseNullableInt(value: string): number | null {
 export function DaysInput({ label, value, onChange }: DaysInputProps) {
     return (
         <FieldWrapper label={label}>
-            <div className="relative">
+            <div className="relative min-w-0">
                 <input
                     type="number"
                     min="0"
