@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import { ExpiryBadge } from './ExpiryBadge'
 import { StockUnitCard } from './StockUnitCard'
-import type { StockGroup } from '../../utils/stockGrouping'
+import type { StockGroup } from '../../utils/sortByExpiry'
 import type { StockUnitDetail } from '../../models/StockUnitModel'
 
 interface StockGroupCardProps {
