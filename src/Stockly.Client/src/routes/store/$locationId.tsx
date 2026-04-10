@@ -6,6 +6,7 @@ import { StackPage } from "../../components/layout/StackPage";
 import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
 import { Scanner } from "../../components/Scanner";
 import { SearchOrCreate } from "../../components/SearchOrCreate";
+import { Toast } from "../../components/Toast";
 import { AddStockModal } from "../../components/store/AddStockModal";
 import { ProductModal } from "../../components/admin/ProductModal";
 import { productService } from "../../services";
@@ -14,6 +15,7 @@ import { useProducts, useProductMutations } from "../../hooks/queries/useProduct
 import { useCategories } from "../../hooks/queries/useCategories";
 import { useStockUnitMutations } from "../../hooks/queries/useStockUnits";
 import { useSettings } from "../../hooks/useSettings";
+import { useToast } from "../../hooks/useToast";
 import type { ProductDetail } from "../../models/ProductModel";
 import type { Product } from "../../models/ProductModel";
 
@@ -35,7 +37,7 @@ function RouteComponent() {
   const [pendingBarcode, setPendingBarcode] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
   const [showProductModal, setShowProductModal] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const { toast, showToast } = useToast(2500);
 
   function cancelAndRescan() {
     setPendingBarcode(null);
@@ -77,16 +79,15 @@ function RouteComponent() {
     setSelectedProduct(product);
   }
 
-  async function handleConfirm(expirationDate: Date | null, quantity: number) {
+  async function handleConfirm(expirationDate: Date | null, quantity: number, freeText: string | null) {
     for (let i = 0; i < quantity; i++) {
-      await add.mutateAsync({ productId: selectedProduct!.id, locationId, expirationDate });
+      await add.mutateAsync({ productId: selectedProduct!.id, locationId, expirationDate, freeText });
     }
     const name = selectedProduct!.name;
     setSelectedProduct(null);
     setPendingBarcode(null);
     setScannerOpen(settings.cameraEnabled);
-    setToast(`${quantity > 1 ? `${quantity}× ` : ''}${name} rangé`);
-    setTimeout(() => setToast(null), 2500);
+    showToast(`${quantity > 1 ? `${quantity}× ` : ''}${name} rangé`);
   }
 
   return (
@@ -95,11 +96,7 @@ function RouteComponent() {
         <Scanner onScan={handleScan} onClose={() => setScannerOpen(false)} />
       )}
 
-      {toast && (
-        <div className="fixed bottom-20 left-4 right-4 z-[60] bg-bark text-white text-sm text-center py-3 px-4 rounded-xl shadow-lg">
-          {toast}
-        </div>
-      )}
+      <Toast message={toast} />
 
       {!scannerOpen && !selectedProduct && (
         <div className="flex flex-col gap-4">

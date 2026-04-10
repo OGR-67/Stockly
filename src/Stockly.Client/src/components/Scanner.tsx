@@ -38,6 +38,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
             BarcodeFormat.EAN_8,
             BarcodeFormat.CODE_128,
             BarcodeFormat.QR_CODE,
+            BarcodeFormat.DATA_MATRIX,
         ])
         const reader = new BrowserMultiFormatReader(hints, {
             delayBetweenScanAttempts: 100,

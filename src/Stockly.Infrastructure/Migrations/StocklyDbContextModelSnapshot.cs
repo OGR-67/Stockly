@@ -171,6 +171,10 @@ namespace Stockly.Infrastructure.Migrations
                     b.Property<DateTime?>("ExpirationDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("FreeText")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
                     b.Property<bool>("IsOpened")
                         .HasColumnType("boolean");
 

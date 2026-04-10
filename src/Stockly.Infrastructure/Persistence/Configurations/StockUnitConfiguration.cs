@@ -19,5 +19,7 @@ public class StockUnitConfiguration : IEntityTypeConfiguration<StockUnit>
             .WithMany()
             .HasForeignKey(s => s.LocationId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(s => s.FreeText).HasMaxLength(2000);
     }
 }

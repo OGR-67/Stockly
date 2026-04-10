@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
+import { useClickOutside } from '../hooks/useClickOutside'
 import Fuse from 'fuse.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBarcode, faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
@@ -43,15 +44,7 @@ export function SearchOrCreate<T extends object>({
         ? fuse.search(query).map((r) => r.item)
         : items
 
-    useEffect(() => {
-        function handleClickOutside(e: MouseEvent) {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setIsOpen(false)
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [])
+    useClickOutside(containerRef, () => setIsOpen(false))
 
     function handleSelect(item: T) {
         onSelect(item)

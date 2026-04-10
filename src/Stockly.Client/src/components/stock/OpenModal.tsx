@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faPrint } from '@fortawesome/free-solid-svg-icons'
+import { faPrint } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from '../Modal'
+import { FormField } from '../FormField'
+import { FieldWrapper } from '../FieldWrapper'
+import { ConfirmButton } from '../ConfirmButton'
 import { PrintModal } from '../PrintModal'
 import { SearchOrCreate } from '../SearchOrCreate'
 import { LocationModal } from '../admin/LocationModal'
 import { useSettings } from '../../hooks/useSettings'
 import { useLocationMutations } from '../../hooks/queries/useLocations'
+import { toInputDate, addDays } from '../../utils/dateUtils'
 import type { StockUnitDetail } from '../../models/StockUnitModel'
 import type { StorageLocation, LocationType } from '../../models/StorageLocationModel'
 import type { Category } from '../../models/CategoryModel'
@@ -18,16 +22,12 @@ interface OpenModalProps {
     onClose: () => void
 }
 
-function toInputDate(date: Date): string {
-    return date.toISOString().split('T')[0]
-}
-
 function computeSuggestedDlc(category: Category, locationType: LocationType): string {
     const days = locationType === 'freezer'
         ? category.defaultFrozenDays
         : category.defaultOpenedDays
     if (!days) return ''
-    return toInputDate(new Date(Date.now() + days * 86400000)) // 86400000 ms in a day
+    return toInputDate(addDays(days))
 }
 
 export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModalProps) {
@@ -54,18 +54,9 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
             <Modal title="Ouvrir" onClose={onClose}>
                 <p className="font-medium text-bark">{stockUnit.product.name}</p>
 
-                <div className="mt-3">
-                    <label className="block text-sm text-stone-500 mb-1">Nouvelle DLC</label>
-                    <input
-                        type="date"
-                        value={dateValue}
-                        onChange={(e) => setDateValue(e.target.value)}
-                        className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-                    />
-                </div>
+                <FormField label="Nouvelle DLC" type="date" value={dateValue} onChange={setDateValue} className="mt-3" />
 
-                <div className="mt-3">
-                    <label className="block text-sm text-stone-500 mb-1">Emplacement</label>
+                <FieldWrapper label="Emplacement" className="mt-3">
                     <SearchOrCreate
                         items={locations}
                         displayKey="name"
@@ -76,7 +67,7 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                         onCreate={() => setShowLocationModal(true)}
                         placeholder="Rechercher un emplacement..."
                     />
-                </div>
+                </FieldWrapper>
 
                 <div className="mt-4 flex flex-col gap-3">
                     {settings.defaultPrinterId && (
@@ -88,16 +79,12 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                             Imprimer l'étiquette
                         </button>
                     )}
-                    <button
+                    <ConfirmButton
                         onClick={() => onConfirm(
                             dateValue ? new Date(dateValue) : null,
                             movedToNewLocation ? selectedLocation.id : null,
                         )}
-                        className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium"
-                    >
-                        <FontAwesomeIcon icon={faCheck} />
-                        Confirmer
-                    </button>
+                    />
                 </div>
             </Modal>
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "../Modal";
+import { ConfirmButton } from "../ConfirmButton";
 import { locationIcon } from "../../utils/locationIcons";
 import type { StockUnitDetail } from "../../models/StockUnitModel";
 import type { StorageLocation } from "../../models/StorageLocationModel";
@@ -52,18 +52,10 @@ export function TransferModal({
         ))}
       </div>
 
-      <button
+      <ConfirmButton
         onClick={() => selectedId && onConfirm(selectedId)}
         disabled={!selectedId}
-        className={`mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-lg font-medium ${
-          selectedId
-            ? "bg-earth text-white"
-            : "bg-stone-200 text-stone-400 cursor-not-allowed"
-        }`}
-      >
-        <FontAwesomeIcon icon={faCheck} />
-        Confirmer
-      </button>
+      />
     </Modal>
   );
 }

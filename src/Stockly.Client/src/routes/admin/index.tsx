@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTableList, faBox, faTag, faLocationDot, faGear } from '@fortawesome/free-solid-svg-icons'
+import { faTableList, faBox, faTag, faLocationDot, faGear, faLayerGroup } from '@fortawesome/free-solid-svg-icons'
 import { RootPage } from '../../components/layout/RootPage'
 import { Modal } from '../../components/Modal'
 
@@ -29,6 +29,16 @@ function RouteComponent() {
                 <FontAwesomeIcon icon={faTableList} className="text-earth text-lg" />
                 Référentiels
             </button>
+            <button
+                onClick={() => navigate({ to: '/admin/stock', search: { filter: undefined } })}
+                className="flex items-center gap-3 w-full p-4 bg-cream rounded-xl border border-sage/30 shadow-sm text-bark font-medium"
+            >
+                <FontAwesomeIcon icon={faLayerGroup} className="text-earth text-lg" />
+                Stock
+            </button>
+
+            <hr className="border-sage/20" />
+
             <button
                 onClick={() => navigate({ to: '/admin/settings' })}
                 className="flex items-center gap-3 w-full p-4 bg-cream rounded-xl border border-sage/30 shadow-sm text-bark font-medium"

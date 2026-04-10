@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faTrash, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { StackPage } from '../../../components/layout/StackPage'
+import { FieldWrapper } from '../../../components/FieldWrapper'
 import { Toggle } from '../../../components/admin/Toggle'
 import { useSettings } from '../../../hooks/useSettings'
 import { usePrinters, usePrinterFormats, usePrinterMutations } from '../../../hooks/queries/usePrinter'
@@ -184,8 +185,7 @@ function RouteComponent() {
                     <div className="bg-cream rounded-xl border border-sage/30 px-4 py-3 flex flex-col gap-3">
                         <p className="text-sm font-medium text-bark">Impression par défaut</p>
 
-                        <div>
-                            <label className="block text-sm text-stone-500 mb-1">Imprimante</label>
+                        <FieldWrapper label="Imprimante">
                             <select
                                 value={settings.defaultPrinterId ?? ''}
                                 onChange={(e) => update({ defaultPrinterId: e.target.value || null, defaultFormatId: null })}
@@ -196,11 +196,10 @@ function RouteComponent() {
                                     <option key={p.id} value={p.id}>{p.name}</option>
                                 ))}
                             </select>
-                        </div>
+                        </FieldWrapper>
 
                         {formats.length > 0 && (
-                            <div>
-                                <label className="block text-sm text-stone-500 mb-1">Format</label>
+                            <FieldWrapper label="Format">
                                 <select
                                     value={settings.defaultFormatId ?? ''}
                                     onChange={(e) => update({ defaultFormatId: e.target.value })}
@@ -210,7 +209,7 @@ function RouteComponent() {
                                         <option key={f.id} value={f.id}>{f.name}</option>
                                     ))}
                                 </select>
-                            </div>
+                            </FieldWrapper>
                         )}
                     </div>
                 )}

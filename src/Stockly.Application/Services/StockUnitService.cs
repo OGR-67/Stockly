@@ -31,6 +31,7 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
             ProductId = request.ProductId,
             LocationId = request.LocationId,
             ExpirationDate = request.ExpirationDate,
+            FreeText = request.FreeText,
             IsOpened = false,
             CreatedAt = DateTime.UtcNow,
             OpenedAt = null,
@@ -39,6 +40,18 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         var created = await repository.CreateAsync(unit);
         var withDetails = await repository.GetByIdWithDetailsAsync(created.Id) ?? created;
         return ToDetailResponse(withDetails);
+    }
+
+    public async Task<StockUnitDetailResponse> UpdateAsync(Guid id, UpdateStockUnitRequest request)
+    {
+        var unit = await repository.GetByIdWithDetailsAsync(id)
+            ?? throw new NotFoundException($"StockUnit {id} not found.");
+
+        unit.ExpirationDate = request.ExpirationDate;
+        unit.FreeText = request.FreeText;
+
+        var updated = await repository.UpdateAsync(unit);
+        return ToDetailResponse(updated);
     }
 
     public async Task<StockUnitDetailResponse> OpenAsync(Guid id)
@@ -89,6 +102,7 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         u.LocationId,
         u.ExpirationDate,
         u.IsOpened,
+        u.FreeText,
         u.CreatedAt,
         u.OpenedAt,
         u.ConsumedAt,

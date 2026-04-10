@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPrint } from "@fortawesome/free-solid-svg-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { Modal } from "./Modal";
+import { FormField } from "./FormField";
+import { FieldWrapper } from "./FieldWrapper";
 import { LoadingSpinner } from "./layout/LoadingSpinner";
 import { productService } from "../services";
 import { queryKeys } from "../hooks/queries/queryKeys";
@@ -152,39 +154,20 @@ export function PrintModal({
           </div>
         </div>
 
-        {/* Note */}
-        <div>
-          <label className="block text-sm text-stone-500 mb-1">Note</label>
-          <input
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
-            placeholder="Note sur l'étiquette..."
-          />
-        </div>
+        <FormField label="Note" value={note} onChange={setNote} placeholder="Note sur l'étiquette..." />
 
-        {/* Printer selector */}
         {printers.length > 1 && (
-          <div>
-            <label className="block text-sm text-stone-500 mb-1">
-              Imprimante
-            </label>
+          <FieldWrapper label="Imprimante">
             <select
               value={selectedPrinterId ?? ""}
-              onChange={(e) => {
-                setSelectedPrinterId(e.target.value);
-                setSelectedFormatId(null);
-              }}
+              onChange={(e) => { setSelectedPrinterId(e.target.value); setSelectedFormatId(null) }}
               className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
             >
               {printers.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
+                <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-          </div>
+          </FieldWrapper>
         )}
         {printers.length === 1 && (
           <p className="text-sm text-stone-500">
@@ -192,10 +175,8 @@ export function PrintModal({
           </p>
         )}
 
-        {/* Format selector */}
         {formats.length > 1 && (
-          <div>
-            <label className="block text-sm text-stone-500 mb-1">Format</label>
+          <FieldWrapper label="Format">
             <select
               value={selectedFormatId ?? ""}
               onChange={(e) => setSelectedFormatId(e.target.value)}
@@ -207,7 +188,7 @@ export function PrintModal({
                 </option>
               ))}
             </select>
-          </div>
+          </FieldWrapper>
         )}
 
         <button

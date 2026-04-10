@@ -14,6 +14,7 @@ const mockStockUnits: StockUnit[] = [
         isOpened: false,
         createdAt: new Date('2026-04-01'),
         openedAt: null,
+        freeText: null,
         consumedAt: null,
     },
     {
@@ -22,6 +23,7 @@ const mockStockUnits: StockUnit[] = [
         locationId: mockLocations[0].id,
         expirationDate: new Date('2026-04-15'),
         isOpened: false,
+        freeText: null,
         createdAt: new Date('2026-04-01'),
         openedAt: null,
         consumedAt: null,
@@ -32,6 +34,7 @@ const mockStockUnits: StockUnit[] = [
         locationId: mockLocations[1].id,
         expirationDate: new Date('2026-04-05'),
         isOpened: true,
+        freeText: null,
         createdAt: new Date('2026-03-28'),
         openedAt: new Date('2026-04-01'),
         consumedAt: null,
@@ -79,6 +82,13 @@ export class MockStockUnitService implements IStockUnitService {
         }
         this.data.push(newStockUnit)
         return newStockUnit
+    }
+
+    async update(id: string, data: { expirationDate: Date | null; freeText: string | null }): Promise<StockUnit> {
+        const index = this.data.findIndex(s => s.id === id)
+        if (index === -1) throw new Error(`StockUnit ${id} not found`)
+        this.data[index] = { ...this.data[index], expirationDate: data.expirationDate, freeText: data.freeText }
+        return this.data[index]
     }
 
     async open(id: string): Promise<StockUnit> {
