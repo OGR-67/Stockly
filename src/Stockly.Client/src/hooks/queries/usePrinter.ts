@@ -28,8 +28,8 @@ export function usePrinterMutations() {
     const invalidate = () => qc.invalidateQueries({ queryKey: ['printers'] })
 
     const register = useMutation({
-        mutationFn: ({ name, ipAddress, port, isDefault }: { name: string; ipAddress: string; port: number; isDefault: boolean }) =>
-            printerService.register(name, ipAddress, port, isDefault),
+        mutationFn: ({ name, queueName, port, isDefault }: { name: string; queueName: string; port: number; isDefault: boolean }) =>
+            printerService.register(name, queueName, port, isDefault),
         onSuccess: invalidate,
     })
 
