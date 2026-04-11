@@ -28,7 +28,7 @@ public class IppPrintingService(ISharpIppClient ippClient, IPrinterRepository pr
 
         var request = new PrintJobRequest
         {
-            PrinterUri = new UriBuilder("ipp", printer.IpAddress, printer.Port, "ipp/print").Uri,
+            PrinterUri = new UriBuilder("ipp", printer.QueueName, printer.Port, "ipp/print").Uri,
             Document = new MemoryStream(resizedBytes),
             DocumentAttributes = new DocumentAttributes { DocumentFormat = "image/jpeg" },
         };
