@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Png;
@@ -9,26 +10,36 @@ using Stockly.Application.Interfaces.Services;
 
 namespace Stockly.Infrastructure.Printing;
 
-public class CupsPrintingService(IPrinterRepository printerRepository) : IPrintingService
+public class CupsPrintingService(IPrinterRepository printerRepository, ILogger<CupsPrintingService> logger) : IPrintingService
 {
     private const double PrintDpi = 300;
 
     public async Task PrintAsync(Guid printerId, Guid formatId, PrintRequest job)
     {
+        logger.LogInformation("Starting print job for printer {PrinterId} with format {FormatId}", printerId, formatId);
+
         var printer = await printerRepository.GetByIdAsync(printerId)
             ?? throw new NotFoundException($"Printer {printerId} not found.");
 
         var format = printer.Formats.FirstOrDefault(f => f.Id == formatId)
             ?? throw new NotFoundException($"Format {formatId} not found.");
 
+        logger.LogDebug("Found printer {PrinterName} with queue {QueueName}", printer.Name, printer.QueueName);
+
         var imageBytes = Convert.FromBase64String(job.ImageBase64);
+        logger.LogDebug("Image decoded: {ByteLength} bytes", imageBytes.Length);
+
         var resizedBytes = ResizeToFormat(imageBytes, (int)format.WidthMm, (int)format.HeightMm);
+        logger.LogDebug("Image resized: {ByteLength} bytes", resizedBytes.Length);
 
         var tmpFile = Path.GetTempFileName() + ".png";
         await File.WriteAllBytesAsync(tmpFile, resizedBytes);
+        logger.LogDebug("Temporary file written to {TmpFile}", tmpFile);
 
         try
         {
+            logger.LogInformation("Sending print job to CUPS queue {QueueName} with file {TmpFile}", printer.QueueName, tmpFile);
+
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "lp",
@@ -43,8 +54,11 @@ public class CupsPrintingService(IPrinterRepository printerRepository) : IPrinti
             if (process.ExitCode != 0)
             {
                 var error = await process.StandardError.ReadToEndAsync();
+                logger.LogError("Print job failed with exit code {ExitCode}: {Error}", process.ExitCode, error);
                 throw new InvalidOperationException($"Print job failed: {error}");
             }
+
+            logger.LogInformation("Print job sent successfully to {QueueName}", printer.QueueName);
         }
         finally
         {
