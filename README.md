@@ -1,5 +1,11 @@
 # Stockly
 
+[![GitHub Release](https://img.shields.io/github/v/release/OGR-67/setup-git-flow)](https://github.com/OGR-67/setup-git-flow/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/OGR-67/setup-git-flow/release.yml?label=release)](https://github.com/OGR-67/setup-git-flow/actions)
+[![License](https://img.shields.io/github/license/OGR-67/setup-git-flow)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/download)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
+
 Gestion de stock alimentaire simplifiée. Suivi par unité, pas au flux. Pensé pour être utile sans friction.
 
 ## Philosophie
