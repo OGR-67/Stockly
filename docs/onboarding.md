@@ -15,6 +15,16 @@ dotnet tool install --global dotnet-ef
 
 ## Démarrage rapide
 
+**Utiliser le script** (recommandé) :
+
+```bash
+git clone <repo>
+cd Stockly
+./scripts/start-dev.sh
+```
+
+**Ou manuellement** :
+
 ```bash
 git clone <repo>
 cd Stockly
