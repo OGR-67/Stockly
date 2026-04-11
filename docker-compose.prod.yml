@@ -2,6 +2,8 @@ services:
   api:
     restart: unless-stopped
     network_mode: host
+    volumes:
+      - /run/cups:/run/cups:ro
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Default: ${CONNECTION_STRING}
