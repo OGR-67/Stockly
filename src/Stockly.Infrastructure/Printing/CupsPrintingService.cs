@@ -1,9 +1,7 @@
+using System.Diagnostics;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SharpIpp;
-using SharpIpp.Models;
-using SharpIpp.Protocol.Models;
+using SixLabors.ImageSharp.Formats.Png;
 using Stockly.Application.DTOs.Printers;
 using Stockly.Application.Exceptions;
 using Stockly.Application.Interfaces.Repositories;
@@ -11,7 +9,7 @@ using Stockly.Application.Interfaces.Services;
 
 namespace Stockly.Infrastructure.Printing;
 
-public class IppPrintingService(ISharpIppClient ippClient, IPrinterRepository printerRepository) : IPrintingService
+public class CupsPrintingService(IPrinterRepository printerRepository) : IPrintingService
 {
     private const double PrintDpi = 300;
 
@@ -26,14 +24,33 @@ public class IppPrintingService(ISharpIppClient ippClient, IPrinterRepository pr
         var imageBytes = Convert.FromBase64String(job.ImageBase64);
         var resizedBytes = ResizeToFormat(imageBytes, (int)format.WidthMm, (int)format.HeightMm);
 
-        var request = new PrintJobRequest
-        {
-            PrinterUri = new UriBuilder("ipp", printer.QueueName, printer.Port, "ipp/print").Uri,
-            Document = new MemoryStream(resizedBytes),
-            DocumentAttributes = new DocumentAttributes { DocumentFormat = "image/jpeg" },
-        };
+        var tmpFile = Path.GetTempFileName() + ".png";
+        await File.WriteAllBytesAsync(tmpFile, resizedBytes);
 
-        await ippClient.PrintJobAsync(request);
+        try
+        {
+            var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = "lp",
+                Arguments = $"-d \"{printer.QueueName}\" \"{tmpFile}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            }) ?? throw new InvalidOperationException("Failed to start lp process.");
+
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+            {
+                var error = await process.StandardError.ReadToEndAsync();
+                throw new InvalidOperationException($"Print job failed: {error}");
+            }
+        }
+        finally
+        {
+            if (File.Exists(tmpFile))
+                File.Delete(tmpFile);
+        }
     }
 
     private static byte[] ResizeToFormat(byte[] imageBytes, int widthMm, int heightMm)
@@ -50,7 +67,7 @@ public class IppPrintingService(ISharpIppClient ippClient, IPrinterRepository pr
         }));
 
         using var ms = new MemoryStream();
-        image.SaveAsJpeg(ms, new JpegEncoder { Quality = 95 });
+        image.SaveAsPng(ms, new PngEncoder { CompressionLevel = PngCompressionLevel.BestCompression });
         return ms.ToArray();
     }
 }
