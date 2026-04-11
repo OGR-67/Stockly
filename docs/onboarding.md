@@ -15,6 +15,21 @@ dotnet tool install --global dotnet-ef
 
 ## Démarrage rapide
 
+**Utiliser le script** (recommandé) :
+
+```bash
+git clone <repo>
+cd Stockly
+./scripts/start-dev.sh
+```
+
+Ce script configure automatiquement :
+- Le pre-commit hook (commit lint + formatage)
+- L'API + Postgres (migrations auto)
+- Le frontend (npm install + dev server)
+
+**Ou manuellement** :
+
 ```bash
 git clone <repo>
 cd Stockly

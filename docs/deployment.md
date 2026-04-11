@@ -28,8 +28,16 @@ Aucune valeur par défaut en prod — le démarrage échoue si une variable est 
 
 ## Démarrage
 
+**Utiliser le script** (recommandé) :
+
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+./scripts/start-prod.sh
+```
+
+**Ou manuellement** :
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
 | Service    | Accès                   |
