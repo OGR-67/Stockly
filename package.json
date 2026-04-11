@@ -1,0 +1,18 @@
+{
+  "name": "Stockly",
+  "version": "1.0.0",
+  "description": "Gestion de stock alimentaire simplifiée. Suivi par unité, pas au flux. Pensé pour être utile sans friction.",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "husky": "^9.1.7",
+    "semantic-release": "^25.0.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
