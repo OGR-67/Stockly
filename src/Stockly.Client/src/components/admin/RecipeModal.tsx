@@ -3,6 +3,7 @@ import { Modal } from "../Modal";
 import { FormField } from "../FormField";
 import { FieldWrapper } from "../FieldWrapper";
 import { ConfirmButton } from "../ConfirmButton";
+import { ToggleGroup } from "../ToggleGroup";
 import { RecipeProductManager } from "./RecipeProductManager";
 import { useProducts } from "../../hooks/queries/useProducts";
 import type { Recipe } from "../../models/RecipeModel";
@@ -54,7 +55,7 @@ export function RecipeModal({ initial, onConfirm, onClose }: RecipeModalProps) {
     if (!name.trim()) return;
     setIsLoading(true);
     try {
-      await onConfirm({
+      onConfirm({
         name: name.trim(),
         type,
         freeText: freeText.trim() || undefined,
@@ -79,26 +80,14 @@ export function RecipeModal({ initial, onConfirm, onClose }: RecipeModalProps) {
         />
 
         <FieldWrapper label="Type">
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                checked={type === "main"}
-                onChange={() => setType("main")}
-                className="cursor-pointer"
-              />
-              <span className="text-sm">Plat</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                checked={type === "dessert"}
-                onChange={() => setType("dessert")}
-                className="cursor-pointer"
-              />
-              <span className="text-sm">Dessert</span>
-            </label>
-          </div>
+          <ToggleGroup
+            options={[
+              { value: "main", label: "Plat" },
+              { value: "dessert", label: "Dessert" },
+            ]}
+            value={type}
+            onChange={setType}
+          />
         </FieldWrapper>
 
         <FieldWrapper label="Préparation (optionnel)">

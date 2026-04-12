@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
 import { FieldWrapper } from '../FieldWrapper'
 import { ConfirmButton } from '../ConfirmButton'
+import { ToggleGroup } from '../ToggleGroup'
 import { locationIcon } from '../../utils/locationIcons'
 import type { StorageLocation, LocationType } from '../../models/StorageLocationModel'
 
@@ -13,10 +13,10 @@ interface LocationModalProps {
     onClose: () => void
 }
 
-const LOCATION_TYPES: { type: LocationType; label: string }[] = [
-    { type: 'fridge', label: 'Réfrigérateur' },
-    { type: 'freezer', label: 'Congélateur' },
-    { type: 'normal', label: 'Placard' },
+const LOCATION_TYPES = [
+    { value: 'fridge' as LocationType, label: 'Réfrigérateur', icon: locationIcon('fridge') },
+    { value: 'freezer' as LocationType, label: 'Congélateur', icon: locationIcon('freezer') },
+    { value: 'normal' as LocationType, label: 'Placard', icon: locationIcon('normal') },
 ]
 
 export function LocationModal({ initial, onConfirm, onClose }: LocationModalProps) {
@@ -29,18 +29,12 @@ export function LocationModal({ initial, onConfirm, onClose }: LocationModalProp
                 <FormField label="Nom" value={name} onChange={setName} placeholder="Ex: Frigo cuisine" />
 
                 <FieldWrapper label="Type">
-                    <div className="flex flex-col gap-2">
-                        {LOCATION_TYPES.map(({ type: t, label }) => (
-                            <button
-                                key={t}
-                                onClick={() => setType(t)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${type === t ? 'border-earth bg-earth/10 text-earth' : 'border-stone-200 text-stone-600'}`}
-                            >
-                                <FontAwesomeIcon icon={locationIcon(t)} />
-                                {label}
-                            </button>
-                        ))}
-                    </div>
+                    <ToggleGroup
+                        options={LOCATION_TYPES}
+                        value={type}
+                        onChange={setType}
+                        variant="secondary"
+                    />
                 </FieldWrapper>
 
                 <ConfirmButton onClick={() => onConfirm({ name, type })} disabled={!name.trim()} />

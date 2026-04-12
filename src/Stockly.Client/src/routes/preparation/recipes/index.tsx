@@ -5,6 +5,8 @@ import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
 import { Card } from '../../../components/Card'
+import { Toggle } from '../../../components/Toggle'
+import { ToggleGroup } from '../../../components/ToggleGroup'
 import { IconButton } from '../../../components/IconButton'
 import { RecipeModal } from '../../../components/admin/RecipeModal'
 import { useRecipes, useRecipeMutations } from '../../../hooks/queries/useRecipes'
@@ -70,48 +72,25 @@ function RouteComponent() {
         >
             <SearchInput value={query} onChange={setQuery} placeholder="Rechercher une recette..." className="mb-4" />
 
-            <div className="flex gap-2 mb-4 flex-wrap">
-                <label className="flex items-center gap-2 px-3 py-1 bg-cream rounded-full border border-sage/30 cursor-pointer hover:bg-sage-light/30">
-                    <input
-                        type="checkbox"
+            <div className="flex gap-4 mb-4 flex-col sm:flex-row sm:items-center">
+                <div className="bg-cream rounded-lg border border-sage/30 px-4 py-2 flex-1">
+                    <Toggle
+                        label="Disponibles uniquement"
                         checked={showAvailableOnly}
-                        onChange={e => setShowAvailableOnly(e.target.checked)}
-                        className="cursor-pointer"
+                        onChange={setShowAvailableOnly}
                     />
-                    <span className="text-sm">Disponibles</span>
-                </label>
+                </div>
 
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => setTypeFilter('all')}
-                        className={`px-3 py-1 rounded-full text-sm ${
-                            typeFilter === 'all'
-                                ? 'bg-earth text-white'
-                                : 'bg-cream border border-sage/30 text-bark hover:bg-sage-light/30'
-                        }`}
-                    >
-                        Tous
-                    </button>
-                    <button
-                        onClick={() => setTypeFilter('main')}
-                        className={`px-3 py-1 rounded-full text-sm ${
-                            typeFilter === 'main'
-                                ? 'bg-earth text-white'
-                                : 'bg-cream border border-sage/30 text-bark hover:bg-sage-light/30'
-                        }`}
-                    >
-                        Plats
-                    </button>
-                    <button
-                        onClick={() => setTypeFilter('dessert')}
-                        className={`px-3 py-1 rounded-full text-sm ${
-                            typeFilter === 'dessert'
-                                ? 'bg-earth text-white'
-                                : 'bg-cream border border-sage/30 text-bark hover:bg-sage-light/30'
-                        }`}
-                    >
-                        Desserts
-                    </button>
+                <div className="bg-cream rounded-lg border border-sage/30 px-4 py-2">
+                    <ToggleGroup
+                        options={[
+                            { value: 'all', label: 'Tous' },
+                            { value: 'main', label: 'Plats' },
+                            { value: 'dessert', label: 'Desserts' },
+                        ]}
+                        value={typeFilter}
+                        onChange={(value) => setTypeFilter(value as typeof typeFilter)}
+                    />
                 </div>
             </div>
 
