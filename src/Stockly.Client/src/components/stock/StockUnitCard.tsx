@@ -1,6 +1,7 @@
 import { faArrowUpFromBracket, faBoxOpen, faArrowRightArrowLeft } from '@fortawesome/free-solid-svg-icons'
 import { Card } from '../Card'
 import { IconButton } from '../IconButton'
+import { Badge } from '../Badge'
 import { ExpiryBadge } from './ExpiryBadge'
 import type { StockUnitDetail } from '../../models/StockUnitModel'
 
@@ -31,9 +32,7 @@ export function StockUnitCard({ unit, onEdit, onOpen, onTransfer, onConsume }: S
                     </p>
                     <ExpiryBadge date={unit.expirationDate} />
                     {unit.isOpened && (
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-earth/10 text-earth font-medium">
-                            Ouvert
-                        </span>
+                        <Badge variant="earth">Ouvert</Badge>
                     )}
                 </div>
             </div>

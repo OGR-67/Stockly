@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
 import { ConfirmButton } from '../ConfirmButton'
-import { Toggle } from './Toggle'
+import { Toggle } from '../Toggle'
 import { DaysInput } from './DaysInput'
 import type { Category } from '../../models/CategoryModel'
 

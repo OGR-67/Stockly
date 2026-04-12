@@ -4,6 +4,8 @@ import Fuse from 'fuse.js'
 import { RootPage } from './RootPage'
 import { LoadingSpinner } from './LoadingSpinner'
 import { SearchInput } from '../SearchInput'
+import { Card } from '../Card'
+import { EmptyState } from '../EmptyState'
 import { locationIcon } from '../../utils/locationIcons'
 import { useLocations } from '../../hooks/queries/useLocations'
 
@@ -29,20 +31,20 @@ export function LocationSelectorPage({ title, onSelect }: LocationSelectorPagePr
             />
 
             {isLoading && <LoadingSpinner />}
-            {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
+            {isError && <EmptyState message="Erreur de chargement" error />}
 
             <div className="flex flex-col gap-3">
                 {filtered.map(location => (
-                    <button
+                    <Card
                         key={location.id}
                         onClick={() => onSelect(location.id)}
-                        className="flex items-center gap-4 p-4 bg-cream rounded-xl shadow-sm border border-sage/30 active:bg-sage-light/50 transition-colors text-left"
+                        className="gap-4 p-4 active:bg-sage-light/50 transition-colors text-left"
                     >
-                        <div className="w-10 h-10 rounded-full bg-sage-light flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-sage-light flex items-center justify-center shrink-0">
                             <FontAwesomeIcon icon={locationIcon(location.type)} className="text-earth" />
                         </div>
                         <span className="text-base font-medium text-bark">{location.name}</span>
-                    </button>
+                    </Card>
                 ))}
             </div>
         </RootPage>

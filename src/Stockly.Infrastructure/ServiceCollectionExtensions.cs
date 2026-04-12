@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IStockUnitRepository, StockUnitRepository>();
         services.AddScoped<IPrinterRepository, PrinterRepository>();
+        services.AddScoped<IRecipeRepository, RecipeRepository>();
 
         services.AddScoped<IPrintingService, CupsPrintingService>();
         services.AddScoped<IPrinterDiscoveryService, CupsDiscoveryService>();

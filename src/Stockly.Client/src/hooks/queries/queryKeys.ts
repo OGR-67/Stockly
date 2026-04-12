@@ -5,4 +5,5 @@ export const queryKeys = {
     stockUnits: (locationId: string) => ['stockUnits', locationId] as const,
     allStockUnits: ['stockUnits', 'all'] as const,
     categories: ['categories'] as const,
+    recipes: ['recipes'] as const,
 }

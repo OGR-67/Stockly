@@ -4,8 +4,8 @@ import { Outlet, createRootRoute } from "@tanstack/react-router";
 import {
   faWarehouse,
   faCartShopping,
+  faUtensils,
   faGear,
-  faCode,
 } from "@fortawesome/free-solid-svg-icons";
 import { LoginModal } from "../components/LoginModal";
 import { NavLink } from "../components/NavLink";
@@ -29,8 +29,8 @@ function RootComponent() {
       <nav className="flex border-t border-sage bg-sage-light/50">
         <NavLink to="/stock" icon={faWarehouse} label="Stock" />
         <NavLink to="/store" icon={faCartShopping} label="Ranger" />
+        <NavLink to="/preparation" icon={faUtensils} label="Préparation" />
         <NavLink to="/admin" icon={faGear} label="Admin" />
-        {import.meta.env.DEV && <NavLink to="/dev" icon={faCode} label="Dev" />}
       </nav>
     </div>
   );

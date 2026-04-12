@@ -6,6 +6,7 @@ import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
 import { Card } from '../../../components/Card'
 import { IconButton } from '../../../components/IconButton'
+import { EmptyState } from '../../../components/EmptyState'
 import { CategoryModal } from '../../../components/admin/CategoryModal'
 import { useCategories, useCategoryMutations } from '../../../hooks/queries/useCategories'
 import { useCrudList } from '../../../hooks/useCrudList'
@@ -46,7 +47,7 @@ function RouteComponent() {
             <SearchInput value={query} onChange={setQuery} placeholder="Rechercher une catégorie..." className="mb-4" />
 
             {isLoading && <LoadingSpinner />}
-            {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
+            {isError && <EmptyState message="Erreur de chargement" error />}
 
             <div className="flex flex-col gap-3">
                 {filtered.map(category => (
@@ -68,7 +69,7 @@ function RouteComponent() {
                     </Card>
                 ))}
                 {!isLoading && filtered.length === 0 && (
-                    <p className="text-center text-stone-400 py-8">Aucune catégorie</p>
+                    <EmptyState message="Aucune catégorie" />
                 )}
             </div>
 
