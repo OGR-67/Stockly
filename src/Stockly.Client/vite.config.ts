@@ -14,6 +14,20 @@ export default defineConfig({
       '/api': 'http://localhost:5050',
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) return 'react'
+            if (id.includes('@tanstack')) return 'tanstack'
+            if (id.includes('fontawesome')) return 'icons'
+            return 'vendor'
+          }
+        },
+      },
+    },
+  },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
