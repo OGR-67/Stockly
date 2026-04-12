@@ -11,7 +11,7 @@ public class PrinterService(IPrinterRepository repository, IPrintingService prin
     // Brother QL series standard label formats
     private static readonly IReadOnlyList<(string Name, decimal WidthMm, decimal HeightMm)> BrotherQlFormats =
     [
-        ("DK-11209 – 62×29mm", 62, 29),
+        ("TZE251 - 62x24mm", 62, 24),
         // other format will come as needed...
     ];
 
