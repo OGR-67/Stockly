@@ -75,7 +75,7 @@ Stockly/
 | ------------------ | ----------------------------------------------- | -------------- |
 | **Core**           | Modèles métier purs                             | —              |
 | **Application**    | Services, DTOs, interfaces IRepo                | Core           |
-| **Infrastructure** | EF Core context, repositories, IPP              | Application    |
+| **Infrastructure** | EF Core context, repositories, CUPS printing    | Application    |
 | **DI**             | Migrations, enregistrement des services         | Infrastructure |
 | **API**            | Controllers, endpoints REST                     | DI             |
 
@@ -129,10 +129,31 @@ docker compose ps
 
 ---
 
-## Imprimante (Brother QL-810W)
+## Impression (CUPS)
 
-L'API communique avec l'imprimante via IPP (port 631), découverte mDNS (`_ipp._tcp.local`).
-L'implémentation est en cours — ajouter une imprimante via `/admin/settings`.
+L'API communique avec les imprimantes via **CUPS** (Common Unix Printing System). CUPS doit être installé sur le serveur hôte.
 
-> **Dev** : quand l'API tourne dans Docker (réseau bridge), la découverte mDNS ne fonctionne pas.
-> Pour tester l'imprimante en local, lancer l'API nativement avec `dotnet run`.
+### Découverte et enregistrement
+
+**Serveur de production** :
+
+```bash
+# Découvrir et enregistrer les imprimantes automatiquement
+./scripts/discover-printers.sh
+```
+
+Ce script :
+- Scanne le réseau (même subnet que le serveur)
+- Récupère le nom de chaque imprimante via IPP
+- Crée les queues CUPS manquantes
+
+Les imprimantes découvertes apparaissent ensuite dans `/admin/settings` pour enregistrement.
+
+**Ajout manuel** (une imprimante spécifique) :
+
+```bash
+# Trouver l'IP sur l'écran de l'imprimante (Settings → Network)
+lpadmin -p NomImprimante -E -v ipp://192.168.1.XXX -m everywhere
+```
+
+Voir [Impression d'étiquettes](printing.md) pour plus de détails.
