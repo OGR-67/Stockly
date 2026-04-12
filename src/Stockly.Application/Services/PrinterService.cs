@@ -33,7 +33,7 @@ public class PrinterService(IPrinterRepository repository, IPrintingService prin
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
-            IpAddress = request.IpAddress,
+            QueueName = request.QueueName,
             Port = request.Port,
             IsDefault = request.IsDefault,
             Formats = BrotherQlFormats.Select(f => new PrinterFormat
@@ -62,5 +62,5 @@ public class PrinterService(IPrinterRepository repository, IPrintingService prin
     }
 
     private static PrinterResponse ToResponse(Printer p) =>
-        new(p.Id, p.Name, p.IpAddress, p.Port, p.IsDefault);
+        new(p.Id, p.Name, p.QueueName, p.Port, p.IsDefault);
 }

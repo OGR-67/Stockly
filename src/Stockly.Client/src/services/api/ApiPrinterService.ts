@@ -15,8 +15,8 @@ export class ApiPrinterService implements IPrinterService {
         return apiClient.get('/api/printers/discover')
     }
 
-    async register(name: string, ipAddress: string, port: number, isDefault: boolean): Promise<Printer> {
-        return apiClient.post('/api/printers', { name, ipAddress, port, isDefault })
+    async register(name: string, queueName: string, port: number, isDefault: boolean): Promise<Printer> {
+        return apiClient.post('/api/printers', { name, queueName, port, isDefault })
     }
 
     async delete(id: string): Promise<void> {

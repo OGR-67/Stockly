@@ -24,7 +24,7 @@ function RouteComponent() {
     const [discovered, setDiscovered] = useState<DiscoveredPrinter[]>([])
     const [showManualForm, setShowManualForm] = useState(false)
     const [manualName, setManualName] = useState('')
-    const [manualIp, setManualIp] = useState('')
+    const [manualQueueName, setManualQueueName] = useState('')
     const [manualPort, setManualPort] = useState('631')
 
     useEffect(() => {
@@ -45,15 +45,15 @@ function RouteComponent() {
     }
 
     async function handleRegister(d: DiscoveredPrinter) {
-        await register.mutateAsync({ name: d.name, ipAddress: d.ipAddress, port: d.port, isDefault: printers.length === 0 })
-        setDiscovered(prev => prev.filter(p => p.ipAddress !== d.ipAddress))
+        await register.mutateAsync({ name: d.name, queueName: d.queueName, port: d.port, isDefault: printers.length === 0 })
+        setDiscovered(prev => prev.filter(p => p.queueName !== d.queueName))
     }
 
     async function handleManualRegister() {
-        if (!manualName.trim() || !manualIp.trim()) return
-        await register.mutateAsync({ name: manualName.trim(), ipAddress: manualIp.trim(), port: parseInt(manualPort) || 631, isDefault: printers.length === 0 })
+        if (!manualName.trim() || !manualQueueName.trim()) return
+        await register.mutateAsync({ name: manualName.trim(), queueName: manualQueueName.trim(), port: parseInt(manualPort) || 631, isDefault: printers.length === 0 })
         setManualName('')
-        setManualIp('')
+        setManualQueueName('')
         setManualPort('631')
         setShowManualForm(false)
     }
@@ -98,7 +98,7 @@ function RouteComponent() {
                                 <div key={p.id} className="flex items-center gap-2 px-3 py-2 bg-stone-50 rounded-lg border border-stone-200">
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-bark truncate">{p.name}</p>
-                                        <p className="text-xs text-stone-400 font-mono">{p.ipAddress}:{p.port}</p>
+                                        <p className="text-xs text-stone-400 font-mono">{p.queueName}:{p.port}</p>
                                     </div>
                                     <button onClick={() => handleDelete(p.id)}>
                                         <FontAwesomeIcon icon={faTrash} className="text-stone-400 hover:text-stone-600" />
@@ -112,10 +112,10 @@ function RouteComponent() {
                         <div className="flex flex-col gap-2">
                             <p className="text-xs text-stone-500">Imprimantes détectées :</p>
                             {discovered.map(d => (
-                                <div key={d.ipAddress} className="flex items-center gap-2 px-3 py-2 bg-sage-light/30 rounded-lg border border-sage/30">
+                                <div key={d.queueName} className="flex items-center gap-2 px-3 py-2 bg-sage-light/30 rounded-lg border border-sage/30">
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm text-bark truncate">{d.name}</p>
-                                        <p className="text-xs text-stone-400 font-mono">{d.ipAddress}:{d.port}</p>
+                                        <p className="text-xs text-stone-400 font-mono">{d.queueName}:{d.port}</p>
                                     </div>
                                     <button onClick={() => handleRegister(d)} className="text-earth">
                                         <FontAwesomeIcon icon={faPlus} />
@@ -143,9 +143,9 @@ function RouteComponent() {
                             <div className="flex gap-2">
                                 <input
                                     type="text"
-                                    value={manualIp}
-                                    onChange={e => setManualIp(e.target.value)}
-                                    placeholder="Adresse IP"
+                                    value={manualQueueName}
+                                    onChange={e => setManualQueueName(e.target.value)}
+                                    placeholder="Nom de queue CUPS"
                                     className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none font-mono"
                                 />
                                 <input
@@ -164,7 +164,7 @@ function RouteComponent() {
                                 </button>
                                 <button
                                     onClick={handleManualRegister}
-                                    disabled={!manualName.trim() || !manualIp.trim() || register.isPending}
+                                    disabled={!manualName.trim() || !manualQueueName.trim() || register.isPending}
                                     className="flex-1 py-2 rounded-lg bg-earth text-white text-sm disabled:opacity-50"
                                 >
                                     Ajouter

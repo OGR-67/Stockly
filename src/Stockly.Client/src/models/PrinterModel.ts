@@ -1,7 +1,7 @@
 export interface Printer {
     id: string
     name: string
-    ipAddress: string
+    queueName: string
     port: number
     isDefault: boolean
 }
@@ -15,6 +15,6 @@ export interface PrinterFormat {
 
 export interface DiscoveredPrinter {
     name: string
-    ipAddress: string
+    queueName: string
     port: number
 }
