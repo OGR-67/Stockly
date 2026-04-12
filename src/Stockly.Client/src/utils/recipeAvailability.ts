@@ -1,13 +1,11 @@
 import { getExpiryStatus } from './expiryStatus'
-import type { RecipeDetail, Recipe } from '../models/RecipeModel'
-import type { Product } from '../models/ProductModel'
+import type { Recipe } from '../models/RecipeModel'
 import type { StockUnitDetail } from '../models/StockUnitModel'
 
 export interface RecipeAvailability {
-    available: Product[]
-    missing: Product[]
+    availableProductIds: string[]
+    missingProductIds: string[]
     isFullyAvailable: boolean
-    missingCount: number
 }
 
 export function isProductAvailable(productId: string, allUnits: StockUnitDetail[]): boolean {
@@ -19,30 +17,21 @@ export function isProductAvailable(productId: string, allUnits: StockUnitDetail[
     )
 }
 
-export function getRecipeAvailability(recipe: RecipeDetail, allUnits: StockUnitDetail[]): RecipeAvailability {
-    const available: Product[] = []
-    const missing: Product[] = []
+export function getRecipeAvailability(recipe: Recipe, allUnits: StockUnitDetail[]): RecipeAvailability {
+    const availableProductIds: string[] = []
+    const missingProductIds: string[] = []
 
     recipe.products.forEach(product => {
         if (isProductAvailable(product.id, allUnits)) {
-            available.push(product)
+            availableProductIds.push(product.id)
         } else {
-            missing.push(product)
+            missingProductIds.push(product.id)
         }
     })
 
     return {
-        available,
-        missing,
-        isFullyAvailable: missing.length === 0 && recipe.products.length > 0,
-        missingCount: missing.length,
+        availableProductIds,
+        missingProductIds,
+        isFullyAvailable: missingProductIds.length === 0 && recipe.products.length > 0,
     }
-}
-
-export function getSimpleRecipeAvailability(recipe: Recipe, allUnits: StockUnitDetail[]): boolean {
-    // Pour la liste, sans avoir le détail complet, on ne peut juste vérifier
-    // Retourne true seulement si on a au moins les infos nécessaires
-    // En pratique, pour la liste, il faudrait passer les RecipeDetail
-    // Pour l'instant on retourne false (conservative approach)
-    return recipe.productCount > 0
 }
