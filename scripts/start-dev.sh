@@ -14,7 +14,7 @@ fi
 
 echo "Démarrage de l'API et PostgreSQL..."
 cd "$PROJECT_ROOT"
-docker compose up -d
+docker compose up --build -d
 
 echo "Attente du démarrage complet..."
 sleep 3
