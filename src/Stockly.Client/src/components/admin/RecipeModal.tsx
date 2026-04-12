@@ -5,7 +5,6 @@ import { FieldWrapper } from "../FieldWrapper";
 import { ConfirmButton } from "../ConfirmButton";
 import { RecipeProductManager } from "./RecipeProductManager";
 import { useProducts } from "../../hooks/queries/useProducts";
-import { useRecipeDetail } from "../../hooks/queries/useRecipes";
 import type { Recipe } from "../../models/RecipeModel";
 import type { Product } from "../../models/ProductModel";
 
@@ -22,7 +21,6 @@ interface RecipeModalProps {
 
 export function RecipeModal({ initial, onConfirm, onClose }: RecipeModalProps) {
   const { data: allProducts = [] } = useProducts();
-  const { data: recipeDetail } = useRecipeDetail(initial?.id ?? "");
 
   const [name, setName] = useState("");
   const [type, setType] = useState<"main" | "dessert">("main");
@@ -35,16 +33,14 @@ export function RecipeModal({ initial, onConfirm, onClose }: RecipeModalProps) {
       setName(initial.name);
       setType(initial.type);
       setFreeText(initial.freeText ?? "");
-      if (recipeDetail) {
-        setProducts(recipeDetail.products);
-      }
+      setProducts(initial.products);
     } else {
       setName("");
       setType("main");
       setFreeText("");
       setProducts([]);
     }
-  }, [initial, recipeDetail]);
+  }, [initial]);
 
   const handleAddProduct = (product: Product) => {
     setProducts([...products, product]);

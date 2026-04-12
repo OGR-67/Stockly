@@ -15,13 +15,6 @@ public class RecipeService(IRecipeRepository repository, IProductRepository prod
         return recipes.Select(ToResponse);
     }
 
-    public async Task<RecipeDetailResponse> GetByIdAsync(Guid id)
-    {
-        var recipe = await repository.GetByIdWithProductsAsync(id)
-            ?? throw new NotFoundException($"Recipe {id} not found.");
-        return ToDetailResponse(recipe);
-    }
-
     public async Task<RecipeResponse> CreateAsync(SaveRecipeRequest request)
     {
         var products = await FetchProductsAsync(request.ProductIds);
@@ -75,10 +68,7 @@ public class RecipeService(IRecipeRepository repository, IProductRepository prod
     }
 
     private static RecipeResponse ToResponse(Recipe r) =>
-        new(r.Id, r.Name, r.Type, r.FreeText, r.Products.Count);
-
-    private static RecipeDetailResponse ToDetailResponse(Recipe r) =>
-        new(r.Id, r.Name, r.Type, r.FreeText, r.Products.Select(p => ToProductResponse(p)));
+        new(r.Id, r.Name, r.Type, r.FreeText, r.Products.Select(ToProductResponse));
 
     private static ProductResponse ToProductResponse(Product p) =>
         new(p.Id, p.CategoryId, p.Name, p.FreeText);

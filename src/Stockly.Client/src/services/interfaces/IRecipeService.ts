@@ -1,8 +1,7 @@
-import type { Recipe, RecipeDetail } from "../../models/RecipeModel";
+import type { Recipe } from "../../models/RecipeModel";
 
 export interface IRecipeService {
   getAll(): Promise<Recipe[]>;
-  getById(id: string): Promise<RecipeDetail>;
   create(
     name: string,
     type: "main" | "dessert",

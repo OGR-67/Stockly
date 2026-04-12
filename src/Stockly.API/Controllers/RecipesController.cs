@@ -12,15 +12,11 @@ public class RecipesController(IRecipeService service) : ControllerBase
     public async Task<IActionResult> GetAll() =>
         Ok(await service.GetAllAsync());
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id) =>
-        Ok(await service.GetByIdAsync(id));
-
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] SaveRecipeRequest request)
     {
         var created = await service.CreateAsync(request);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        return Ok(created);
     }
 
     [HttpPut("{id:guid}")]

@@ -1,5 +1,5 @@
 import type { IRecipeService } from "../interfaces/IRecipeService";
-import type { Recipe, RecipeDetail } from "../../models/RecipeModel";
+import type { Recipe } from "../../models/RecipeModel";
 
 const mockRecipes: Recipe[] = [
   {
@@ -7,29 +7,20 @@ const mockRecipes: Recipe[] = [
     name: "Pâtes Carbonara",
     type: "main",
     freeText: "Classique italienne",
-    productCount: 5,
+    products: [],
   },
   {
     id: "2",
     name: "Tiramisu",
     type: "dessert",
     freeText: "Dessert italien traditionnel",
-    productCount: 4,
+    products: [],
   },
 ];
 
 export class MockRecipeService implements IRecipeService {
   async getAll(): Promise<Recipe[]> {
     return mockRecipes;
-  }
-
-  async getById(id: string): Promise<RecipeDetail> {
-    const recipe = mockRecipes.find((r) => r.id === id);
-    if (!recipe) throw new Error(`Recipe ${id} not found`);
-    return {
-      ...recipe,
-      products: [],
-    };
   }
 
   async create(
@@ -43,7 +34,7 @@ export class MockRecipeService implements IRecipeService {
       name,
       type,
       freeText,
-      productCount: productIds.length,
+      products: [],
     };
     mockRecipes.push(recipe);
     return recipe;
@@ -61,7 +52,6 @@ export class MockRecipeService implements IRecipeService {
     recipe.name = name;
     recipe.type = type;
     recipe.freeText = freeText;
-    recipe.productCount = productIds.length;
     return recipe;
   }
 

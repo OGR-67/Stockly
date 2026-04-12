@@ -9,13 +9,6 @@ export function useRecipes() {
   });
 }
 
-export function useRecipeDetail(id: string) {
-  return useQuery({
-    queryKey: queryKeys.recipe(id),
-    queryFn: () => recipeService.getById(id),
-  });
-}
-
 export function useRecipeMutations() {
   const qc = useQueryClient();
   const invalidate = () =>

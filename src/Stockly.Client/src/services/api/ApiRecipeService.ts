@@ -1,14 +1,10 @@
 import { apiClient } from "./apiClient";
 import type { IRecipeService } from "../interfaces/IRecipeService";
-import type { Recipe, RecipeDetail } from "../../models/RecipeModel";
+import type { Recipe } from "../../models/RecipeModel";
 
 export class ApiRecipeService implements IRecipeService {
   async getAll(): Promise<Recipe[]> {
     return apiClient.get("/api/recipes");
-  }
-
-  async getById(id: string): Promise<RecipeDetail> {
-    return apiClient.get(`/api/recipes/${id}`);
   }
 
   async create(

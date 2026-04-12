@@ -81,8 +81,8 @@ function RouteComponent() {
                   {typeLabel(recipe.type)}
                 </span>
                 <span className="text-xs text-stone-400">
-                  {recipe.productCount} article
-                  {recipe.productCount > 1 ? "s" : ""}
+                  {recipe.products.length} article
+                  {recipe.products.length > 1 ? "s" : ""}
                 </span>
               </div>
               {recipe.freeText && (

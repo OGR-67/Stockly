@@ -7,9 +7,5 @@ export interface Recipe {
   name: string;
   type: RecipeType;
   freeText?: string;
-  productCount: number;
-}
-
-export interface RecipeDetail extends Omit<Recipe, "productCount"> {
   products: Product[];
 }
