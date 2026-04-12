@@ -7,6 +7,8 @@ import { SearchInput } from "../../../components/SearchInput";
 import { Card } from "../../../components/Card";
 import { IconButton } from "../../../components/IconButton";
 import { RecipeModal } from "../../../components/admin/RecipeModal";
+import { EmptyState } from "../../../components/EmptyState";
+import { RecipeTypeBadge } from "../../../components/RecipeTypeBadge";
 import {
   useRecipes,
   useRecipeMutations,
@@ -44,9 +46,6 @@ function RouteComponent() {
     await remove.mutateAsync(id);
   }
 
-  const typeLabel = (type: "main" | "dessert") =>
-    type === "main" ? "Plat" : "Dessert";
-
   return (
     <StackPage
       title="Recettes"
@@ -67,9 +66,7 @@ function RouteComponent() {
       />
 
       {isLoading && <LoadingSpinner />}
-      {isError && (
-        <p className="text-center text-stone-400 py-8">Erreur de chargement</p>
-      )}
+      {isError && <EmptyState message="Erreur de chargement" error />}
 
       <div className="flex flex-col gap-3">
         {filtered.map((recipe) => (
@@ -77,9 +74,7 @@ function RouteComponent() {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-bark truncate">{recipe.name}</p>
               <div className="flex gap-2 mt-1 items-center">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-earth/10 text-earth">
-                  {typeLabel(recipe.type)}
-                </span>
+                <RecipeTypeBadge type={recipe.type} />
                 <span className="text-xs text-stone-400">
                   {recipe.products.length} article
                   {recipe.products.length > 1 ? "s" : ""}
@@ -104,7 +99,7 @@ function RouteComponent() {
           </Card>
         ))}
         {!isLoading && filtered.length === 0 && (
-          <p className="text-center text-stone-400 py-8">Aucune recette</p>
+          <EmptyState message="Aucune recette" />
         )}
       </div>
 

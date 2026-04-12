@@ -8,6 +8,9 @@ import { Card } from '../../../components/Card'
 import { Toggle } from '../../../components/Toggle'
 import { ToggleGroup } from '../../../components/ToggleGroup'
 import { IconButton } from '../../../components/IconButton'
+import { EmptyState } from '../../../components/EmptyState'
+import { RecipeTypeBadge } from '../../../components/RecipeTypeBadge'
+import { AvailabilityBadge } from '../../../components/AvailabilityBadge'
 import { RecipeModal } from '../../../components/admin/RecipeModal'
 import { useRecipes, useRecipeMutations } from '../../../hooks/queries/useRecipes'
 import { useAllStockUnits } from '../../../hooks/queries/useStockUnits'
@@ -59,8 +62,6 @@ function RouteComponent() {
         setEditTarget(null)
     }
 
-    const typeLabel = (type: 'main' | 'dessert') => (type === 'main' ? 'Plat' : 'Dessert')
-
     return (
         <StackPage
             title="Recettes"
@@ -95,7 +96,7 @@ function RouteComponent() {
             </div>
 
             {isLoading && <LoadingSpinner />}
-            {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
+            {isError && <EmptyState message="Erreur de chargement" error />}
 
             <div className="flex flex-col gap-3">
                 {filtered.map(recipe => {
@@ -112,19 +113,8 @@ function RouteComponent() {
                             <div className="flex-1 min-w-0">
                                 <p className="font-medium text-bark truncate">{recipe.name}</p>
                                 <div className="flex gap-2 mt-1 items-center">
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-earth/10 text-earth">
-                                        {typeLabel(recipe.type)}
-                                    </span>
-                                    {availability.isFullyAvailable ? (
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-sage/30 text-bark">
-                                            ✓ Disponible
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
-                                            ✗ {availability.missingProductIds.length} manquant
-                                            {availability.missingProductIds.length > 1 ? 's' : ''}
-                                        </span>
-                                    )}
+                                    <RecipeTypeBadge type={recipe.type} />
+                                    <AvailabilityBadge missing={availability.missingProductIds.length} />
                                 </div>
                                 {recipe.freeText && <p className="text-xs text-stone-400 mt-1 truncate">{recipe.freeText}</p>}
                             </div>
@@ -138,7 +128,7 @@ function RouteComponent() {
                     )
                 })}
                 {!isLoading && filtered.length === 0 && (
-                    <p className="text-center text-stone-400 py-8">Aucune recette</p>
+                    <EmptyState message="Aucune recette" />
                 )}
             </div>
 

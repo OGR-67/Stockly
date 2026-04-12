@@ -5,6 +5,7 @@ import { RootPage } from './RootPage'
 import { LoadingSpinner } from './LoadingSpinner'
 import { SearchInput } from '../SearchInput'
 import { Card } from '../Card'
+import { EmptyState } from '../EmptyState'
 import { locationIcon } from '../../utils/locationIcons'
 import { useLocations } from '../../hooks/queries/useLocations'
 
@@ -30,7 +31,7 @@ export function LocationSelectorPage({ title, onSelect }: LocationSelectorPagePr
             />
 
             {isLoading && <LoadingSpinner />}
-            {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
+            {isError && <EmptyState message="Erreur de chargement" error />}
 
             <div className="flex flex-col gap-3">
                 {filtered.map(location => (

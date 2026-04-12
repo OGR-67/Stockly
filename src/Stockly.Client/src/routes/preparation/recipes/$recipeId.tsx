@@ -6,6 +6,10 @@ import { useRecipes } from '../../../hooks/queries/useRecipes'
 import { useAllStockUnits } from '../../../hooks/queries/useStockUnits'
 import { getRecipeAvailability } from '../../../utils/recipeAvailability'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
+import { EmptyState } from '../../../components/EmptyState'
+import { StatusBanner } from '../../../components/StatusBanner'
+import { LabeledSection } from '../../../components/LabeledSection'
+import { RecipeTypeBadge } from '../../../components/RecipeTypeBadge'
 
 export const Route = createFileRoute('/preparation/recipes/$recipeId')({
     component: RouteComponent,
@@ -26,21 +30,17 @@ function RouteComponent() {
     if (!recipe) {
         return (
             <StackPage title="Recette non trouvée">
-                <p className="text-center text-stone-400 py-8">Recette introuvable</p>
+                <EmptyState message="Recette introuvable" />
             </StackPage>
         )
     }
-
-    const typeLabel = recipe.type === 'main' ? 'Plat' : 'Dessert'
 
     return (
         <StackPage title={recipe.name}>
             <div className="space-y-4">
                 <div>
                     <div className="flex gap-2 items-center mb-2">
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-earth/10 text-earth font-medium">
-                            {typeLabel}
-                        </span>
+                        <RecipeTypeBadge type={recipe.type} />
                         {availability && (
                             <span className="text-sm font-medium text-bark">
                                 {availability.availableProductIds.length}/{recipe.products.length} ingrédients
@@ -49,31 +49,27 @@ function RouteComponent() {
                     </div>
 
                     {availability && !availability.isFullyAvailable && (
-                        <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg mb-2">
-                            <p className="text-sm text-orange-900">
-                                {availability.missingProductIds.length} ingrédient
-                                {availability.missingProductIds.length > 1 ? 's' : ''} manquant
-                                {availability.missingProductIds.length > 1 ? 's' : ''}
-                            </p>
-                        </div>
+                        <StatusBanner variant="warning">
+                            {availability.missingProductIds.length} ingrédient
+                            {availability.missingProductIds.length > 1 ? 's' : ''} manquant
+                            {availability.missingProductIds.length > 1 ? 's' : ''}
+                        </StatusBanner>
                     )}
 
                     {availability?.isFullyAvailable && (
-                        <div className="p-3 bg-sage-light/50 border border-sage/30 rounded-lg mb-2">
-                            <p className="text-sm text-bark">✓ Recette complète, tous les ingrédients sont disponibles</p>
-                        </div>
+                        <StatusBanner variant="success">
+                            ✓ Recette complète, tous les ingrédients sont disponibles
+                        </StatusBanner>
                     )}
                 </div>
 
                 {recipe.freeText && (
-                    <div>
-                        <h3 className="text-sm font-medium text-bark mb-1">Préparation</h3>
+                    <LabeledSection title="Préparation">
                         <p className="text-sm text-stone-600 whitespace-pre-wrap">{recipe.freeText}</p>
-                    </div>
+                    </LabeledSection>
                 )}
 
-                <div>
-                    <h3 className="text-sm font-medium text-bark mb-2">Ingrédients</h3>
+                <LabeledSection title="Ingrédients">
                     <div className="space-y-2">
                         {recipe.products.map(product => {
                             const available = availability && availability.availableProductIds.includes(product.id)
@@ -99,7 +95,7 @@ function RouteComponent() {
                             )
                         })}
                     </div>
-                </div>
+                </LabeledSection>
             </div>
         </StackPage>
     )

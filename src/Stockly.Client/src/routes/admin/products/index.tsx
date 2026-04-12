@@ -6,6 +6,7 @@ import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
 import { Card } from '../../../components/Card'
 import { IconButton } from '../../../components/IconButton'
+import { EmptyState } from '../../../components/EmptyState'
 import { ProductModal } from '../../../components/admin/ProductModal'
 import { useProducts, useProductMutations } from '../../../hooks/queries/useProducts'
 import { stockUnitService } from '../../../services'
@@ -53,7 +54,7 @@ function RouteComponent() {
             <SearchInput value={query} onChange={setQuery} placeholder="Rechercher un article..." className="mb-4" />
 
             {isLoading && <LoadingSpinner />}
-            {isError && <p className="text-center text-stone-400 py-8">Erreur de chargement</p>}
+            {isError && <EmptyState message="Erreur de chargement" error />}
 
             <div className="flex flex-col gap-3">
                 {filtered.map(product => (
@@ -68,7 +69,7 @@ function RouteComponent() {
                     </Card>
                 ))}
                 {!isLoading && filtered.length === 0 && (
-                    <p className="text-center text-stone-400 py-8">Aucun article</p>
+                    <EmptyState message="Aucun article" />
                 )}
             </div>
 
