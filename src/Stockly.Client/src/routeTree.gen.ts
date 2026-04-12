@@ -12,16 +12,18 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoreIndexRouteImport } from './routes/store/index'
 import { Route as StockIndexRouteImport } from './routes/stock/index'
-import { Route as DevIndexRouteImport } from './routes/dev/index'
+import { Route as PreparationIndexRouteImport } from './routes/preparation/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as StoreLocationIdRouteImport } from './routes/store/$locationId'
 import { Route as StockLocationIdRouteImport } from './routes/stock/$locationId'
+import { Route as PreparationRecipesIndexRouteImport } from './routes/preparation/recipes/index'
 import { Route as AdminStockIndexRouteImport } from './routes/admin/stock/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
 import { Route as AdminRecipesIndexRouteImport } from './routes/admin/recipes/index'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index'
 import { Route as AdminLocationsIndexRouteImport } from './routes/admin/locations/index'
 import { Route as AdminCategoriesIndexRouteImport } from './routes/admin/categories/index'
+import { Route as PreparationRecipesRecipeIdRouteImport } from './routes/preparation/recipes/$recipeId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,9 +40,9 @@ const StockIndexRoute = StockIndexRouteImport.update({
   path: '/stock/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DevIndexRoute = DevIndexRouteImport.update({
-  id: '/dev/',
-  path: '/dev/',
+const PreparationIndexRoute = PreparationIndexRouteImport.update({
+  id: '/preparation/',
+  path: '/preparation/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -56,6 +58,11 @@ const StoreLocationIdRoute = StoreLocationIdRouteImport.update({
 const StockLocationIdRoute = StockLocationIdRouteImport.update({
   id: '/stock/$locationId',
   path: '/stock/$locationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreparationRecipesIndexRoute = PreparationRecipesIndexRouteImport.update({
+  id: '/preparation/recipes/',
+  path: '/preparation/recipes/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminStockIndexRoute = AdminStockIndexRouteImport.update({
@@ -88,36 +95,46 @@ const AdminCategoriesIndexRoute = AdminCategoriesIndexRouteImport.update({
   path: '/admin/categories/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PreparationRecipesRecipeIdRoute =
+  PreparationRecipesRecipeIdRouteImport.update({
+    id: '/preparation/recipes/$recipeId',
+    path: '/preparation/recipes/$recipeId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
   '/store/$locationId': typeof StoreLocationIdRoute
   '/admin/': typeof AdminIndexRoute
-  '/dev/': typeof DevIndexRoute
+  '/preparation/': typeof PreparationIndexRoute
   '/stock/': typeof StockIndexRoute
   '/store/': typeof StoreIndexRoute
+  '/preparation/recipes/$recipeId': typeof PreparationRecipesRecipeIdRoute
   '/admin/categories/': typeof AdminCategoriesIndexRoute
   '/admin/locations/': typeof AdminLocationsIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/recipes/': typeof AdminRecipesIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/stock/': typeof AdminStockIndexRoute
+  '/preparation/recipes/': typeof PreparationRecipesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
   '/store/$locationId': typeof StoreLocationIdRoute
   '/admin': typeof AdminIndexRoute
-  '/dev': typeof DevIndexRoute
+  '/preparation': typeof PreparationIndexRoute
   '/stock': typeof StockIndexRoute
   '/store': typeof StoreIndexRoute
+  '/preparation/recipes/$recipeId': typeof PreparationRecipesRecipeIdRoute
   '/admin/categories': typeof AdminCategoriesIndexRoute
   '/admin/locations': typeof AdminLocationsIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
   '/admin/recipes': typeof AdminRecipesIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/stock': typeof AdminStockIndexRoute
+  '/preparation/recipes': typeof PreparationRecipesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,15 +142,17 @@ export interface FileRoutesById {
   '/stock/$locationId': typeof StockLocationIdRoute
   '/store/$locationId': typeof StoreLocationIdRoute
   '/admin/': typeof AdminIndexRoute
-  '/dev/': typeof DevIndexRoute
+  '/preparation/': typeof PreparationIndexRoute
   '/stock/': typeof StockIndexRoute
   '/store/': typeof StoreIndexRoute
+  '/preparation/recipes/$recipeId': typeof PreparationRecipesRecipeIdRoute
   '/admin/categories/': typeof AdminCategoriesIndexRoute
   '/admin/locations/': typeof AdminLocationsIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/recipes/': typeof AdminRecipesIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/stock/': typeof AdminStockIndexRoute
+  '/preparation/recipes/': typeof PreparationRecipesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,45 +161,51 @@ export interface FileRouteTypes {
     | '/stock/$locationId'
     | '/store/$locationId'
     | '/admin/'
-    | '/dev/'
+    | '/preparation/'
     | '/stock/'
     | '/store/'
+    | '/preparation/recipes/$recipeId'
     | '/admin/categories/'
     | '/admin/locations/'
     | '/admin/products/'
     | '/admin/recipes/'
     | '/admin/settings/'
     | '/admin/stock/'
+    | '/preparation/recipes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/stock/$locationId'
     | '/store/$locationId'
     | '/admin'
-    | '/dev'
+    | '/preparation'
     | '/stock'
     | '/store'
+    | '/preparation/recipes/$recipeId'
     | '/admin/categories'
     | '/admin/locations'
     | '/admin/products'
     | '/admin/recipes'
     | '/admin/settings'
     | '/admin/stock'
+    | '/preparation/recipes'
   id:
     | '__root__'
     | '/'
     | '/stock/$locationId'
     | '/store/$locationId'
     | '/admin/'
-    | '/dev/'
+    | '/preparation/'
     | '/stock/'
     | '/store/'
+    | '/preparation/recipes/$recipeId'
     | '/admin/categories/'
     | '/admin/locations/'
     | '/admin/products/'
     | '/admin/recipes/'
     | '/admin/settings/'
     | '/admin/stock/'
+    | '/preparation/recipes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -188,15 +213,17 @@ export interface RootRouteChildren {
   StockLocationIdRoute: typeof StockLocationIdRoute
   StoreLocationIdRoute: typeof StoreLocationIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
-  DevIndexRoute: typeof DevIndexRoute
+  PreparationIndexRoute: typeof PreparationIndexRoute
   StockIndexRoute: typeof StockIndexRoute
   StoreIndexRoute: typeof StoreIndexRoute
+  PreparationRecipesRecipeIdRoute: typeof PreparationRecipesRecipeIdRoute
   AdminCategoriesIndexRoute: typeof AdminCategoriesIndexRoute
   AdminLocationsIndexRoute: typeof AdminLocationsIndexRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
   AdminRecipesIndexRoute: typeof AdminRecipesIndexRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminStockIndexRoute: typeof AdminStockIndexRoute
+  PreparationRecipesIndexRoute: typeof PreparationRecipesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -222,11 +249,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StockIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dev/': {
-      id: '/dev/'
-      path: '/dev'
-      fullPath: '/dev/'
-      preLoaderRoute: typeof DevIndexRouteImport
+    '/preparation/': {
+      id: '/preparation/'
+      path: '/preparation'
+      fullPath: '/preparation/'
+      preLoaderRoute: typeof PreparationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -248,6 +275,13 @@ declare module '@tanstack/react-router' {
       path: '/stock/$locationId'
       fullPath: '/stock/$locationId'
       preLoaderRoute: typeof StockLocationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preparation/recipes/': {
+      id: '/preparation/recipes/'
+      path: '/preparation/recipes'
+      fullPath: '/preparation/recipes/'
+      preLoaderRoute: typeof PreparationRecipesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/stock/': {
@@ -292,6 +326,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/preparation/recipes/$recipeId': {
+      id: '/preparation/recipes/$recipeId'
+      path: '/preparation/recipes/$recipeId'
+      fullPath: '/preparation/recipes/$recipeId'
+      preLoaderRoute: typeof PreparationRecipesRecipeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -300,15 +341,17 @@ const rootRouteChildren: RootRouteChildren = {
   StockLocationIdRoute: StockLocationIdRoute,
   StoreLocationIdRoute: StoreLocationIdRoute,
   AdminIndexRoute: AdminIndexRoute,
-  DevIndexRoute: DevIndexRoute,
+  PreparationIndexRoute: PreparationIndexRoute,
   StockIndexRoute: StockIndexRoute,
   StoreIndexRoute: StoreIndexRoute,
+  PreparationRecipesRecipeIdRoute: PreparationRecipesRecipeIdRoute,
   AdminCategoriesIndexRoute: AdminCategoriesIndexRoute,
   AdminLocationsIndexRoute: AdminLocationsIndexRoute,
   AdminProductsIndexRoute: AdminProductsIndexRoute,
   AdminRecipesIndexRoute: AdminRecipesIndexRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminStockIndexRoute: AdminStockIndexRoute,
+  PreparationRecipesIndexRoute: PreparationRecipesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
