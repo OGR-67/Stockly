@@ -18,6 +18,7 @@ import { Route as StoreLocationIdRouteImport } from './routes/store/$locationId'
 import { Route as StockLocationIdRouteImport } from './routes/stock/$locationId'
 import { Route as AdminStockIndexRouteImport } from './routes/admin/stock/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
+import { Route as AdminRecipesIndexRouteImport } from './routes/admin/recipes/index'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index'
 import { Route as AdminLocationsIndexRouteImport } from './routes/admin/locations/index'
 import { Route as AdminCategoriesIndexRouteImport } from './routes/admin/categories/index'
@@ -67,6 +68,11 @@ const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
   path: '/admin/settings/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRecipesIndexRoute = AdminRecipesIndexRouteImport.update({
+  id: '/admin/recipes/',
+  path: '/admin/recipes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
   id: '/admin/products/',
   path: '/admin/products/',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories/': typeof AdminCategoriesIndexRoute
   '/admin/locations/': typeof AdminLocationsIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
+  '/admin/recipes/': typeof AdminRecipesIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/stock/': typeof AdminStockIndexRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesIndexRoute
   '/admin/locations': typeof AdminLocationsIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
+  '/admin/recipes': typeof AdminRecipesIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/stock': typeof AdminStockIndexRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/admin/categories/': typeof AdminCategoriesIndexRoute
   '/admin/locations/': typeof AdminLocationsIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
+  '/admin/recipes/': typeof AdminRecipesIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/stock/': typeof AdminStockIndexRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/admin/categories/'
     | '/admin/locations/'
     | '/admin/products/'
+    | '/admin/recipes/'
     | '/admin/settings/'
     | '/admin/stock/'
   fileRoutesByTo: FileRoutesByTo
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/locations'
     | '/admin/products'
+    | '/admin/recipes'
     | '/admin/settings'
     | '/admin/stock'
   id:
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/admin/categories/'
     | '/admin/locations/'
     | '/admin/products/'
+    | '/admin/recipes/'
     | '/admin/settings/'
     | '/admin/stock/'
   fileRoutesById: FileRoutesById
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   AdminCategoriesIndexRoute: typeof AdminCategoriesIndexRoute
   AdminLocationsIndexRoute: typeof AdminLocationsIndexRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
+  AdminRecipesIndexRoute: typeof AdminRecipesIndexRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminStockIndexRoute: typeof AdminStockIndexRoute
 }
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/recipes/': {
+      id: '/admin/recipes/'
+      path: '/admin/recipes'
+      fullPath: '/admin/recipes/'
+      preLoaderRoute: typeof AdminRecipesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/products/': {
       id: '/admin/products/'
       path: '/admin/products'
@@ -286,6 +306,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCategoriesIndexRoute: AdminCategoriesIndexRoute,
   AdminLocationsIndexRoute: AdminLocationsIndexRoute,
   AdminProductsIndexRoute: AdminProductsIndexRoute,
+  AdminRecipesIndexRoute: AdminRecipesIndexRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminStockIndexRoute: AdminStockIndexRoute,
 }

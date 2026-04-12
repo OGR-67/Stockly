@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTableList, faBox, faTag, faLocationDot, faGear, faLayerGroup } from '@fortawesome/free-solid-svg-icons'
+import { faTableList, faBox, faTag, faLocationDot, faGear, faLayerGroup, faUtensils } from '@fortawesome/free-solid-svg-icons'
 import { RootPage } from '../../components/layout/RootPage'
 import { Modal } from '../../components/Modal'
 
@@ -13,6 +13,7 @@ const ENTITIES = [
     { label: 'Articles', icon: faBox, to: '/admin/products' },
     { label: 'Catégories', icon: faTag, to: '/admin/categories' },
     { label: 'Emplacements', icon: faLocationDot, to: '/admin/locations' },
+    { label: 'Recettes', icon: faUtensils, to: '/admin/recipes' },
 ] as const
 
 function RouteComponent() {
