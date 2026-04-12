@@ -12,7 +12,6 @@ import {
   useRecipeMutations,
 } from "../../../hooks/queries/useRecipes";
 import { useCrudList } from "../../../hooks/useCrudList";
-import type { Recipe } from "../../../models/RecipeModel";
 
 export const Route = createFileRoute("/admin/recipes/")({
   component: RouteComponent,
@@ -28,7 +27,7 @@ function RouteComponent() {
 
   async function handleSave(data: {
     name: string;
-    type: "Main" | "Dessert";
+    type: "main" | "dessert";
     freeText?: string;
     productIds: string[];
   }) {

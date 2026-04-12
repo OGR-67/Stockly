@@ -8,7 +8,7 @@ namespace Stockly.Infrastructure.Repositories;
 public class RecipeRepository(StocklyDbContext context) : IRecipeRepository
 {
     public async Task<IEnumerable<Recipe>> GetAllAsync() =>
-        await context.Recipes.AsNoTracking().ToListAsync();
+        await WithProducts().AsNoTracking().ToListAsync();
 
     public async Task<Recipe?> GetByIdWithProductsAsync(Guid id) =>
         await WithProducts().FirstOrDefaultAsync(r => r.Id == id);
