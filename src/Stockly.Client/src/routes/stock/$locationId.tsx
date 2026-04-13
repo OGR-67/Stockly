@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { haptic } from "ios-haptics";
 
 import { StackPage } from "../../components/layout/StackPage";
 import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
@@ -84,6 +85,7 @@ function RouteComponent() {
   }, [groups, expandedGroups]);
 
   function toggleGroup(key: string) {
+    haptic()
     setExpandedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -111,6 +113,7 @@ function RouteComponent() {
     if (newLocationId) {
       await move.mutateAsync({ id: unit.id, targetLocationId: newLocationId });
     }
+    haptic.confirm();
     setOpenModalUnit(null);
   }
 
@@ -121,6 +124,7 @@ function RouteComponent() {
       id: unit.id,
       targetLocationId: destinationLocationId,
     });
+    haptic.confirm();
     setTransferModalUnit(null);
   }
 
@@ -128,7 +132,10 @@ function RouteComponent() {
     onEdit: setEditModalUnit,
     onOpen: setOpenModalUnit,
     onTransfer: setTransferModalUnit,
-    onConsume: (id: string) => consume.mutate(id),
+    onConsume: (id: string) => {
+      haptic()
+      consume.mutate(id)
+    },
   };
 
   const { expired, soon } = countExpiryStatus(stockUnits);
@@ -221,12 +228,14 @@ function RouteComponent() {
               id: editModalUnit.id,
               data: { expirationDate, freeText },
             });
+            haptic.confirm();
           }}
           onOpen={(unit) => {
             setEditModalUnit(null);
             setOpenModalUnit(unit);
           }}
           onConsume={(unit) => {
+            haptic();
             consume.mutate(unit.id);
           }}
           onTransfer={async (destinationLocationId) => {
@@ -234,6 +243,7 @@ function RouteComponent() {
               id: editModalUnit.id,
               targetLocationId: destinationLocationId,
             });
+            haptic.confirm();
           }}
           onClose={() => setEditModalUnit(null)}
         />

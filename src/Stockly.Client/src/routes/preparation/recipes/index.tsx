@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
@@ -59,6 +60,7 @@ function RouteComponent() {
         } else if (editTarget) {
             await update.mutateAsync({ id: editTarget.id, ...data })
         }
+        haptic.confirm()
         setEditTarget(null)
     }
 
@@ -108,7 +110,10 @@ function RouteComponent() {
                     return (
                         <Card
                             key={recipe.id}
-                            onClick={() => navigate({ to: '/preparation/recipes/$recipeId', params: { recipeId: recipe.id } })}
+                            onClick={() => {
+                              haptic.confirm();
+                              navigate({ to: '/preparation/recipes/$recipeId', params: { recipeId: recipe.id } });
+                            }}
                         >
                             <div className="flex-1 min-w-0">
                                 <p className="font-medium text-bark truncate">{recipe.name}</p>

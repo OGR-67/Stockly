@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUtensils, faClipboardList } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 import { RootPage } from '../../components/layout/RootPage'
 import { Card } from '../../components/Card'
 
@@ -14,7 +15,12 @@ function RouteComponent() {
     return (
         <RootPage title="Préparation">
             <div className="flex flex-col gap-3">
-                <Card onClick={() => navigate({ to: '/preparation/recipes' })}>
+                <Card
+                  onClick={() => {
+                    haptic.confirm();
+                    navigate({ to: '/preparation/recipes' });
+                  }}
+                >
                     <div className="text-2xl text-earth">
                         <FontAwesomeIcon icon={faUtensils} />
                     </div>

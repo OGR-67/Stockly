@@ -2,10 +2,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
 import { useToast } from '../hooks/useToast'
 import { useWindowEvent } from '../hooks/useWindowEvent'
+import { haptic } from 'ios-haptics'
 
 export function ErrorToast() {
     const { toast, showToast } = useToast(4000)
-    useWindowEvent<string>('api-error', showToast)
+    useWindowEvent<string>('api-error', (message) => {
+        haptic.error()
+        showToast(message)
+    })
 
     if (!toast) return null
 

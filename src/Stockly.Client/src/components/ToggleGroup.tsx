@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { haptic } from "ios-haptics";
 
 interface ToggleOption<T> {
   value: T;
@@ -44,7 +45,10 @@ export function ToggleGroup<T extends string>({
         <button
           key={option.value}
           type="button"
-          onClick={() => onChange(option.value)}
+          onClick={() => {
+            haptic()
+            onChange(option.value)
+          }}
           className={`${baseClasses[variant]} ${
             value === option.value
               ? selectedClasses[variant]

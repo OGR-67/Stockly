@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { haptic } from "ios-haptics";
 import { StackPage } from "../../../components/layout/StackPage";
 import { LoadingSpinner } from "../../../components/layout/LoadingSpinner";
 import { SearchInput } from "../../../components/SearchInput";
@@ -38,6 +39,7 @@ function RouteComponent() {
     } else {
       await update.mutateAsync({ id: editTarget!.id, ...data });
     }
+    haptic.confirm();
     setEditTarget(null);
   }
 

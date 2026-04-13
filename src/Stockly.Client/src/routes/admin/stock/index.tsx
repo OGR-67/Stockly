@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { haptic } from "ios-haptics";
 import {
   faChevronDown,
   faChevronRight,
@@ -82,6 +83,7 @@ function RouteComponent() {
   }, [filtered]);
 
   function toggleLocation(id: string) {
+    haptic()
     setExpandedLocations((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -98,6 +100,7 @@ function RouteComponent() {
     await open.mutateAsync(unit.id);
     if (newLocationId)
       await move.mutateAsync({ id: unit.id, targetLocationId: newLocationId });
+    haptic.confirm();
     setOpenModalUnit(null);
   }
 
@@ -108,6 +111,7 @@ function RouteComponent() {
       id: unit.id,
       targetLocationId: destinationLocationId,
     });
+    haptic.confirm();
     setTransferModalUnit(null);
   }
 
@@ -178,7 +182,10 @@ function RouteComponent() {
                       onEdit={setEditModalUnit}
                       onOpen={setOpenModalUnit}
                       onTransfer={setTransferModalUnit}
-                      onConsume={(id) => consume.mutate(id)}
+                      onConsume={(id) => {
+                        haptic()
+                        consume.mutate(id)
+                      }}
                     />
                   ))}
                 </div>
@@ -216,12 +223,14 @@ function RouteComponent() {
               id: editModalUnit.id,
               data: { expirationDate, freeText },
             });
+            haptic.confirm();
           }}
           onOpen={(unit) => {
             setEditModalUnit(null);
             setOpenModalUnit(unit);
           }}
           onConsume={(unit) => {
+            haptic();
             consume.mutate(unit.id);
           }}
           onTransfer={async (destinationLocationId) => {
@@ -229,6 +238,7 @@ function RouteComponent() {
               id: editModalUnit.id,
               targetLocationId: destinationLocationId,
             });
+            haptic.confirm();
           }}
           onClose={() => setEditModalUnit(null)}
         />

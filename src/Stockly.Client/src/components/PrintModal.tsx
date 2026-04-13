@@ -16,6 +16,7 @@ import {
   usePrint,
 } from "../hooks/queries/usePrinter";
 import { useSettings } from "../hooks/useSettings";
+import { haptic } from "ios-haptics";
 import type { ProductDetail } from "../models/ProductModel";
 
 interface PrintModalProps {
@@ -98,6 +99,7 @@ export function PrintModal({
       for (let i = 0; i < copies; i++) {
         await print.mutateAsync({ printerId: selectedPrinterId, formatId: selectedFormatId, imageBase64 });
       }
+      haptic.confirm();
       onClose();
     } catch (e) {
       window.dispatchEvent(new CustomEvent('api-error', { detail: (e as Error).message }));

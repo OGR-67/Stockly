@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faTrash, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 import { StackPage } from '../../../components/layout/StackPage'
 import { FieldWrapper } from '../../../components/FieldWrapper'
 import { Toggle } from '../../../components/Toggle'
@@ -46,12 +47,14 @@ function RouteComponent() {
 
     async function handleRegister(d: DiscoveredPrinter) {
         await register.mutateAsync({ name: d.name, queueName: d.queueName, port: d.port, isDefault: printers.length === 0 })
+        haptic.confirm()
         setDiscovered(prev => prev.filter(p => p.queueName !== d.queueName))
     }
 
     async function handleManualRegister() {
         if (!manualName.trim() || !manualQueueName.trim()) return
         await register.mutateAsync({ name: manualName.trim(), queueName: manualQueueName.trim(), port: parseInt(manualPort) || 631, isDefault: printers.length === 0 })
+        haptic.confirm()
         setManualName('')
         setManualQueueName('')
         setManualPort('631')
