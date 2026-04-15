@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Barcode from "react-barcode";
-import { toJpeg } from "html-to-image";
+import { toPng } from "html-to-image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPrint } from "@fortawesome/free-solid-svg-icons";
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,7 +93,7 @@ export function PrintModal({
     if (!selectedPrinterId || !selectedFormatId || !barcode || !previewRef.current) return;
     setPrinting(true);
     try {
-      const dataUrl = await toJpeg(previewRef.current, { pixelRatio: 3, backgroundColor: '#ffffff', quality: 0.95 });
+      const dataUrl = await toPng(previewRef.current, { pixelRatio: 6, backgroundColor: '#ffffff' });
       const imageBase64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
       for (let i = 0; i < copies; i++) {
         await print.mutateAsync({ printerId: selectedPrinterId, formatId: selectedFormatId, imageBase64 });
