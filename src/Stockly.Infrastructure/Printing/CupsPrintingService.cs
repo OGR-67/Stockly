@@ -12,7 +12,7 @@ namespace Stockly.Infrastructure.Printing;
 
 public class CupsPrintingService(IPrinterRepository printerRepository, ILogger<CupsPrintingService> logger) : IPrintingService
 {
-    private const double PrintDpi = 360;
+    private const double PrintDpi = 180;
 
     public async Task PrintAsync(Guid printerId, Guid formatId, PrintRequest job)
     {
@@ -43,7 +43,7 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ILogger<C
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "lp",
-                Arguments = $"-d \"{printer.QueueName}\" -o Resolution=360dpi \"{tmpFile}\"",
+                Arguments = $"-d \"{printer.QueueName}\" \"{tmpFile}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,

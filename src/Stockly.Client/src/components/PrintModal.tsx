@@ -110,20 +110,16 @@ export function PrintModal({
     <Modal title="Imprimer l'étiquette" onClose={onClose}>
       <div className="flex flex-col gap-4">
         {/* Label preview */}
-        <div style={{ width: displayWidth, height: displayHeight, position: 'relative', margin: '0 auto', flexShrink: 0 }}>
+        <div style={{ width: displayWidth, height: displayHeight, position: 'relative', margin: '0 auto', flexShrink: 0, overflow: 'hidden' }} className="border-2 border-stone-300 rounded">
+          <div style={{ transformOrigin: 'top left', transform: `scale(${scale})`, position: 'absolute', top: 0, left: 0 }}>
           <div
             ref={previewRef}
             style={{
               width: previewWidth,
               minHeight: previewHeight,
-              transformOrigin: 'top left',
-              transform: `scale(${scale})`,
-              position: 'absolute',
-              top: 0,
-              left: 0,
               padding: Math.max(8, previewWidth * 0.05),
             }}
-            className="bg-white border-2 border-stone-300 rounded flex flex-col items-center justify-between"
+            className="bg-white flex flex-col items-center justify-between"
           >
           <p className="font-bold text-center text-sm leading-tight w-full truncate">
             {product.name}
@@ -151,6 +147,7 @@ export function PrintModal({
               {note}
             </p>
           )}
+          </div>
           </div>
         </div>
 
