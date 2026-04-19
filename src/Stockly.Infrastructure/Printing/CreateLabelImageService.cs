@@ -25,49 +25,40 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
-        // Always use the narrow dimension as tape width regardless of storage order
-        int targetW = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
+        // Landscape: long dimension = label length (width), short = tape width (height)
+        int targetW = (int)Math.Round((double)Math.Max(widthMm, heightMm) * LabelDpi / 25.4);
+        int targetH = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
 
-        float padding = Math.Max(6f, targetW * 0.04f);
-        float spacing = Math.Max(3f, targetW * 0.02f);
-        float contentWidth = targetW - padding * 2;
+        float padding = Math.Max(6f, targetH * 0.04f);
+        float spacing = Math.Max(3f, targetH * 0.025f);
+        float contentW = targetW - padding * 2;
 
-        // Pre-generate barcode matrix to compute exact rendered size
+        // Compute text block height to determine remaining space for barcode
+        float textH = NamePt * PtScale * 1.2f;
+        if (expiryDate.HasValue) textH += spacing + DatePt * PtScale * 1.2f;
+        if (!string.IsNullOrEmpty(note)) textH += spacing + NotePt * PtScale * 1.2f;
+
+        float barcodeAvailableH = Math.Max(20f, targetH - padding * 2 - textH - spacing);
+
+        // Pre-generate barcode to compute x scale (bar widths must be integer multiples)
         BitMatrix? bitMatrix = null;
-        int barcodeScale = 1;
+        int xScale = 1;
         int barcodeRenderedW = 0;
-        int barcodeRenderedH = 0;
 
         try
         {
             var writer = new BarcodeWriter<BitMatrix> { Format = BarcodeFormat.CODE_128 };
             bitMatrix = writer.Encode(barcodeValue);
-            barcodeScale = Math.Max(1, (int)(contentWidth / bitMatrix.Width));
-            barcodeRenderedW = bitMatrix.Width * barcodeScale;
-            barcodeRenderedH = bitMatrix.Height * barcodeScale;
+            xScale = Math.Max(1, (int)(contentW / bitMatrix.Width));
+            barcodeRenderedW = bitMatrix.Width * xScale;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to generate barcode for value {BarcodeValue}", barcodeValue);
         }
 
-        // Compute exact content height (fonts scaled to 180 DPI)
-        float nameLineH = NamePt * PtScale * 1.2f;
-        float dateLineH = expiryDate.HasValue ? DatePt * PtScale * 1.2f : 0f;
-        float noteLineH = !string.IsNullOrEmpty(note) ? NotePt * PtScale * 1.2f : 0f;
-
-        float textH = nameLineH
-            + (dateLineH > 0 ? spacing + dateLineH : 0f);
-
-        float totalContentH = textH
-            + (barcodeRenderedH > 0 ? spacing + barcodeRenderedH : 0f)
-            + (noteLineH > 0 ? spacing + noteLineH : 0f);
-
-        int targetH = (int)Math.Ceiling(padding + totalContentH + padding);
-
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
         var fontFamily = GetFontFamily();
-
         float barcodeY = 0;
 
         image.Mutate(ctx =>
@@ -83,19 +74,20 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
                 cy += spacing;
             }
 
-            barcodeY = cy;
-
             if (!string.IsNullOrEmpty(note))
             {
-                float noteY = cy + barcodeRenderedH + spacing;
-                _ = DrawTextCentered(ctx, note, noteY, targetW, NotePt, bold: false, fontFamily);
+                cy = DrawTextCentered(ctx, note, cy, targetW, NotePt, bold: false, fontFamily);
+                cy += spacing;
             }
+
+            barcodeY = cy;
         });
 
         if (bitMatrix is not null)
         {
-            int barcodeOffsetX = (int)(padding + (contentWidth - barcodeRenderedW) / 2);
-            DrawBarcodeMatrix(image, bitMatrix, barcodeScale, barcodeOffsetX, (int)barcodeY);
+            int barcodeOffsetX = (int)(padding + (contentW - barcodeRenderedW) / 2);
+            // X scale is integer (preserves bar widths), Y is stretched to fill available height
+            DrawBarcodeMatrix(image, bitMatrix, xScale, barcodeAvailableH, barcodeOffsetX, (int)barcodeY);
         }
 
         image.Metadata.HorizontalResolution = LabelDpi;
@@ -117,7 +109,6 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
     private static float DrawTextCentered(IImageProcessingContext ctx, string text, float y, float canvasWidth, float fontSize, bool bold, FontFamily fontFamily)
     {
-        // Scale pt→px at LabelDpi so physical size matches typographic point size
         float scaledPx = fontSize * PtScale;
         var font = fontFamily.CreateFont(scaledPx, bold ? FontStyle.Bold : FontStyle.Regular);
         var size = TextMeasurer.MeasureSize(text, new TextOptions(font));
@@ -127,19 +118,23 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return y + scaledPx * 1.2f;
     }
 
-    private static void DrawBarcodeMatrix(Image<Rgba32> image, BitMatrix bitMatrix, int scale, int offsetX, int offsetY)
+    private static void DrawBarcodeMatrix(Image<Rgba32> image, BitMatrix bitMatrix, int xScale, float availableH, int offsetX, int offsetY)
     {
+        // Bar widths use integer xScale to stay crisp; height is stretched to fill available space
+        float yScale = availableH / bitMatrix.Height;
+
         for (int by = 0; by < bitMatrix.Height; by++)
         {
             for (int bx = 0; bx < bitMatrix.Width; bx++)
             {
                 if (!bitMatrix[bx, by]) continue;
 
-                int px = offsetX + bx * scale;
-                int py = offsetY + by * scale;
+                int px = offsetX + bx * xScale;
+                int py = offsetY + (int)(by * yScale);
+                int cellH = Math.Max(1, (int)((by + 1) * yScale) - (int)(by * yScale));
 
-                for (int dy = 0; dy < scale && py + dy < image.Height; dy++)
-                    for (int dx = 0; dx < scale && px + dx < image.Width; dx++)
+                for (int dy = 0; dy < cellH && py + dy < image.Height; dy++)
+                    for (int dx = 0; dx < xScale && px + dx < image.Width; dx++)
                         image[px + dx, py + dy] = Black;
             }
         }
