@@ -51,8 +51,13 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         var semanticLines = BuildSemanticLines(productName, expiryDate, note);
         var physicalLines = WrapAllLines(semanticLines, fontFamily, availableW);
 
-        float textTotalH = physicalLines.Sum(l => l.scaledPx * 1.2f) + LineSpacing * (physicalLines.Count - 1);
+        float textTotalH = physicalLines.Count > 0
+            ? physicalLines.Sum(l => l.scaledPx * 1.2f) + LineSpacing * (physicalLines.Count - 1)
+            : 0;
         int targetH = (int)Math.Ceiling(padding + textTotalH + padding + qrRenderedSize + padding);
+
+        logger.LogInformation("Label: {W}x{H}px, lines={Lines}, qr={Qr}px, text={Text}px",
+            targetW, targetH, physicalLines.Count, qrRenderedSize, textTotalH);
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
 
