@@ -23,12 +23,12 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
     private const float DatePt = 10f;
     private const float NotePt = 8f;
 
+    // Portrait layout: width = tape width (fixed), height = content (variable)
+    // Text rows at top, QR code below — matches Brother PT-P750W native raster orientation
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
-        int targetH = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
-
-        float padding = Math.Max(6f, targetH * 0.04f);
-        float qrAvailableSize = targetH; // ZXing includes quiet zone in BitMatrix
+        int targetW = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
+        float padding = Math.Max(6f, targetW * 0.04f);
 
         BitMatrix? qrMatrix = null;
         int qrScale = 1;
@@ -38,7 +38,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         {
             var writer = new BarcodeWriter<BitMatrix> { Format = BarcodeFormat.QR_CODE };
             qrMatrix = writer.Encode(barcodeValue);
-            qrScale = Math.Max(1, (int)(qrAvailableSize / qrMatrix.Width));
+            qrScale = Math.Max(1, (int)((targetW - 2 * padding) / qrMatrix.Width));
             qrRenderedSize = qrMatrix.Width * qrScale;
         }
         catch (Exception ex)
@@ -47,27 +47,21 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         }
 
         var fontFamily = GetFontFamily();
-
-        // Measure all text lines to size the canvas to content
-        // CreateFont takes typographic points; ImageSharp applies DPI scaling at render time
         var lines = BuildLines(productName, expiryDate, note);
-        float textColumnW = lines.Max(l =>
-        {
-            var font = fontFamily.CreateFont(l.pt, l.pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
-            return TextMeasurer.MeasureSize(l.text, new TextOptions(font) { Dpi = LabelDpi }).Width;
-        });
 
-        float textColumnX = qrRenderedSize + padding;
-        int targetW = (int)Math.Ceiling(textColumnX + textColumnW + padding);
+        const float lineSpacing = 4f;
+        float textTotalH = lines.Sum(l => l.pt * PtScale * 1.2f) + lineSpacing * (lines.Count - 1);
+
+        int targetH = (int)Math.Ceiling(padding + textTotalH + padding + qrRenderedSize + padding);
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
 
-        image.Mutate(ctx => DrawTextColumn(ctx, lines, textColumnX, textColumnW, targetH));
+        image.Mutate(ctx => DrawTextRows(ctx, lines, targetW, padding, fontFamily));
 
         if (qrMatrix is not null)
         {
-            int qrOffsetX = 0;
-            int qrOffsetY = (targetH - qrRenderedSize) / 2;
+            int qrOffsetX = (targetW - qrRenderedSize) / 2;
+            int qrOffsetY = (int)(padding + textTotalH + padding);
             DrawQrMatrix(image, qrMatrix, qrScale, qrOffsetX, qrOffsetY);
         }
 
@@ -88,19 +82,17 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return lines;
     }
 
-    private static void DrawTextColumn(IImageProcessingContext ctx, List<(string text, float pt)> lines, float x, float colW, float colH)
+    private static void DrawTextRows(IImageProcessingContext ctx, List<(string text, float pt)> lines, float imgW, float padding, FontFamily fontFamily)
     {
-        var fontFamily = GetFontFamily();
         const float lineSpacing = 4f;
-        float totalH = lines.Sum(l => l.pt * PtScale * 1.2f) + lineSpacing * (lines.Count - 1);
-        float cy = (colH - totalH) / 2f;
+        float cy = padding;
 
         foreach (var (text, pt) in lines)
         {
-            float scaledPx = pt * PtScale; // pixel height at LabelDpi, used for layout spacing
+            float scaledPx = pt * PtScale;
             var font = fontFamily.CreateFont(pt, pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
             var size = TextMeasurer.MeasureSize(text, new TextOptions(font) { Dpi = LabelDpi });
-            float cx = x + Math.Max(0f, (colW - size.Width) / 2f);
+            float cx = Math.Max(padding, (imgW - size.Width) / 2f);
 
             ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(cx, cy));
             cy += scaledPx * 1.2f + lineSpacing;
