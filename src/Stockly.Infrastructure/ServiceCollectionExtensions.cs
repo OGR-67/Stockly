@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPrinterRepository, PrinterRepository>();
         services.AddScoped<IRecipeRepository, RecipeRepository>();
 
+        services.AddScoped<ICreateLabelImageService, CreateLabelImageService>();
         services.AddScoped<IPrintingService, CupsPrintingService>();
         services.AddScoped<IPrinterDiscoveryService, CupsDiscoveryService>();
 

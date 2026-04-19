@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Barcode from "react-barcode";
-import { toPng } from "html-to-image";
+import { haptic } from "ios-haptics";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPrint } from "@fortawesome/free-solid-svg-icons";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,7 +13,7 @@ import { queryKeys } from "../hooks/queries/queryKeys";
 import {
   usePrinters,
   usePrinterFormats,
-  usePrint,
+  usePrintLabel,
 } from "../hooks/queries/usePrinter";
 import { useSettings } from "../hooks/useSettings";
 import type { ProductDetail } from "../models/ProductModel";
@@ -51,7 +51,7 @@ export function PrintModal({
 
   const { data: printers = [] } = usePrinters();
   const { data: formats = [] } = usePrinterFormats(selectedPrinterId);
-  const print = usePrint();
+  const printLabel = usePrintLabel();
 
   // Auto-generate barcode if product has none
   useEffect(() => {
@@ -90,14 +90,20 @@ export function PrintModal({
   const displayHeight = previewHeight * scale;
 
   async function handlePrint() {
-    if (!selectedPrinterId || !selectedFormatId || !barcode || !previewRef.current) return;
+    if (!selectedPrinterId || !selectedFormatId || !barcode) return;
     setPrinting(true);
     try {
-      const dataUrl = await toPng(previewRef.current, { pixelRatio: 6, backgroundColor: '#ffffff' });
-      const imageBase64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
       for (let i = 0; i < copies; i++) {
-        await print.mutateAsync({ printerId: selectedPrinterId, formatId: selectedFormatId, imageBase64 });
+        await printLabel.mutateAsync({
+          printerId: selectedPrinterId,
+          formatId: selectedFormatId,
+          productName: product.name,
+          expiryDate: expirationDate,
+          note,
+          barcodeValue: barcode,
+        });
       }
+      haptic.confirm();
       onClose();
     } catch (e) {
       window.dispatchEvent(new CustomEvent('api-error', { detail: (e as Error).message }));

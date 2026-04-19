@@ -9,4 +9,5 @@ public interface IPrinterService
     Task<PrinterResponse> RegisterAsync(RegisterPrinterRequest request);
     Task DeleteAsync(Guid id);
     Task PrintAsync(Guid printerId, PrintRequest request);
+    Task PrintLabelAsync(Guid printerId, PrintLabelRequest request);
 }

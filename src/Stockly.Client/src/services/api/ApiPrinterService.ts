@@ -26,4 +26,8 @@ export class ApiPrinterService implements IPrinterService {
     async print(printerId: string, formatId: string, imageBase64: string): Promise<void> {
         return apiClient.post(`/api/printers/${printerId}/print`, { formatId, imageBase64 })
     }
+
+    async printLabel(printerId: string, formatId: string, productName: string, expiryDate: Date | null, note: string, barcodeValue: string): Promise<void> {
+        return apiClient.post(`/api/printers/${printerId}/print-label`, { formatId, productName, expiryDate, note, barcodeValue })
+    }
 }

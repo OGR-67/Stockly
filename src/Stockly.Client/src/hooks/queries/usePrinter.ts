@@ -23,6 +23,13 @@ export function usePrint() {
     })
 }
 
+export function usePrintLabel() {
+    return useMutation({
+        mutationFn: ({ printerId, formatId, productName, expiryDate, note, barcodeValue }: { printerId: string; formatId: string; productName: string; expiryDate: Date | null; note: string; barcodeValue: string }) =>
+            printerService.printLabel(printerId, formatId, productName, expiryDate, note, barcodeValue),
+    })
+}
+
 export function usePrinterMutations() {
     const qc = useQueryClient()
     const invalidate = () => qc.invalidateQueries({ queryKey: ['printers'] })

@@ -42,4 +42,11 @@ public class PrintersController(IPrinterService service, IPrinterDiscoveryServic
         await service.PrintAsync(id, request);
         return NoContent();
     }
+
+    [HttpPost("{id:guid}/print-label")]
+    public async Task<IActionResult> PrintLabel(Guid id, [FromBody] PrintLabelRequest request)
+    {
+        await service.PrintLabelAsync(id, request);
+        return NoContent();
+    }
 }

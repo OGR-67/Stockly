@@ -10,7 +10,7 @@ using Stockly.Application.Interfaces.Services;
 
 namespace Stockly.Infrastructure.Printing;
 
-public class CupsPrintingService(IPrinterRepository printerRepository, ILogger<CupsPrintingService> logger) : IPrintingService
+public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLabelImageService labelImageService, ILogger<CupsPrintingService> logger) : IPrintingService
 {
     private const double PrintDpi = 180;
 
@@ -32,18 +32,48 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ILogger<C
         var resizedBytes = ResizeToFormat(imageBytes, (int)format.WidthMm, (int)format.HeightMm);
         logger.LogDebug("Image resized: {ByteLength} bytes", resizedBytes.Length);
 
+        await SendToCups(printer.QueueName, resizedBytes);
+    }
+
+    public async Task PrintLabelAsync(Guid printerId, PrintLabelRequest request)
+    {
+        logger.LogInformation("Starting label print job for printer {PrinterId}", printerId);
+
+        var printer = await printerRepository.GetByIdAsync(printerId)
+            ?? throw new NotFoundException($"Printer {printerId} not found.");
+
+        var format = printer.Formats.FirstOrDefault(f => f.Id == request.FormatId)
+            ?? throw new NotFoundException($"Format {request.FormatId} not found.");
+
+        logger.LogDebug("Found printer {PrinterName} with queue {QueueName}", printer.Name, printer.QueueName);
+
+        var imageBytes = labelImageService.GenerateLabel(
+            request.ProductName,
+            request.ExpiryDate,
+            request.Note,
+            request.BarcodeValue,
+            format.WidthMm,
+            format.HeightMm
+        );
+        logger.LogDebug("Label image generated: {ByteLength} bytes", imageBytes.Length);
+
+        await SendToCups(printer.QueueName, imageBytes);
+    }
+
+    private async Task SendToCups(string queueName, byte[] imageBytes)
+    {
         var tmpFile = Path.GetTempFileName() + ".png";
-        await File.WriteAllBytesAsync(tmpFile, resizedBytes);
+        await File.WriteAllBytesAsync(tmpFile, imageBytes);
         logger.LogDebug("Temporary file written to {TmpFile}", tmpFile);
 
         try
         {
-            logger.LogInformation("Sending print job to CUPS queue {QueueName} with file {TmpFile}", printer.QueueName, tmpFile);
+            logger.LogInformation("Sending print job to CUPS queue {QueueName} with file {TmpFile}", queueName, tmpFile);
 
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "lp",
-                Arguments = $"-d \"{printer.QueueName}\" \"{tmpFile}\"",
+                Arguments = $"-d \"{queueName}\" \"{tmpFile}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -58,7 +88,7 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ILogger<C
                 throw new InvalidOperationException($"Print job failed: {error}");
             }
 
-            logger.LogInformation("Print job sent successfully to {QueueName}", printer.QueueName);
+            logger.LogInformation("Print job sent successfully to {QueueName}", queueName);
         }
         finally
         {

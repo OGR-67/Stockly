@@ -61,6 +61,11 @@ public class PrinterService(IPrinterRepository repository, IPrintingService prin
         await printingService.PrintAsync(printerId, request.FormatId, request);
     }
 
+    public async Task PrintLabelAsync(Guid printerId, PrintLabelRequest request)
+    {
+        await printingService.PrintLabelAsync(printerId, request);
+    }
+
     private static PrinterResponse ToResponse(Printer p) =>
         new(p.Id, p.Name, p.QueueName, p.Port, p.IsDefault);
 }
