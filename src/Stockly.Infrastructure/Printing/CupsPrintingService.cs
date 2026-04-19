@@ -72,28 +72,37 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
         double wPts = imgInfo.Width * 72.0 / PrintDpi;
         double hPts = imgInfo.Height * 72.0 / PrintDpi;
         var mediaArg = FormattableString.Invariant($"Custom.{wPts:F0}x{hPts:F0}");
-        logger.LogDebug("Label media: {MediaArg} ({W}x{H} pts)", mediaArg, wPts, hPts);
+        logger.LogInformation("lp args: -d {Queue} -o ppi=180 -o PageSize={Media} -o fit-to-page=false {File} (image {W}x{H}px)",
+            queueName, mediaArg, tmpFile, imgInfo.Width, imgInfo.Height);
 
         try
         {
-            logger.LogInformation("Sending print job to CUPS queue {QueueName} with file {TmpFile}", queueName, tmpFile);
-
-            var process = Process.Start(new ProcessStartInfo
+            var psi = new ProcessStartInfo
             {
                 FileName = "lp",
-                Arguments = $"-d \"{queueName}\" -o ppi=180 -o PageSize={mediaArg} -o fit-to-page=false \"{tmpFile}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-            }) ?? throw new InvalidOperationException("Failed to start lp process.");
+            };
+            psi.ArgumentList.Add("-d"); psi.ArgumentList.Add(queueName);
+            psi.ArgumentList.Add("-o"); psi.ArgumentList.Add("ppi=180");
+            psi.ArgumentList.Add("-o"); psi.ArgumentList.Add($"PageSize={mediaArg}");
+            psi.ArgumentList.Add("-o"); psi.ArgumentList.Add("fit-to-page=false");
+            psi.ArgumentList.Add(tmpFile);
+
+            var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start lp process.");
 
             await process.WaitForExitAsync();
 
+            var stdout = await process.StandardOutput.ReadToEndAsync();
+            var stderr = await process.StandardError.ReadToEndAsync();
+            if (!string.IsNullOrWhiteSpace(stdout)) logger.LogInformation("lp stdout: {Stdout}", stdout.Trim());
+            if (!string.IsNullOrWhiteSpace(stderr)) logger.LogWarning("lp stderr: {Stderr}", stderr.Trim());
+
             if (process.ExitCode != 0)
             {
-                var error = await process.StandardError.ReadToEndAsync();
-                logger.LogError("Print job failed with exit code {ExitCode}: {Error}", process.ExitCode, error);
-                throw new InvalidOperationException($"Print job failed: {error}");
+                logger.LogError("Print job failed with exit code {ExitCode}", process.ExitCode);
+                throw new InvalidOperationException($"Print job failed: {stderr}");
             }
 
             logger.LogInformation("Print job sent successfully to {QueueName}", queueName);
