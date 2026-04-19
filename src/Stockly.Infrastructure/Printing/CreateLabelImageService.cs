@@ -15,7 +15,7 @@ namespace Stockly.Infrastructure.Printing;
 public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : ICreateLabelImageService
 {
     private const int LabelDpi = 180;
-    private const float PtScale = LabelDpi / 72f; // points → pixels at 180 DPI
+    private const float PtScale = LabelDpi / 72f;
     private static readonly Rgba32 Black = new(0, 0, 0);
     private static readonly DrawingOptions NoAntialias = new() { GraphicsOptions = { Antialias = false } };
 
@@ -25,69 +25,41 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
-        // Landscape: long dimension = label length (width), short = tape width (height)
         int targetW = (int)Math.Round((double)Math.Max(widthMm, heightMm) * LabelDpi / 25.4);
         int targetH = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
 
         float padding = Math.Max(6f, targetH * 0.04f);
-        float spacing = Math.Max(3f, targetH * 0.025f);
-        float contentW = targetW - padding * 2;
+        float qrAvailableSize = targetH - padding * 2;
 
-        // Compute text block height to determine remaining space for barcode
-        float textH = NamePt * PtScale * 1.2f;
-        if (expiryDate.HasValue) textH += spacing + DatePt * PtScale * 1.2f;
-        if (!string.IsNullOrEmpty(note)) textH += spacing + NotePt * PtScale * 1.2f;
-
-        float barcodeAvailableH = Math.Max(20f, targetH - padding * 2 - textH - spacing);
-
-        // Pre-generate barcode to compute x scale (bar widths must be integer multiples)
-        BitMatrix? bitMatrix = null;
-        int xScale = 1;
-        int barcodeRenderedW = 0;
+        BitMatrix? qrMatrix = null;
+        int qrScale = 1;
+        int qrRenderedSize = 0;
 
         try
         {
-            var writer = new BarcodeWriter<BitMatrix> { Format = BarcodeFormat.CODE_128 };
-            bitMatrix = writer.Encode(barcodeValue);
-            xScale = Math.Max(1, (int)(contentW / bitMatrix.Width));
-            barcodeRenderedW = bitMatrix.Width * xScale;
+            var writer = new BarcodeWriter<BitMatrix> { Format = BarcodeFormat.QR_CODE };
+            qrMatrix = writer.Encode(barcodeValue);
+            qrScale = Math.Max(1, (int)(qrAvailableSize / qrMatrix.Width));
+            qrRenderedSize = qrMatrix.Width * qrScale;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to generate barcode for value {BarcodeValue}", barcodeValue);
+            logger.LogError(ex, "Failed to generate QR code for value {BarcodeValue}", barcodeValue);
         }
+
+        float textColumnX = padding + qrAvailableSize + padding;
+        float textColumnW = targetW - textColumnX - padding;
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
         var fontFamily = GetFontFamily();
-        float barcodeY = 0;
 
-        image.Mutate(ctx =>
+        image.Mutate(ctx => DrawTextColumn(ctx, productName, expiryDate, note, textColumnX, textColumnW, targetH, fontFamily));
+
+        if (qrMatrix is not null)
         {
-            float cy = padding;
-
-            cy = DrawTextCentered(ctx, productName, cy, targetW, NamePt, bold: true, fontFamily);
-            cy += spacing;
-
-            if (expiryDate.HasValue)
-            {
-                cy = DrawTextCentered(ctx, $"DLC: {expiryDate:dd/MM/yyyy}", cy, targetW, DatePt, bold: false, fontFamily);
-                cy += spacing;
-            }
-
-            if (!string.IsNullOrEmpty(note))
-            {
-                cy = DrawTextCentered(ctx, note, cy, targetW, NotePt, bold: false, fontFamily);
-                cy += spacing;
-            }
-
-            barcodeY = cy;
-        });
-
-        if (bitMatrix is not null)
-        {
-            int barcodeOffsetX = (int)(padding + (contentW - barcodeRenderedW) / 2);
-            // X scale is integer (preserves bar widths), Y is stretched to fill available height
-            DrawBarcodeMatrix(image, bitMatrix, xScale, barcodeAvailableH, barcodeOffsetX, (int)barcodeY);
+            int qrOffsetX = (int)padding;
+            int qrOffsetY = (int)(padding + (qrAvailableSize - qrRenderedSize) / 2);
+            DrawQrMatrix(image, qrMatrix, qrScale, qrOffsetX, qrOffsetY);
         }
 
         image.Metadata.HorizontalResolution = LabelDpi;
@@ -99,6 +71,28 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return ms.ToArray();
     }
 
+    private static void DrawTextColumn(IImageProcessingContext ctx, string productName, DateTime? expiryDate, string note, float x, float colW, float colH, FontFamily fontFamily)
+    {
+        var lines = new List<(string text, float pt)> { (productName, NamePt) };
+        if (expiryDate.HasValue) lines.Add(($"DLC: {expiryDate:dd/MM/yyyy}", DatePt));
+        if (!string.IsNullOrEmpty(note)) lines.Add((note, NotePt));
+
+        const float lineSpacing = 4f;
+        float totalH = lines.Sum(l => l.pt * PtScale * 1.2f) + lineSpacing * (lines.Count - 1);
+        float cy = (colH - totalH) / 2f;
+
+        foreach (var (text, pt) in lines)
+        {
+            float scaledPx = pt * PtScale;
+            var font = fontFamily.CreateFont(scaledPx, pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
+            var size = TextMeasurer.MeasureSize(text, new TextOptions(font));
+            float cx = x + Math.Max(0f, (colW - size.Width) / 2f);
+
+            ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(cx, cy));
+            cy += scaledPx * 1.2f + lineSpacing;
+        }
+    }
+
     private static FontFamily GetFontFamily()
     {
         string[] candidates = ["DejaVu Sans", "Liberation Sans", "Arial", "FreeSans", "Helvetica"];
@@ -107,34 +101,19 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return match is not null ? SystemFonts.Get(match) : SystemFonts.Families.First();
     }
 
-    private static float DrawTextCentered(IImageProcessingContext ctx, string text, float y, float canvasWidth, float fontSize, bool bold, FontFamily fontFamily)
+    private static void DrawQrMatrix(Image<Rgba32> image, BitMatrix bitMatrix, int scale, int offsetX, int offsetY)
     {
-        float scaledPx = fontSize * PtScale;
-        var font = fontFamily.CreateFont(scaledPx, bold ? FontStyle.Bold : FontStyle.Regular);
-        var size = TextMeasurer.MeasureSize(text, new TextOptions(font));
-        float x = Math.Max(4f, (canvasWidth - size.Width) / 2f);
-
-        ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(x, y));
-        return y + scaledPx * 1.2f;
-    }
-
-    private static void DrawBarcodeMatrix(Image<Rgba32> image, BitMatrix bitMatrix, int xScale, float availableH, int offsetX, int offsetY)
-    {
-        // Bar widths use integer xScale to stay crisp; height is stretched to fill available space
-        float yScale = availableH / bitMatrix.Height;
-
         for (int by = 0; by < bitMatrix.Height; by++)
         {
             for (int bx = 0; bx < bitMatrix.Width; bx++)
             {
                 if (!bitMatrix[bx, by]) continue;
 
-                int px = offsetX + bx * xScale;
-                int py = offsetY + (int)(by * yScale);
-                int cellH = Math.Max(1, (int)((by + 1) * yScale) - (int)(by * yScale));
+                int px = offsetX + bx * scale;
+                int py = offsetY + by * scale;
 
-                for (int dy = 0; dy < cellH && py + dy < image.Height; dy++)
-                    for (int dx = 0; dx < xScale && px + dx < image.Width; dx++)
+                for (int dy = 0; dy < scale && py + dy < image.Height; dy++)
+                    for (int dx = 0; dx < scale && px + dx < image.Width; dx++)
                         image[px + dx, py + dy] = Black;
             }
         }
