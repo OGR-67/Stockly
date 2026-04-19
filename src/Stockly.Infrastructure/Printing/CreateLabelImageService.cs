@@ -49,11 +49,12 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         var fontFamily = GetFontFamily();
 
         // Measure all text lines to size the canvas to content
+        // CreateFont takes typographic points; ImageSharp applies DPI scaling at render time
         var lines = BuildLines(productName, expiryDate, note);
         float textColumnW = lines.Max(l =>
         {
-            var font = fontFamily.CreateFont(l.pt * PtScale, l.pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
-            return TextMeasurer.MeasureSize(l.text, new TextOptions(font)).Width;
+            var font = fontFamily.CreateFont(l.pt, l.pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
+            return TextMeasurer.MeasureSize(l.text, new TextOptions(font) { Dpi = LabelDpi }).Width;
         });
 
         float textColumnX = qrRenderedSize + padding;
@@ -96,9 +97,9 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
         foreach (var (text, pt) in lines)
         {
-            float scaledPx = pt * PtScale;
-            var font = fontFamily.CreateFont(scaledPx, pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
-            var size = TextMeasurer.MeasureSize(text, new TextOptions(font));
+            float scaledPx = pt * PtScale; // pixel height at LabelDpi, used for layout spacing
+            var font = fontFamily.CreateFont(pt, pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
+            var size = TextMeasurer.MeasureSize(text, new TextOptions(font) { Dpi = LabelDpi });
             float cx = x + Math.Max(0f, (colW - size.Width) / 2f);
 
             ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(cx, cy));

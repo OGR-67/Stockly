@@ -66,12 +66,13 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
         await File.WriteAllBytesAsync(tmpFile, imageBytes);
         logger.LogDebug("Temporary file written to {TmpFile}", tmpFile);
 
-        // Tell CUPS the exact label dimensions so it doesn't scale to the queue default
+        // Brother PT-P750W expects portrait media (W=tape width, H=label length).
+        // Our image is landscape (Width=label length, Height=tape width), so we swap.
         var imgInfo = Image.Identify(new MemoryStream(imageBytes));
-        double wPts = imgInfo.Width * 72.0 / PrintDpi;
-        double hPts = imgInfo.Height * 72.0 / PrintDpi;
-        var mediaArg = FormattableString.Invariant($"Custom.{wPts:F0}x{hPts:F0}");
-        logger.LogDebug("Label physical size: {W}x{H} pts ({MediaArg})", wPts, hPts, mediaArg);
+        double tapePts = imgInfo.Height * 72.0 / PrintDpi;  // tape width → portrait W
+        double labelPts = imgInfo.Width * 72.0 / PrintDpi;   // label length → portrait H
+        var mediaArg = FormattableString.Invariant($"Custom.{tapePts:F0}x{labelPts:F0}");
+        logger.LogDebug("Label media: {MediaArg} (tape={TapeW}pts label={LabelH}pts)", mediaArg, tapePts, labelPts);
 
         try
         {
@@ -80,7 +81,7 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "lp",
-                Arguments = $"-d \"{queueName}\" -o ppi=180 -o fit-to-page=false \"{tmpFile}\"",
+                Arguments = $"-d \"{queueName}\" -o ppi=180 -o media={mediaArg} -o fit-to-page=false \"{tmpFile}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
