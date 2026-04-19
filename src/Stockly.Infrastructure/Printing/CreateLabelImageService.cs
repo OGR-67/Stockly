@@ -28,7 +28,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         int targetH = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
 
         float padding = Math.Max(6f, targetH * 0.04f);
-        float qrAvailableSize = targetH - padding * 2;
+        float qrAvailableSize = targetH; // ZXing includes quiet zone in BitMatrix
 
         BitMatrix? qrMatrix = null;
         int qrScale = 1;
@@ -56,7 +56,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
             return TextMeasurer.MeasureSize(l.text, new TextOptions(font)).Width;
         });
 
-        float textColumnX = padding + qrRenderedSize + padding;
+        float textColumnX = qrRenderedSize + padding;
         int targetW = (int)Math.Ceiling(textColumnX + textColumnW + padding);
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
@@ -65,8 +65,8 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
         if (qrMatrix is not null)
         {
-            int qrOffsetX = (int)padding;
-            int qrOffsetY = (int)(padding + (qrAvailableSize - qrRenderedSize) / 2);
+            int qrOffsetX = 0;
+            int qrOffsetY = (targetH - qrRenderedSize) / 2;
             DrawQrMatrix(image, qrMatrix, qrScale, qrOffsetX, qrOffsetY);
         }
 
