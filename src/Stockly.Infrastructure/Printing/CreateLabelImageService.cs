@@ -8,6 +8,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.Fonts;
+using System.Text;
 using Stockly.Application.Interfaces.Services;
 
 namespace Stockly.Infrastructure.Printing;
@@ -19,16 +20,16 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
     private static readonly Rgba32 Black = new(0, 0, 0);
     private static readonly DrawingOptions NoAntialias = new() { GraphicsOptions = { Antialias = false } };
 
-    private const float NamePt = 14f;
-    private const float DatePt = 10f;
-    private const float NotePt = 8f;
+    private const float NamePt = 18f;
+    private const float DatePt = 12f;
+    private const float NotePt = 10f;
+    private const float LineSpacing = 3f;
 
-    // Portrait layout: width = tape width (fixed), height = content (variable)
-    // Text rows at top, QR code below — matches Brother PT-P750W native raster orientation
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
         int targetW = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
         float padding = Math.Max(6f, targetW * 0.04f);
+        float availableW = targetW - 2 * padding;
 
         BitMatrix? qrMatrix = null;
         int qrScale = 1;
@@ -38,7 +39,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         {
             var writer = new BarcodeWriter<BitMatrix> { Format = BarcodeFormat.QR_CODE };
             qrMatrix = writer.Encode(barcodeValue);
-            qrScale = Math.Max(1, (int)((targetW - 2 * padding) / qrMatrix.Width));
+            qrScale = Math.Max(1, (int)(availableW / qrMatrix.Width));
             qrRenderedSize = qrMatrix.Width * qrScale;
         }
         catch (Exception ex)
@@ -47,16 +48,15 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         }
 
         var fontFamily = GetFontFamily();
-        var lines = BuildLines(productName, expiryDate, note);
+        var semanticLines = BuildSemanticLines(productName, expiryDate, note);
+        var physicalLines = WrapAllLines(semanticLines, fontFamily, availableW);
 
-        const float lineSpacing = 4f;
-        float textTotalH = lines.Sum(l => l.pt * PtScale * 1.2f) + lineSpacing * (lines.Count - 1);
-
+        float textTotalH = physicalLines.Sum(l => l.scaledPx * 1.2f) + LineSpacing * (physicalLines.Count - 1);
         int targetH = (int)Math.Ceiling(padding + textTotalH + padding + qrRenderedSize + padding);
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
 
-        image.Mutate(ctx => DrawTextRows(ctx, lines, targetW, padding, fontFamily));
+        DrawTextRows(image, physicalLines, targetW, padding, availableW);
 
         if (qrMatrix is not null)
         {
@@ -74,7 +74,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return ms.ToArray();
     }
 
-    private static List<(string text, float pt)> BuildLines(string productName, DateTime? expiryDate, string note)
+    private static List<(string text, float pt)> BuildSemanticLines(string productName, DateTime? expiryDate, string note)
     {
         var lines = new List<(string text, float pt)> { (productName, NamePt) };
         if (expiryDate.HasValue) lines.Add(($"DLC: {expiryDate:dd/MM/yyyy}", DatePt));
@@ -82,21 +82,60 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return lines;
     }
 
-    private static void DrawTextRows(IImageProcessingContext ctx, List<(string text, float pt)> lines, float imgW, float padding, FontFamily fontFamily)
+    // Word-wraps each semantic line into physical lines that fit within availableW
+    private static List<(string text, float scaledPx, Font font)> WrapAllLines(
+        List<(string text, float pt)> semanticLines, FontFamily fontFamily, float availableW)
     {
-        const float lineSpacing = 4f;
-        float cy = padding;
-
-        foreach (var (text, pt) in lines)
+        var result = new List<(string, float, Font)>();
+        foreach (var (text, pt) in semanticLines)
         {
-            float scaledPx = pt * PtScale;
             var font = fontFamily.CreateFont(pt, pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
-            var size = TextMeasurer.MeasureSize(text, new TextOptions(font) { Dpi = LabelDpi });
-            float cx = Math.Max(padding, (imgW - size.Width) / 2f);
-
-            ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(cx, cy));
-            cy += scaledPx * 1.2f + lineSpacing;
+            float scaledPx = pt * PtScale;
+            foreach (var wrapped in WordWrap(text, font, availableW))
+                result.Add((wrapped, scaledPx, font));
         }
+        return result;
+    }
+
+    private static IEnumerable<string> WordWrap(string text, Font font, float maxWidth)
+    {
+        var words = text.Split(' ');
+        var current = new StringBuilder();
+
+        foreach (var word in words)
+        {
+            var candidate = current.Length == 0 ? word : current + " " + word;
+            var w = TextMeasurer.MeasureSize(candidate, new TextOptions(font) { Dpi = LabelDpi }).Width;
+
+            if (w > maxWidth && current.Length > 0)
+            {
+                yield return current.ToString();
+                current.Clear();
+                current.Append(word);
+            }
+            else
+            {
+                if (current.Length > 0) current.Append(' ');
+                current.Append(word);
+            }
+        }
+
+        if (current.Length > 0) yield return current.ToString();
+    }
+
+    private static void DrawTextRows(Image<Rgba32> image, List<(string text, float scaledPx, Font font)> lines, float imgW, float padding, float availableW)
+    {
+        float cy = padding;
+        image.Mutate(ctx =>
+        {
+            foreach (var (text, scaledPx, font) in lines)
+            {
+                var size = TextMeasurer.MeasureSize(text, new TextOptions(font) { Dpi = LabelDpi });
+                float cx = padding + Math.Max(0f, (availableW - size.Width) / 2f);
+                ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(cx, cy));
+                cy += scaledPx * 1.2f + LineSpacing;
+            }
+        });
     }
 
     private static FontFamily GetFontFamily()
