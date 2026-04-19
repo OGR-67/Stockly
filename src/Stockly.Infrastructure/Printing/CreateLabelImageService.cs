@@ -25,7 +25,6 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
-        int targetW = (int)Math.Round((double)Math.Max(widthMm, heightMm) * LabelDpi / 25.4);
         int targetH = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
 
         float padding = Math.Max(6f, targetH * 0.04f);
@@ -47,13 +46,22 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
             logger.LogError(ex, "Failed to generate QR code for value {BarcodeValue}", barcodeValue);
         }
 
-        float textColumnX = padding + qrAvailableSize + padding;
-        float textColumnW = targetW - textColumnX - padding;
-
-        using var image = new Image<Rgba32>(targetW, targetH, Color.White);
         var fontFamily = GetFontFamily();
 
-        image.Mutate(ctx => DrawTextColumn(ctx, productName, expiryDate, note, textColumnX, textColumnW, targetH, fontFamily));
+        // Measure all text lines to size the canvas to content
+        var lines = BuildLines(productName, expiryDate, note);
+        float textColumnW = lines.Max(l =>
+        {
+            var font = fontFamily.CreateFont(l.pt * PtScale, l.pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
+            return TextMeasurer.MeasureSize(l.text, new TextOptions(font)).Width;
+        });
+
+        float textColumnX = padding + qrRenderedSize + padding;
+        int targetW = (int)Math.Ceiling(textColumnX + textColumnW + padding);
+
+        using var image = new Image<Rgba32>(targetW, targetH, Color.White);
+
+        image.Mutate(ctx => DrawTextColumn(ctx, lines, textColumnX, textColumnW, targetH));
 
         if (qrMatrix is not null)
         {
@@ -71,12 +79,17 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return ms.ToArray();
     }
 
-    private static void DrawTextColumn(IImageProcessingContext ctx, string productName, DateTime? expiryDate, string note, float x, float colW, float colH, FontFamily fontFamily)
+    private static List<(string text, float pt)> BuildLines(string productName, DateTime? expiryDate, string note)
     {
         var lines = new List<(string text, float pt)> { (productName, NamePt) };
         if (expiryDate.HasValue) lines.Add(($"DLC: {expiryDate:dd/MM/yyyy}", DatePt));
         if (!string.IsNullOrEmpty(note)) lines.Add((note, NotePt));
+        return lines;
+    }
 
+    private static void DrawTextColumn(IImageProcessingContext ctx, List<(string text, float pt)> lines, float x, float colW, float colH)
+    {
+        var fontFamily = GetFontFamily();
         const float lineSpacing = 4f;
         float totalH = lines.Sum(l => l.pt * PtScale * 1.2f) + lineSpacing * (lines.Count - 1);
         float cy = (colH - totalH) / 2f;
