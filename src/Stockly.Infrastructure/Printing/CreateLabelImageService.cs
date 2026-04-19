@@ -20,19 +20,30 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
-        // Always portrait: short dimension = tape width, long dimension = label length
-        decimal tapeWidth = Math.Min(widthMm, heightMm);
-        decimal labelLength = Math.Max(widthMm, heightMm);
-
-        int targetW = (int)Math.Round((double)tapeWidth * LabelDpi / 25.4);
-        int targetH = (int)Math.Round((double)labelLength * LabelDpi / 25.4);
+        // widthMm = label length (feeds through printer), heightMm = tape width (print head width)
+        int targetW = (int)Math.Round((double)widthMm * LabelDpi / 25.4);
+        int targetH = (int)Math.Round((double)heightMm * LabelDpi / 25.4);
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
 
-        float padding = Math.Max(4, targetW * 0.05f);
-        float contentWidth = targetW - padding * 2;
-        float barcodeHeight = targetH * 0.55f;
+        float padding = Math.Max(4, targetH * 0.05f);
+        float availableH = targetH - padding * 2;
+        float spacing = Math.Max(2, targetH * 0.025f);
         var fontFamily = GetFontFamily();
+
+        const float namePt = 12f;
+        const float datePt = 9f;
+        const float notePt = 7f;
+
+        float nameH = namePt * 1.25f;
+        float dateH = expiryDate.HasValue ? datePt * 1.25f : 0;
+        float noteH = !string.IsNullOrEmpty(note) ? notePt * 1.25f : 0;
+
+        float textH = nameH
+            + (dateH > 0 ? spacing + dateH : 0)
+            + (noteH > 0 ? spacing + noteH : 0);
+
+        float barcodeH = Math.Max(30, availableH - textH - spacing);
 
         float barcodeY = 0;
 
@@ -40,27 +51,26 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         {
             float cy = padding;
 
-            cy = DrawText(ctx, productName, padding, cy, contentWidth, 11, bold: true, fontFamily);
-            cy += padding * 0.3f;
+            cy = DrawTextCentered(ctx, productName, cy, targetW, namePt, bold: true, fontFamily);
+            cy += spacing;
 
             if (expiryDate.HasValue)
             {
-                cy = DrawText(ctx, $"DLC: {expiryDate:dd/MM/yyyy}", padding, cy, contentWidth, 8, bold: false, fontFamily);
-                cy += padding * 0.3f;
+                cy = DrawTextCentered(ctx, $"DLC: {expiryDate:dd/MM/yyyy}", cy, targetW, datePt, bold: false, fontFamily);
+                cy += spacing;
             }
 
-            barcodeY = cy + padding;
+            barcodeY = cy;
 
             if (!string.IsNullOrEmpty(note))
             {
-                float noteY = barcodeY + barcodeHeight + padding * 0.5f;
-                _ = DrawText(ctx, note, padding, noteY, contentWidth, 7, bold: false, fontFamily);
+                float noteY = cy + barcodeH + spacing;
+                _ = DrawTextCentered(ctx, note, noteY, targetW, notePt, bold: false, fontFamily);
             }
         });
 
-        DrawBarcode(image, barcodeValue, padding, barcodeY, contentWidth, barcodeHeight);
+        DrawBarcode(image, barcodeValue, padding, barcodeY, targetW - padding * 2, barcodeH);
 
-        // DPI metadata so CUPS doesn't scale the image
         image.Metadata.HorizontalResolution = LabelDpi;
         image.Metadata.VerticalResolution = LabelDpi;
         image.Metadata.ResolutionUnits = PixelResolutionUnit.PixelsPerInch;
@@ -78,49 +88,14 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return match is not null ? SystemFonts.Get(match) : SystemFonts.Families.First();
     }
 
-    private static float DrawText(IImageProcessingContext ctx, string text, float x, float y, float maxWidth, float fontSize, bool bold, FontFamily fontFamily)
+    private static float DrawTextCentered(IImageProcessingContext ctx, string text, float y, float canvasWidth, float fontSize, bool bold, FontFamily fontFamily)
     {
         var font = fontFamily.CreateFont(fontSize, bold ? FontStyle.Bold : FontStyle.Regular);
-        var lines = WrapText(text, font, maxWidth);
-        float lineHeight = fontSize * 1.2f;
-        float currentY = y;
+        var size = TextMeasurer.MeasureSize(text, new TextOptions(font));
+        float x = Math.Max(4, (canvasWidth - size.Width) / 2);
 
-        foreach (var line in lines)
-        {
-            ctx.DrawText(NoAntialias, line, font, Color.Black, new PointF(x, currentY));
-            currentY += lineHeight;
-        }
-
-        return currentY;
-    }
-
-    private static List<string> WrapText(string text, Font font, float maxWidth)
-    {
-        var words = text.Split(' ');
-        var lines = new List<string>();
-        var currentLine = "";
-
-        foreach (var word in words)
-        {
-            var testLine = string.IsNullOrEmpty(currentLine) ? word : currentLine + " " + word;
-            var size = TextMeasurer.MeasureSize(testLine, new TextOptions(font));
-
-            if (size.Width <= maxWidth)
-            {
-                currentLine = testLine;
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(currentLine))
-                    lines.Add(currentLine);
-                currentLine = word;
-            }
-        }
-
-        if (!string.IsNullOrEmpty(currentLine))
-            lines.Add(currentLine);
-
-        return lines.Count > 0 ? lines : [text];
+        ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(x, y));
+        return y + fontSize * 1.25f;
     }
 
     private void DrawBarcode(Image<Rgba32> image, string barcodeValue, float x, float y, float width, float height)
