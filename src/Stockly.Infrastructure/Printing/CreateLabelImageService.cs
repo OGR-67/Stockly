@@ -15,35 +15,58 @@ namespace Stockly.Infrastructure.Printing;
 public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : ICreateLabelImageService
 {
     private const int LabelDpi = 180;
+    private const float PtScale = LabelDpi / 72f; // points → pixels at 180 DPI
     private static readonly Rgba32 Black = new(0, 0, 0);
     private static readonly DrawingOptions NoAntialias = new() { GraphicsOptions = { Antialias = false } };
 
+    private const float NamePt = 14f;
+    private const float DatePt = 10f;
+    private const float NotePt = 8f;
+
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
-        // widthMm = label length (feeds through printer), heightMm = tape width (print head width)
-        int targetW = (int)Math.Round((double)widthMm * LabelDpi / 25.4);
-        int targetH = (int)Math.Round((double)heightMm * LabelDpi / 25.4);
+        // Always use the narrow dimension as tape width regardless of storage order
+        int targetW = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
+
+        float padding = Math.Max(6f, targetW * 0.04f);
+        float spacing = Math.Max(3f, targetW * 0.02f);
+        float contentWidth = targetW - padding * 2;
+
+        // Pre-generate barcode matrix to compute exact rendered size
+        BitMatrix? bitMatrix = null;
+        int barcodeScale = 1;
+        int barcodeRenderedW = 0;
+        int barcodeRenderedH = 0;
+
+        try
+        {
+            var writer = new BarcodeWriter<BitMatrix> { Format = BarcodeFormat.CODE_128 };
+            bitMatrix = writer.Encode(barcodeValue);
+            barcodeScale = Math.Max(1, (int)(contentWidth / bitMatrix.Width));
+            barcodeRenderedW = bitMatrix.Width * barcodeScale;
+            barcodeRenderedH = bitMatrix.Height * barcodeScale;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to generate barcode for value {BarcodeValue}", barcodeValue);
+        }
+
+        // Compute exact content height (fonts scaled to 180 DPI)
+        float nameLineH = NamePt * PtScale * 1.2f;
+        float dateLineH = expiryDate.HasValue ? DatePt * PtScale * 1.2f : 0f;
+        float noteLineH = !string.IsNullOrEmpty(note) ? NotePt * PtScale * 1.2f : 0f;
+
+        float textH = nameLineH
+            + (dateLineH > 0 ? spacing + dateLineH : 0f);
+
+        float totalContentH = textH
+            + (barcodeRenderedH > 0 ? spacing + barcodeRenderedH : 0f)
+            + (noteLineH > 0 ? spacing + noteLineH : 0f);
+
+        int targetH = (int)Math.Ceiling(padding + totalContentH + padding);
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
-
-        float padding = Math.Max(4, targetH * 0.05f);
-        float availableH = targetH - padding * 2;
-        float spacing = Math.Max(2, targetH * 0.025f);
         var fontFamily = GetFontFamily();
-
-        const float namePt = 12f;
-        const float datePt = 9f;
-        const float notePt = 7f;
-
-        float nameH = namePt * 1.25f;
-        float dateH = expiryDate.HasValue ? datePt * 1.25f : 0;
-        float noteH = !string.IsNullOrEmpty(note) ? notePt * 1.25f : 0;
-
-        float textH = nameH
-            + (dateH > 0 ? spacing + dateH : 0)
-            + (noteH > 0 ? spacing + noteH : 0);
-
-        float barcodeH = Math.Max(30, availableH - textH - spacing);
 
         float barcodeY = 0;
 
@@ -51,12 +74,12 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         {
             float cy = padding;
 
-            cy = DrawTextCentered(ctx, productName, cy, targetW, namePt, bold: true, fontFamily);
+            cy = DrawTextCentered(ctx, productName, cy, targetW, NamePt, bold: true, fontFamily);
             cy += spacing;
 
             if (expiryDate.HasValue)
             {
-                cy = DrawTextCentered(ctx, $"DLC: {expiryDate:dd/MM/yyyy}", cy, targetW, datePt, bold: false, fontFamily);
+                cy = DrawTextCentered(ctx, $"DLC: {expiryDate:dd/MM/yyyy}", cy, targetW, DatePt, bold: false, fontFamily);
                 cy += spacing;
             }
 
@@ -64,12 +87,16 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
             if (!string.IsNullOrEmpty(note))
             {
-                float noteY = cy + barcodeH + spacing;
-                _ = DrawTextCentered(ctx, note, noteY, targetW, notePt, bold: false, fontFamily);
+                float noteY = cy + barcodeRenderedH + spacing;
+                _ = DrawTextCentered(ctx, note, noteY, targetW, NotePt, bold: false, fontFamily);
             }
         });
 
-        DrawBarcode(image, barcodeValue, padding, barcodeY, targetW - padding * 2, barcodeH);
+        if (bitMatrix is not null)
+        {
+            int barcodeOffsetX = (int)(padding + (contentWidth - barcodeRenderedW) / 2);
+            DrawBarcodeMatrix(image, bitMatrix, barcodeScale, barcodeOffsetX, (int)barcodeY);
+        }
 
         image.Metadata.HorizontalResolution = LabelDpi;
         image.Metadata.VerticalResolution = LabelDpi;
@@ -90,47 +117,31 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
     private static float DrawTextCentered(IImageProcessingContext ctx, string text, float y, float canvasWidth, float fontSize, bool bold, FontFamily fontFamily)
     {
-        var font = fontFamily.CreateFont(fontSize, bold ? FontStyle.Bold : FontStyle.Regular);
+        // Scale pt→px at LabelDpi so physical size matches typographic point size
+        float scaledPx = fontSize * PtScale;
+        var font = fontFamily.CreateFont(scaledPx, bold ? FontStyle.Bold : FontStyle.Regular);
         var size = TextMeasurer.MeasureSize(text, new TextOptions(font));
-        float x = Math.Max(4, (canvasWidth - size.Width) / 2);
+        float x = Math.Max(4f, (canvasWidth - size.Width) / 2f);
 
         ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(x, y));
-        return y + fontSize * 1.25f;
+        return y + scaledPx * 1.2f;
     }
 
-    private void DrawBarcode(Image<Rgba32> image, string barcodeValue, float x, float y, float width, float height)
+    private static void DrawBarcodeMatrix(Image<Rgba32> image, BitMatrix bitMatrix, int scale, int offsetX, int offsetY)
     {
-        try
+        for (int by = 0; by < bitMatrix.Height; by++)
         {
-            var writer = new BarcodeWriter<BitMatrix> { Format = BarcodeFormat.CODE_128 };
-            var bitMatrix = writer.Encode(barcodeValue);
-
-            float scaleX = width / bitMatrix.Width;
-            float scaleY = height / bitMatrix.Height;
-            int scale = Math.Max(1, (int)Math.Min(scaleX, scaleY));
-
-            int barcodeW = bitMatrix.Width * scale;
-            int offsetX = (int)(x + (width - barcodeW) / 2);
-            int offsetY = (int)y;
-
-            for (int by = 0; by < bitMatrix.Height; by++)
+            for (int bx = 0; bx < bitMatrix.Width; bx++)
             {
-                for (int bx = 0; bx < bitMatrix.Width; bx++)
-                {
-                    if (!bitMatrix[bx, by]) continue;
+                if (!bitMatrix[bx, by]) continue;
 
-                    int px = offsetX + bx * scale;
-                    int py = offsetY + by * scale;
+                int px = offsetX + bx * scale;
+                int py = offsetY + by * scale;
 
-                    for (int dy = 0; dy < scale && py + dy < image.Height; dy++)
-                        for (int dx = 0; dx < scale && px + dx < image.Width; dx++)
-                            image[px + dx, py + dy] = Black;
-                }
+                for (int dy = 0; dy < scale && py + dy < image.Height; dy++)
+                    for (int dx = 0; dx < scale && px + dx < image.Width; dx++)
+                        image[px + dx, py + dy] = Black;
             }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to generate barcode for value {BarcodeValue}", barcodeValue);
         }
     }
 }
