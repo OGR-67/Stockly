@@ -68,9 +68,8 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
 
         // Tell CUPS the exact label dimensions so it doesn't scale to the queue default
         var imgInfo = Image.Identify(new MemoryStream(imageBytes));
-        double dpi = imgInfo.Metadata.HorizontalResolution > 0 ? imgInfo.Metadata.HorizontalResolution : 180;
-        double wPts = imgInfo.Width * 72.0 / dpi;
-        double hPts = imgInfo.Height * 72.0 / dpi;
+        double wPts = imgInfo.Width * 72.0 / PrintDpi;
+        double hPts = imgInfo.Height * 72.0 / PrintDpi;
         var mediaArg = FormattableString.Invariant($"Custom.{wPts:F0}x{hPts:F0}");
         logger.LogDebug("Label physical size: {W}x{H} pts ({MediaArg})", wPts, hPts, mediaArg);
 
