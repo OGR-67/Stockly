@@ -4,7 +4,7 @@ COPY . .
 RUN dotnet publish src/Stockly.API/Stockly.API.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
-RUN apt-get update && apt-get install -y libpq5 krb5-locales cups-client && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libpq5 krb5-locales cups-client libssl3 libstdc++6 libharfbuzz0b && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app .
 ENTRYPOINT ["dotnet", "Stockly.API.dll"]
