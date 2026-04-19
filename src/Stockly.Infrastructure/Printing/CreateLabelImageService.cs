@@ -61,7 +61,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
 
-        DrawTextRows(image, physicalLines, targetW, padding, availableW);
+        image.Mutate(ctx => DrawTextRows(ctx, physicalLines, targetW, padding, availableW));
 
         if (qrMatrix is not null)
         {
@@ -128,19 +128,16 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         if (current.Length > 0) yield return current.ToString();
     }
 
-    private static void DrawTextRows(Image<Rgba32> image, List<(string text, float scaledPx, Font font)> lines, float imgW, float padding, float availableW)
+    private static void DrawTextRows(IImageProcessingContext ctx, List<(string text, float scaledPx, Font font)> lines, float imgW, float padding, float availableW)
     {
         float cy = padding;
-        image.Mutate(ctx =>
+        foreach (var (text, scaledPx, font) in lines)
         {
-            foreach (var (text, scaledPx, font) in lines)
-            {
-                var size = TextMeasurer.MeasureSize(text, new TextOptions(font) { Dpi = LabelDpi });
-                float cx = padding + Math.Max(0f, (availableW - size.Width) / 2f);
-                ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(cx, cy));
-                cy += scaledPx * 1.2f + LineSpacing;
-            }
-        });
+            var size = TextMeasurer.MeasureSize(text, new TextOptions(font) { Dpi = LabelDpi });
+            float cx = padding + Math.Max(0f, (availableW - size.Width) / 2f);
+            ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(cx, cy));
+            cy += scaledPx * 1.2f + LineSpacing;
+        }
     }
 
     private static FontFamily GetFontFamily()
