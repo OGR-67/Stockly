@@ -2,6 +2,7 @@ using ZXing;
 using ZXing.Common;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Metadata;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -15,17 +16,22 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 {
     private const int LabelDpi = 180;
     private static readonly Rgba32 Black = new(0, 0, 0);
+    private static readonly DrawingOptions NoAntialias = new() { GraphicsOptions = { Antialias = false } };
 
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
-        int targetW = (int)Math.Round((double)widthMm * LabelDpi / 25.4);
-        int targetH = (int)Math.Round((double)heightMm * LabelDpi / 25.4);
+        // Always portrait: short dimension = tape width, long dimension = label length
+        decimal tapeWidth = Math.Min(widthMm, heightMm);
+        decimal labelLength = Math.Max(widthMm, heightMm);
+
+        int targetW = (int)Math.Round((double)tapeWidth * LabelDpi / 25.4);
+        int targetH = (int)Math.Round((double)labelLength * LabelDpi / 25.4);
 
         using var image = new Image<Rgba32>(targetW, targetH, Color.White);
 
         float padding = Math.Max(4, targetW * 0.05f);
         float contentWidth = targetW - padding * 2;
-        float barcodeHeight = targetH * 0.45f;
+        float barcodeHeight = targetH * 0.55f;
         var fontFamily = GetFontFamily();
 
         float barcodeY = 0;
@@ -54,6 +60,11 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
         DrawBarcode(image, barcodeValue, padding, barcodeY, contentWidth, barcodeHeight);
 
+        // DPI metadata so CUPS doesn't scale the image
+        image.Metadata.HorizontalResolution = LabelDpi;
+        image.Metadata.VerticalResolution = LabelDpi;
+        image.Metadata.ResolutionUnits = PixelResolutionUnit.PixelsPerInch;
+
         using var ms = new MemoryStream();
         image.SaveAsPng(ms, new PngEncoder { CompressionLevel = PngCompressionLevel.BestCompression });
         return ms.ToArray();
@@ -76,7 +87,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
         foreach (var line in lines)
         {
-            ctx.DrawText(line, font, Color.Black, new PointF(x, currentY));
+            ctx.DrawText(NoAntialias, line, font, Color.Black, new PointF(x, currentY));
             currentY += lineHeight;
         }
 
@@ -121,7 +132,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
             float scaleX = width / bitMatrix.Width;
             float scaleY = height / bitMatrix.Height;
-            int scale = Math.Max(1, (int)(Math.Min(scaleX, scaleY) * 95 / 100));
+            int scale = Math.Max(1, (int)Math.Min(scaleX, scaleY));
 
             int barcodeW = bitMatrix.Width * scale;
             int offsetX = (int)(x + (width - barcodeW) / 2);

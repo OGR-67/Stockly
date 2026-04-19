@@ -73,7 +73,7 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "lp",
-                Arguments = $"-d \"{queueName}\" \"{tmpFile}\"",
+                Arguments = $"-d \"{queueName}\" -o ppi=180 \"{tmpFile}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
