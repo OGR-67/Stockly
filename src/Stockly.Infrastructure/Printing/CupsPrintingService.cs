@@ -64,6 +64,7 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
     {
         var tmpFile = Path.GetTempFileName() + ".png";
         await File.WriteAllBytesAsync(tmpFile, imageBytes);
+        await File.WriteAllBytesAsync("/tmp/label_debug.png", imageBytes);
         logger.LogDebug("Temporary file written to {TmpFile}", tmpFile);
 
         // Image is portrait (Width=tape width, Height=label length) — matches Brother native orientation

@@ -70,6 +70,12 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
             DrawQrMatrix(image, qrMatrix, qrScale, qrOffsetX, qrOffsetY);
         }
 
+        int darkPixels = 0;
+        for (int y = 0; y < image.Height; y++)
+            for (int x = 0; x < image.Width; x++)
+                if (image[x, y].R < 200) darkPixels++;
+        logger.LogInformation("Dark pixels: {Count} / {Total}", darkPixels, image.Width * image.Height);
+
         image.Metadata.HorizontalResolution = LabelDpi;
         image.Metadata.VerticalResolution = LabelDpi;
         image.Metadata.ResolutionUnits = PixelResolutionUnit.PixelsPerInch;
