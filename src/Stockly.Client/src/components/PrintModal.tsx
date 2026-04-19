@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import Barcode from "react-barcode";
-import { haptic } from "ios-haptics";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPrint } from "@fortawesome/free-solid-svg-icons";
 import { useQueryClient } from "@tanstack/react-query";
@@ -103,7 +102,6 @@ export function PrintModal({
           barcodeValue: barcode,
         });
       }
-      haptic.confirm();
       onClose();
     } catch (e) {
       window.dispatchEvent(new CustomEvent('api-error', { detail: (e as Error).message }));
