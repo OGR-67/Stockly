@@ -68,17 +68,19 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
         // Brother driver expects portrait orientation (width=tape width).
         // Rotate landscape label 90° CW so the driver sees 24mm wide × Nmm tall portrait,
         // then add top/bottom margin rows for tape leading/trailing edge clearance.
-        const int TapeMarginPx = 35; // ~5mm at 180 DPI
         byte[] printBytes;
-        using (var img = Image.Load(imageBytes))
-        {
-            img.Mutate(x => x.Rotate(RotateMode.Rotate90));
-            using var padded = new Image<Rgba32>(img.Width, img.Height + 2 * TapeMarginPx, Color.White);
-            padded.Mutate(ctx => ctx.DrawImage(img, new Point(0, TapeMarginPx), 1f));
-            using var rotMs = new MemoryStream();
-            padded.SaveAsPng(rotMs, new PngEncoder { CompressionLevel = PngCompressionLevel.BestCompression });
-            printBytes = rotMs.ToArray();
-        }
+
+        const int TapeMarginPx = 35; // ~5mm at 180 DPI
+
+        using var img = Image.Load(imageBytes);
+        img.Mutate(x => x.Rotate(RotateMode.Rotate90));
+
+        using var padded = new Image<Rgba32>(img.Width, img.Height + 2 * TapeMarginPx, Color.White);
+        padded.Mutate(ctx => ctx.DrawImage(img, new Point(0, TapeMarginPx), 1f));
+
+        using var rotMs = new MemoryStream();
+        padded.SaveAsPng(rotMs, new PngEncoder { CompressionLevel = PngCompressionLevel.BestCompression });
+        printBytes = rotMs.ToArray();
 
         var tmpFile = Path.GetTempFileName() + ".png";
         await File.WriteAllBytesAsync(tmpFile, printBytes);

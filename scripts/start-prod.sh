@@ -15,7 +15,14 @@ echo "✓ .env trouvé"
 echo "Démarrage de Stockly en production..."
 
 cd "$(dirname "$0")/.."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+echo "Nettoyage du cache Docker..."
+docker builder prune -a -f
+
+echo "Build sans cache..."
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
+
+echo "Démarrage des services..."
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 echo "✓ Démarrage complet"
 echo "Services :"
