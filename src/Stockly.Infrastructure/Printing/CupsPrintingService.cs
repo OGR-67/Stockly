@@ -71,7 +71,7 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
         var imgInfo = Image.Identify(new MemoryStream(imageBytes));
         double wPts = imgInfo.Width * 72.0 / PrintDpi;
         double hPts = imgInfo.Height * 72.0 / PrintDpi;
-        var mediaArg = FormattableString.Invariant($"Custom.{wPts:F0}x{hPts:F0}");
+        var mediaArg = FormattableString.Invariant($"Custom.{hPts:F0}x{wPts:F0}");
         logger.LogInformation("lp args: -d {Queue} -o ppi=180 -o PageSize={Media} -o fit-to-page=false {File} (image {W}x{H}px)",
             queueName, mediaArg, tmpFile, imgInfo.Width, imgInfo.Height);
 
