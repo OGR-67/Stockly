@@ -27,20 +27,20 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
     public byte[] GenerateLabel(string productName, DateTime? expiryDate, string note, string barcodeValue, decimal widthMm, decimal heightMm)
     {
-        int targetW = (int)Math.Round((double)Math.Min(widthMm, heightMm) * LabelDpi / 25.4);
-        float padding = Math.Max(6f, targetW * 0.04f);
-        float availableW = targetW - 2 * padding;
+        const float TapeWidthMm = 24f;
+        float tapeWidthPx = TapeWidthMm * LabelDpi / 25.4f;
+        float marginPx = 3f * LabelDpi / 25.4f;
+        float qrSizePx = tapeWidthPx;
+        float gapPx = 2f * LabelDpi / 25.4f;
 
         BitMatrix? qrMatrix = null;
         int qrScale = 1;
-        int qrRenderedSize = 0;
 
         try
         {
             var writer = new BarcodeWriter<BitMatrix> { Format = BarcodeFormat.QR_CODE };
             qrMatrix = writer.Encode(barcodeValue);
-            qrScale = Math.Max(1, (int)(availableW / qrMatrix.Width));
-            qrRenderedSize = qrMatrix.Width * qrScale;
+            qrScale = Math.Max(1, (int)(qrSizePx / qrMatrix.Width));
         }
         catch (Exception ex)
         {
@@ -48,27 +48,37 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         }
 
         var fontFamily = GetFontFamily();
-        var semanticLines = BuildSemanticLines(productName, expiryDate, note);
-        var physicalLines = WrapAllLines(semanticLines, fontFamily, availableW);
+        var textLines = BuildTextLines(productName, expiryDate, note);
+        var measuredLines = MeasureTextLines(textLines, fontFamily);
 
-        float textTotalH = physicalLines.Count > 0
-            ? physicalLines.Sum(l => l.scaledPx * 1.2f) + LineSpacing * (physicalLines.Count - 1)
-            : 0;
-        int targetH = (int)Math.Ceiling(padding + textTotalH + padding + qrRenderedSize + padding);
+        float textWidthPx = measuredLines.Count > 0 ? measuredLines.Max(l => l.width) : 0;
+        float totalWidthPx = marginPx + qrSizePx + gapPx + textWidthPx + marginPx;
 
-        logger.LogInformation("Label: {W}x{H}px, lines={Lines}, qr={Qr}px, text={Text}px",
-            targetW, targetH, physicalLines.Count, qrRenderedSize, textTotalH);
+        int imgWidth = (int)Math.Ceiling(totalWidthPx);
+        int imgHeight = (int)Math.Ceiling(tapeWidthPx);
 
-        using var image = new Image<Rgba32>(targetW, targetH, Color.White);
+        logger.LogInformation("Label: {W}x{H}px, qr={Qr}px, text={Text}px, lines={Lines}",
+            imgWidth, imgHeight, (int)qrSizePx, (int)textWidthPx, measuredLines.Count);
 
-        image.Mutate(ctx => DrawTextRows(ctx, physicalLines, targetW, padding, availableW));
+        using var image = new Image<Rgba32>(imgWidth, imgHeight, Color.White);
 
         if (qrMatrix is not null)
         {
-            int qrOffsetX = (targetW - qrRenderedSize) / 2;
-            int qrOffsetY = (int)(padding + textTotalH + padding);
-            DrawQrMatrix(image, qrMatrix, qrScale, qrOffsetX, qrOffsetY);
+            int qrX = (int)marginPx;
+            int qrY = (int)((imgHeight - qrSizePx) / 2);
+            DrawQrMatrix(image, qrMatrix, qrScale, qrX, qrY);
         }
+
+        float textX = marginPx + qrSizePx + gapPx;
+        float textY = marginPx;
+        image.Mutate(ctx =>
+        {
+            foreach (var (text, font, scaledPx, _) in measuredLines)
+            {
+                ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(textX, textY));
+                textY += scaledPx + 2f;
+            }
+        });
 
         int darkPixels = 0;
         for (int y = 0; y < image.Height; y++)
@@ -85,7 +95,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return ms.ToArray();
     }
 
-    private static List<(string text, float pt)> BuildSemanticLines(string productName, DateTime? expiryDate, string note)
+    private static List<(string text, float pt)> BuildTextLines(string productName, DateTime? expiryDate, string note)
     {
         var lines = new List<(string text, float pt)> { (productName, NamePt) };
         if (expiryDate.HasValue) lines.Add(($"DLC: {expiryDate:dd/MM/yyyy}", DatePt));
@@ -93,57 +103,18 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         return lines;
     }
 
-    // Word-wraps each semantic line into physical lines that fit within availableW
-    private static List<(string text, float scaledPx, Font font)> WrapAllLines(
-        List<(string text, float pt)> semanticLines, FontFamily fontFamily, float availableW)
+    private static List<(string text, Font font, float scaledPx, float width)> MeasureTextLines(
+        List<(string text, float pt)> lines, FontFamily fontFamily)
     {
-        var result = new List<(string, float, Font)>();
-        foreach (var (text, pt) in semanticLines)
+        var result = new List<(string, Font, float, float)>();
+        foreach (var (text, pt) in lines)
         {
             var font = fontFamily.CreateFont(pt, pt == NamePt ? FontStyle.Bold : FontStyle.Regular);
+            var size = TextMeasurer.MeasureSize(text, new TextOptions(font) { Dpi = LabelDpi });
             float scaledPx = pt * PtScale;
-            foreach (var wrapped in WordWrap(text, font, availableW))
-                result.Add((wrapped, scaledPx, font));
+            result.Add((text, font, scaledPx, size.Width));
         }
         return result;
-    }
-
-    private static IEnumerable<string> WordWrap(string text, Font font, float maxWidth)
-    {
-        var words = text.Split(' ');
-        var current = new StringBuilder();
-
-        foreach (var word in words)
-        {
-            var candidate = current.Length == 0 ? word : current + " " + word;
-            var w = TextMeasurer.MeasureSize(candidate, new TextOptions(font) { Dpi = LabelDpi }).Width;
-
-            if (w > maxWidth && current.Length > 0)
-            {
-                yield return current.ToString();
-                current.Clear();
-                current.Append(word);
-            }
-            else
-            {
-                if (current.Length > 0) current.Append(' ');
-                current.Append(word);
-            }
-        }
-
-        if (current.Length > 0) yield return current.ToString();
-    }
-
-    private static void DrawTextRows(IImageProcessingContext ctx, List<(string text, float scaledPx, Font font)> lines, float imgW, float padding, float availableW)
-    {
-        float cy = padding;
-        foreach (var (text, scaledPx, font) in lines)
-        {
-            var size = TextMeasurer.MeasureSize(text, new TextOptions(font) { Dpi = LabelDpi });
-            float cx = padding + Math.Max(0f, (availableW - size.Width) / 2f);
-            ctx.DrawText(NoAntialias, text, font, Color.Black, new PointF(cx, cy));
-            cy += scaledPx * 1.2f + LineSpacing;
-        }
     }
 
     private static FontFamily GetFontFamily()
