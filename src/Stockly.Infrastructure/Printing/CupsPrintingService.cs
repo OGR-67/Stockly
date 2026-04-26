@@ -62,17 +62,26 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
 
     private async Task SendToCups(string queueName, byte[] imageBytes)
     {
-        var tmpFile = Path.GetTempFileName() + ".png";
-        await File.WriteAllBytesAsync(tmpFile, imageBytes);
-        await File.WriteAllBytesAsync("/tmp/label_debug.png", imageBytes);
-        logger.LogDebug("Temporary file written to {TmpFile}", tmpFile);
+        // Brother driver expects portrait orientation (width=tape width).
+        // Rotate landscape label 90° CW so the driver sees 24mm wide × Nmm tall portrait.
+        byte[] printBytes;
+        using (var img = Image.Load(imageBytes))
+        {
+            img.Mutate(x => x.Rotate(RotateMode.Rotate90));
+            using var rotMs = new MemoryStream();
+            img.SaveAsPng(rotMs, new PngEncoder { CompressionLevel = PngCompressionLevel.BestCompression });
+            printBytes = rotMs.ToArray();
+        }
 
-        // Image is portrait (Width=tape width, Height=label length) — matches Brother native orientation
-        var imgInfo = Image.Identify(new MemoryStream(imageBytes));
+        var tmpFile = Path.GetTempFileName() + ".png";
+        await File.WriteAllBytesAsync(tmpFile, printBytes);
+        await File.WriteAllBytesAsync("/tmp/label_debug.png", printBytes);
+
+        var imgInfo = Image.Identify(new MemoryStream(printBytes));
         double wPts = imgInfo.Width * 72.0 / PrintDpi;
         double hPts = imgInfo.Height * 72.0 / PrintDpi;
-        var mediaArg = FormattableString.Invariant($"Custom.{hPts:F0}x{wPts:F0}");
-        logger.LogInformation("lp args: -d {Queue} -o ppi=180 -o PageSize={Media} -o fit-to-page=false {File} (image {W}x{H}px)",
+        var mediaArg = FormattableString.Invariant($"Custom.{wPts:F0}x{hPts:F0}");
+        logger.LogInformation("lp args: -d {Queue} -o PageSize={Media} {File} (image {W}x{H}px after rotate)",
             queueName, mediaArg, tmpFile, imgInfo.Width, imgInfo.Height);
 
         try
