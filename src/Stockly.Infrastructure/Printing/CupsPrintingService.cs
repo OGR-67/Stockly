@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using Stockly.Application.DTOs.Printers;
@@ -63,13 +64,17 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
     private async Task SendToCups(string queueName, byte[] imageBytes)
     {
         // Brother driver expects portrait orientation (width=tape width).
-        // Rotate landscape label 90° CW so the driver sees 24mm wide × Nmm tall portrait.
+        // Rotate landscape label 90° CW so the driver sees 24mm wide × Nmm tall portrait,
+        // then add top/bottom margin rows for tape leading/trailing edge clearance.
+        const int TapeMarginPx = 35; // ~5mm at 180 DPI
         byte[] printBytes;
         using (var img = Image.Load(imageBytes))
         {
             img.Mutate(x => x.Rotate(RotateMode.Rotate90));
+            using var padded = new Image<Rgba32>(img.Width, img.Height + 2 * TapeMarginPx, Color.White);
+            padded.Mutate(ctx => ctx.DrawImage(img, new Point(0, TapeMarginPx), 1f));
             using var rotMs = new MemoryStream();
-            img.SaveAsPng(rotMs, new PngEncoder { CompressionLevel = PngCompressionLevel.BestCompression });
+            padded.SaveAsPng(rotMs, new PngEncoder { CompressionLevel = PngCompressionLevel.BestCompression });
             printBytes = rotMs.ToArray();
         }
 
