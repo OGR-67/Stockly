@@ -22,9 +22,9 @@ Stockly trace le stock à l'unité plutôt qu'au flux. L'app n'a pas besoin d'ê
 
 ## Stack
 
-- **Backend** : .NET 10 + EF Core + PostgreSQL 17
-- **Frontend** : React 19 + TypeScript + TanStack Router
-- **Infra** : Docker + Docker Compose
+- **Backend** : .NET 10 + EF Core + PostgreSQL 17.
+- **Frontend** : React 19 + TypeScript + TanStack Router.
+- **Infra** : Docker + Docker Compose.
 
 ## Documentation
 
