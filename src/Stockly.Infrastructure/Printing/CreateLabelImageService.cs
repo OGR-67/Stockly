@@ -55,7 +55,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
         float totalWidthPx = marginPx + qrSizePx + gapPx + textWidthPx + marginPx;
 
         int imgWidth = (int)Math.Ceiling(totalWidthPx);
-        int imgHeight = (int)Math.Ceiling(tapeWidthPx);
+        int imgHeight = (int)Math.Round(tapeWidthPx);
 
         logger.LogInformation("Label: {W}x{H}px, qr={Qr}px, text={Text}px, lines={Lines}",
             imgWidth, imgHeight, (int)qrSizePx, (int)textWidthPx, measuredLines.Count);
