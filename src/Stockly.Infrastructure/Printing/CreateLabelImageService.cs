@@ -59,7 +59,7 @@ public class CreateLabelImageService(ILogger<CreateLabelImageService> logger) : 
 
         if (qrMatrix is not null)
         {
-            DrawQrMatrix(image, qrMatrix, qrScale, MarginPx, 0);
+            DrawQrMatrix(image, qrMatrix, qrScale, MarginPx, MarginPx);
         }
 
         int textXPx = MarginPx + TapeWidthPx + GapPx;

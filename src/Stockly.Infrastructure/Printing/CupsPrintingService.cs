@@ -53,8 +53,10 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
             request.ExpiryDate,
             request.Note,
             request.BarcodeValue,
-            format.WidthMm,
-            format.HeightMm
+            60,
+            24
+        // format.WidthMm,
+        // format.HeightMm
         );
         logger.LogDebug("Label image generated: {ByteLength} bytes", imageBytes.Length);
 
@@ -100,7 +102,7 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
             };
             psi.ArgumentList.Add("-d"); psi.ArgumentList.Add(queueName);
             psi.ArgumentList.Add("-o"); psi.ArgumentList.Add("ppi=180");
-            psi.ArgumentList.Add("-o"); psi.ArgumentList.Add($"PageSize={mediaArg}");
+            // psi.ArgumentList.Add("-o"); psi.ArgumentList.Add($"PageSize={mediaArg}");
             psi.ArgumentList.Add("-o"); psi.ArgumentList.Add("fit-to-page=false");
             psi.ArgumentList.Add(tmpFile);
 
