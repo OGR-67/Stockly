@@ -94,6 +94,7 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
                 UseShellExecute = false,
             };
             psi.ArgumentList.Add("-d"); psi.ArgumentList.Add(queueName);
+            psi.ArgumentList.Add("-o"); psi.ArgumentList.Add("ppi=180");
             psi.ArgumentList.Add("-o"); psi.ArgumentList.Add($"PageSize={mediaArg}");
             psi.ArgumentList.Add("-o"); psi.ArgumentList.Add("fit-to-page=false");
             psi.ArgumentList.Add(tmpFile);
