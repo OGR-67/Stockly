@@ -83,10 +83,14 @@ public class CupsPrintingService(IPrinterRepository printerRepository, ICreateLa
         printBytes = rotMs.ToArray();
 
         var tmpFile = Path.GetTempFileName() + ".png";
-        await File.WriteAllBytesAsync(tmpFile, printBytes);
-        await File.WriteAllBytesAsync("/tmp/label_debug.png", printBytes);
+        // await File.WriteAllBytesAsync(tmpFile, printBytes);
+        // await File.WriteAllBytesAsync("/tmp/label_debug.png", printBytes);
 
-        var imgInfo = Image.Identify(new MemoryStream(printBytes));
+        // var imgInfo = Image.Identify(new MemoryStream(printBytes));
+        await File.WriteAllBytesAsync(tmpFile, imageBytes);
+        await File.WriteAllBytesAsync("/tmp/label_debug.png", imageBytes);
+
+        var imgInfo = Image.Identify(new MemoryStream(imageBytes));
         double wPts = imgInfo.Width * 72.0 / PrintDpi;
         double hPts = imgInfo.Height * 72.0 / PrintDpi;
         var mediaArg = FormattableString.Invariant($"Custom.{wPts:F0}x{hPts:F0}");
