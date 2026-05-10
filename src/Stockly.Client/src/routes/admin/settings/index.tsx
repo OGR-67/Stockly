@@ -35,6 +35,7 @@ function RouteComponent() {
     }, [formats, settings.defaultPrinterId])
 
     async function handleDiscover() {
+        haptic()
         setDiscovering(true)
         setDiscovered([])
         try {
@@ -64,6 +65,7 @@ function RouteComponent() {
     async function handleDelete(id: string) {
         if (settings.defaultPrinterId === id) update({ defaultPrinterId: null, defaultFormatId: null })
         await remove.mutateAsync(id)
+        haptic.error()
     }
 
     return (

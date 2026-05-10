@@ -46,6 +46,7 @@ function RouteComponent() {
   async function handleDelete(id: string) {
     if (!window.confirm("Supprimer cette recette ?")) return;
     await remove.mutateAsync(id);
+    haptic.error();
   }
 
   return (
@@ -53,7 +54,7 @@ function RouteComponent() {
       title="Recettes"
       action={
         <button
-          onClick={() => setEditTarget("new")}
+          onClick={() => { haptic(); setEditTarget("new"); }}
           className="text-white/80 hover:text-white"
         >
           <FontAwesomeIcon icon={faPlus} />
@@ -90,7 +91,7 @@ function RouteComponent() {
             </div>
             <IconButton
               icon={faPencil}
-              onClick={() => setEditTarget(recipe)}
+              onClick={() => { haptic(); setEditTarget(recipe); }}
               title="Modifier"
             />
             <IconButton

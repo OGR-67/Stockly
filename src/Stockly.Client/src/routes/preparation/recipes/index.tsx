@@ -68,7 +68,7 @@ function RouteComponent() {
         <StackPage
             title="Recettes"
             action={
-                <button onClick={() => setEditTarget('new')} className="text-white/80 hover:text-white">
+                <button onClick={() => { haptic(); setEditTarget('new'); }} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faPlus} />
                 </button>
             }
@@ -105,6 +105,7 @@ function RouteComponent() {
                     const availability = getRecipeAvailability(recipe, allUnits)
                     const handleEditClick = (e: React.MouseEvent) => {
                         e.stopPropagation()
+                        haptic()
                         setEditTarget(recipe)
                     }
                     return (

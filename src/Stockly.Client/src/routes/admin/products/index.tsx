@@ -42,13 +42,14 @@ function RouteComponent() {
             : 'Supprimer cet article ?'
         if (!window.confirm(message)) return
         await remove.mutateAsync(id)
+        haptic.error()
     }
 
     return (
         <StackPage
             title="Articles"
             action={
-                <button onClick={() => setEditTarget('new')} className="text-white/80 hover:text-white">
+                <button onClick={() => { haptic(); setEditTarget('new'); }} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faPlus} />
                 </button>
             }
@@ -66,7 +67,7 @@ function RouteComponent() {
                             <p className="text-xs text-stone-500 truncate">{product.category.name}</p>
                             {product.freeText && <p className="text-xs text-stone-400 truncate">{product.freeText}</p>}
                         </div>
-                        <IconButton icon={faPencil} onClick={() => setEditTarget(product)} title="Modifier" />
+                        <IconButton icon={faPencil} onClick={() => { haptic(); setEditTarget(product); }} title="Modifier" />
                         <IconButton icon={faTrash} onClick={() => handleDelete(product.id)} title="Supprimer" />
                     </Card>
                 ))}

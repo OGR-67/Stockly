@@ -125,17 +125,19 @@ function RouteComponent() {
         />
         <div className="flex gap-2">
           <button
-            onClick={() =>
-              setActiveFilter((f) => (f === "soon" ? undefined : "soon"))
-            }
+            onClick={() => {
+              haptic();
+              setActiveFilter((f) => (f === "soon" ? undefined : "soon"));
+            }}
             className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${activeFilter === "soon" ? "bg-orange-100 text-orange-600 border-orange-200" : "bg-cream border-stone-200 text-stone-500"}`}
           >
             Bientôt périmés
           </button>
           <button
-            onClick={() =>
-              setActiveFilter((f) => (f === "expired" ? undefined : "expired"))
-            }
+            onClick={() => {
+              haptic();
+              setActiveFilter((f) => (f === "expired" ? undefined : "expired"));
+            }}
             className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${activeFilter === "expired" ? "bg-red-100 text-red-600 border-red-200" : "bg-cream border-stone-200 text-stone-500"}`}
           >
             Périmés

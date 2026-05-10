@@ -35,13 +35,14 @@ function RouteComponent() {
     async function handleDelete(id: string) {
         if (!window.confirm('Supprimer cette catégorie ?')) return
         await remove.mutateAsync(id)
+        haptic.error()
     }
 
     return (
         <StackPage
             title="Catégories"
             action={
-                <button onClick={() => setEditTarget('new')} className="text-white/80 hover:text-white">
+                <button onClick={() => { haptic(); setEditTarget('new'); }} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faPlus} />
                 </button>
             }
@@ -66,7 +67,7 @@ function RouteComponent() {
                                 )}
                             </div>
                         </div>
-                        <IconButton icon={faPencil} onClick={() => setEditTarget(category)} title="Modifier" />
+                        <IconButton icon={faPencil} onClick={() => { haptic(); setEditTarget(category); }} title="Modifier" />
                         <IconButton icon={faTrash} onClick={() => handleDelete(category.id)} title="Supprimer" />
                     </Card>
                 ))}

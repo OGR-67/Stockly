@@ -36,13 +36,14 @@ function RouteComponent() {
     async function handleDelete(id: string) {
         if (!window.confirm('Supprimer cet emplacement ?')) return
         await remove.mutateAsync(id)
+        haptic.error()
     }
 
     return (
         <StackPage
             title="Emplacements"
             action={
-                <button onClick={() => setEditTarget('new')} className="text-white/80 hover:text-white">
+                <button onClick={() => { haptic(); setEditTarget('new'); }} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faPlus} />
                 </button>
             }
@@ -57,7 +58,7 @@ function RouteComponent() {
                     <Card key={location.id}>
                         <IconButton icon={locationIcon(location.type)} variant="primary" />
                         <span className="flex-1 font-medium text-bark">{location.name}</span>
-                        <IconButton icon={faPencil} onClick={() => setEditTarget(location)} title="Modifier" />
+                        <IconButton icon={faPencil} onClick={() => { haptic(); setEditTarget(location); }} title="Modifier" />
                         <IconButton icon={faTrash} onClick={() => handleDelete(location.id)} title="Supprimer" />
                     </Card>
                 ))}

@@ -25,7 +25,10 @@ function RouteComponent() {
         <RootPage title="Admin">
             <div className="flex flex-col gap-3">
             <button
-                onClick={() => setModalOpen(true)}
+                onClick={() => {
+                  haptic();
+                  setModalOpen(true);
+                }}
                 className="flex items-center gap-3 w-full p-4 bg-cream rounded-xl border border-sage/30 shadow-sm text-bark font-medium"
             >
                 <FontAwesomeIcon icon={faTableList} className="text-earth text-lg" />
