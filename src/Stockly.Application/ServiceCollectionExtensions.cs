@@ -14,6 +14,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStockUnitService, StockUnitService>();
         services.AddScoped<IPrinterService, PrinterService>();
         services.AddScoped<IRecipeService, RecipeService>();
+        services.AddScoped<IGroceryListService, GroceryListService>();
 
         return services;
     }

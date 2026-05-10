@@ -6,6 +6,7 @@ import { ConfirmButton } from '../ConfirmButton'
 import { SearchOrCreate } from '../SearchOrCreate'
 import { BarcodeManager } from './BarcodeManager'
 import { CategoryModal } from './CategoryModal'
+import { DaysInput } from './DaysInput'
 import { useCategoryMutations } from '../../hooks/queries/useCategories'
 import { haptic } from 'ios-haptics'
 import type { Product, ProductDetail } from '../../models/ProductModel'
@@ -28,6 +29,7 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
         initial ? categories.find(c => c.id === initial.categoryId) : undefined
     )
     const [freeText, setFreeText] = useState(initial?.freeText ?? '')
+    const [minStockUnits, setMinStockUnits] = useState<number | null>(initial?.minStockUnits ?? null)
     const [showCategoryModal, setShowCategoryModal] = useState(false)
     const { create: createCategory } = useCategoryMutations()
 
@@ -64,6 +66,7 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                     </FieldWrapper>
 
                     <FormField label="Note (optionnel)" value={freeText} onChange={setFreeText} />
+                    <DaysInput label="Stock minimal (unités)" value={minStockUnits} onChange={setMinStockUnits} />
 
                     {initial && (
                         <BarcodeManager
@@ -74,7 +77,7 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                     )}
 
                     <ConfirmButton
-                        onClick={() => onConfirm({ name, categoryId: selectedCategory!.id, freeText: freeText || null })}
+                        onClick={() => onConfirm({ name, categoryId: selectedCategory!.id, freeText: freeText || null, minStockUnits })}
                         disabled={!name.trim() || !selectedCategory}
                     />
                 </div>

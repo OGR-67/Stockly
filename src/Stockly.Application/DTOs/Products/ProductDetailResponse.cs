@@ -9,6 +9,7 @@ public record ProductDetailResponse(
     Guid CategoryId,
     string Name,
     string? FreeText,
+    int? MinStockUnits,
     CategoryResponse Category,
     IEnumerable<BarcodeResponse> Barcodes
 );

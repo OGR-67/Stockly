@@ -6,6 +6,7 @@ export interface Product {
   categoryId: string;
   name: string;
   freeText: string | null;
+  minStockUnits: number | null;
 }
 
 export interface ProductDetail extends Product {

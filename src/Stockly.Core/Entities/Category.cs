@@ -10,4 +10,5 @@ public class Category
     public int? DefaultOpenedDays { get; set; }
     public int? DefaultFrozenDays { get; set; }
     public string? FreeText { get; set; }
+    public int? MinStockUnits { get; set; }
 }

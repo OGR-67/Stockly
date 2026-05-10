@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stockly.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Stockly.Infrastructure.Persistence;
 namespace Stockly.Infrastructure.Migrations
 {
     [DbContext(typeof(StocklyDbContext))]
-    partial class StocklyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510064646_AddGroceryList")]
+    partial class AddGroceryList
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,9 +119,6 @@ namespace Stockly.Infrastructure.Migrations
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
-
-                    b.Property<int?>("Quantity")
-                        .HasColumnType("integer");
 
                     b.Property<Guid?>("RecipeId")
                         .HasColumnType("uuid");

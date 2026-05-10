@@ -14,6 +14,8 @@ public class StocklyDbContext(DbContextOptions<StocklyDbContext> options) : DbCo
     public DbSet<Printer> Printers => Set<Printer>();
     public DbSet<PrinterFormat> PrinterFormats => Set<PrinterFormat>();
     public DbSet<Recipe> Recipes => Set<Recipe>();
+    public DbSet<GroceryList> GroceryLists => Set<GroceryList>();
+    public DbSet<GroceryListItem> GroceryListItems => Set<GroceryListItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,5 +27,7 @@ public class StocklyDbContext(DbContextOptions<StocklyDbContext> options) : DbCo
         modelBuilder.ApplyConfiguration(new PrinterConfiguration());
         modelBuilder.ApplyConfiguration(new PrinterFormatConfiguration());
         modelBuilder.ApplyConfiguration(new RecipeConfiguration());
+        modelBuilder.ApplyConfiguration(new GroceryListConfiguration());
+        modelBuilder.ApplyConfiguration(new GroceryListItemConfiguration());
     }
 }

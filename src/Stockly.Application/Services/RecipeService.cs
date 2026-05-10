@@ -71,5 +71,5 @@ public class RecipeService(IRecipeRepository repository, IProductRepository prod
         new(r.Id, r.Name, r.Type, r.FreeText, r.Products.Select(ToProductResponse));
 
     private static ProductResponse ToProductResponse(Product p) =>
-        new(p.Id, p.CategoryId, p.Name, p.FreeText);
+        new(p.Id, p.CategoryId, p.Name, p.FreeText, p.MinStockUnits);
 }

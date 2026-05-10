@@ -117,13 +117,14 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         p.CategoryId,
         p.Name,
         p.FreeText,
+        p.MinStockUnits,
         ToCategoryResponse(p.Category!),
         p.Barcodes.Select(b => new BarcodeResponse(b.Code, b.ProductId))
     );
 
     private static CategoryResponse ToCategoryResponse(Category c) => new(
         c.Id, c.Name, c.IsPerishable, c.IsFresh,
-        c.DefaultClosedDays, c.DefaultOpenedDays, c.DefaultFrozenDays, c.FreeText
+        c.DefaultClosedDays, c.DefaultOpenedDays, c.DefaultFrozenDays, c.FreeText, c.MinStockUnits
     );
 
     private static StorageLocationResponse ToLocationResponse(StorageLocation l) => new(l.Id, l.Name, l.Type);

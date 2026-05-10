@@ -20,6 +20,7 @@ export function CategoryModal({ initial, onConfirm, onClose }: CategoryModalProp
     const [defaultOpenedDays, setDefaultOpenedDays] = useState<number | null>(initial?.defaultOpenedDays ?? null)
     const [defaultFrozenDays, setDefaultFrozenDays] = useState<number | null>(initial?.defaultFrozenDays ?? null)
     const [freeText, setFreeText] = useState(initial?.freeText ?? '')
+    const [minStockUnits, setMinStockUnits] = useState<number | null>(initial?.minStockUnits ?? null)
 
     return (
         <Modal title={initial ? 'Modifier la catégorie' : 'Nouvelle catégorie'} onClose={onClose}>
@@ -34,11 +35,12 @@ export function CategoryModal({ initial, onConfirm, onClose }: CategoryModalProp
                 <DaysInput label="Jours fermé" value={defaultClosedDays} onChange={setDefaultClosedDays} />
                 <DaysInput label="Jours ouvert" value={defaultOpenedDays} onChange={setDefaultOpenedDays} />
                 <DaysInput label="Jours congelé" value={defaultFrozenDays} onChange={setDefaultFrozenDays} />
+                <DaysInput label="Stock minimal (unités)" value={minStockUnits} onChange={setMinStockUnits} />
 
                 <FormField label="Note (optionnel)" value={freeText} onChange={setFreeText} />
 
                 <ConfirmButton
-                    onClick={() => onConfirm({ name, isPerishable, isFresh, defaultClosedDays, defaultOpenedDays, defaultFrozenDays, freeText: freeText || null })}
+                    onClick={() => onConfirm({ name, isPerishable, isFresh, defaultClosedDays, defaultOpenedDays, defaultFrozenDays, freeText: freeText || null, minStockUnits })}
                     disabled={!name.trim()}
                 />
             </div>

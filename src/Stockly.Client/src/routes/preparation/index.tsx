@@ -30,13 +30,18 @@ function RouteComponent() {
                     </div>
                 </Card>
 
-                <Card className="opacity-50 cursor-not-allowed">
-                    <div className="text-2xl text-stone-400">
+                <Card
+                    onClick={() => {
+                        haptic.confirm();
+                        navigate({ to: '/preparation/grocery-list' });
+                    }}
+                >
+                    <div className="text-2xl text-earth">
                         <FontAwesomeIcon icon={faClipboardList} />
                     </div>
                     <div className="flex-1 text-left">
-                        <p className="font-medium text-bark">Liste de course</p>
-                        <p className="text-xs text-stone-400">Bientôt disponible</p>
+                        <p className="font-medium text-bark">Liste de courses</p>
+                        <p className="text-xs text-stone-400">Générer et gérer votre liste de courses</p>
                     </div>
                 </Card>
             </div>
