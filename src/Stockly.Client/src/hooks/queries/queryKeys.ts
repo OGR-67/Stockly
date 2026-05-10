@@ -6,4 +6,5 @@ export const queryKeys = {
     allStockUnits: ['stockUnits', 'all'] as const,
     categories: ['categories'] as const,
     recipes: ['recipes'] as const,
+    groceryList: ['groceryList'] as const,
 }

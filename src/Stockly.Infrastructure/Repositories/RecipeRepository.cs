@@ -13,6 +13,12 @@ public class RecipeRepository(StocklyDbContext context) : IRecipeRepository
     public async Task<Recipe?> GetByIdWithProductsAsync(Guid id) =>
         await WithProducts().FirstOrDefaultAsync(r => r.Id == id);
 
+    public async Task<IEnumerable<Recipe>> GetByIdsWithProductsAsync(IEnumerable<Guid> ids)
+    {
+        var idSet = ids.ToHashSet();
+        return await WithProducts().AsNoTrackingWithIdentityResolution().Where(r => idSet.Contains(r.Id)).ToListAsync();
+    }
+
     public async Task<Recipe> CreateAsync(Recipe recipe)
     {
         context.Recipes.Add(recipe);

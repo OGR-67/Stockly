@@ -36,7 +36,8 @@ public class ProductService(IProductRepository repository) : IProductService
             Id = Guid.NewGuid(),
             CategoryId = request.CategoryId,
             Name = request.Name,
-            FreeText = request.FreeText
+            FreeText = request.FreeText,
+            MinStockUnits = request.MinStockUnits
         };
         var created = await repository.CreateAsync(product);
         return ToResponse(created);
@@ -50,6 +51,7 @@ public class ProductService(IProductRepository repository) : IProductService
         existing.CategoryId = request.CategoryId;
         existing.Name = request.Name;
         existing.FreeText = request.FreeText;
+        existing.MinStockUnits = request.MinStockUnits;
 
         var updated = await repository.UpdateAsync(existing);
         return ToResponse(updated);
@@ -74,19 +76,20 @@ public class ProductService(IProductRepository repository) : IProductService
         await repository.DeleteBarcodeAsync(barcode);
     }
 
-    private static ProductResponse ToResponse(Product p) => new(p.Id, p.CategoryId, p.Name, p.FreeText);
+    private static ProductResponse ToResponse(Product p) => new(p.Id, p.CategoryId, p.Name, p.FreeText, p.MinStockUnits);
 
     private static ProductDetailResponse ToDetailResponse(Product p) => new(
         p.Id,
         p.CategoryId,
         p.Name,
         p.FreeText,
+        p.MinStockUnits,
         ToCategoryResponse(p.Category!),
         p.Barcodes.Select(b => new BarcodeResponse(b.Code, b.ProductId))
     );
 
     private static CategoryResponse ToCategoryResponse(Category c) => new(
         c.Id, c.Name, c.IsPerishable, c.IsFresh,
-        c.DefaultClosedDays, c.DefaultOpenedDays, c.DefaultFrozenDays, c.FreeText
+        c.DefaultClosedDays, c.DefaultOpenedDays, c.DefaultFrozenDays, c.FreeText, c.MinStockUnits
     );
 }

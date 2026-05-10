@@ -9,5 +9,6 @@ public record SaveCategoryRequest(
     int? DefaultClosedDays,
     int? DefaultOpenedDays,
     int? DefaultFrozenDays,
-    string? FreeText
+    string? FreeText,
+    int? MinStockUnits
 );

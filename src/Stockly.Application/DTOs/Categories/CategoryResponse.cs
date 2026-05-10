@@ -8,5 +8,6 @@ public record CategoryResponse(
     int? DefaultClosedDays,
     int? DefaultOpenedDays,
     int? DefaultFrozenDays,
-    string? FreeText
+    string? FreeText,
+    int? MinStockUnits
 );

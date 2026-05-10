@@ -4,5 +4,6 @@ public record ProductResponse(
     Guid Id,
     Guid CategoryId,
     string Name,
-    string? FreeText
+    string? FreeText,
+    int? MinStockUnits
 );

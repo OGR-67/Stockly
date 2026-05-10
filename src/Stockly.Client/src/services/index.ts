@@ -4,6 +4,7 @@ import { ApiProductService } from './api/ApiProductService'
 import { ApiStockUnitService } from './api/ApiStockUnitService'
 import { ApiPrinterService } from './api/ApiPrinterService'
 import { ApiRecipeService } from './api/ApiRecipeService'
+import { ApiGroceryListService } from './api/ApiGroceryListService'
 
 const categoryService = new ApiCategoryService()
 const locationService = new ApiStorageLocationService()
@@ -11,5 +12,6 @@ const productService = new ApiProductService()
 const stockUnitService = new ApiStockUnitService()
 const printerService = new ApiPrinterService()
 const recipeService = new ApiRecipeService()
+const groceryListService = new ApiGroceryListService()
 
-export { categoryService, locationService, productService, stockUnitService, printerService, recipeService }
+export { categoryService, locationService, productService, stockUnitService, printerService, recipeService, groceryListService }

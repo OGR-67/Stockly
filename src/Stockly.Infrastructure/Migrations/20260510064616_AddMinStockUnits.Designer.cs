@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stockly.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Stockly.Infrastructure.Persistence;
 namespace Stockly.Infrastructure.Migrations
 {
     [DbContext(typeof(StocklyDbContext))]
-    partial class StocklyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510064616_AddMinStockUnits")]
+    partial class AddMinStockUnits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,50 +92,6 @@ namespace Stockly.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("Stockly.Core.Entities.GroceryList", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("GeneratedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("GroceryLists");
-                });
-
-            modelBuilder.Entity("Stockly.Core.Entities.GroceryListItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("GroceryListId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("RecipeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Source")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroceryListId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("GroceryListItems");
                 });
 
             modelBuilder.Entity("Stockly.Core.Entities.Printer", b =>
@@ -330,25 +289,6 @@ namespace Stockly.Infrastructure.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Stockly.Core.Entities.GroceryListItem", b =>
-                {
-                    b.HasOne("Stockly.Core.Entities.GroceryList", "GroceryList")
-                        .WithMany("Items")
-                        .HasForeignKey("GroceryListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Stockly.Core.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("GroceryList");
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("Stockly.Core.Entities.PrinterFormat", b =>
                 {
                     b.HasOne("Stockly.Core.Entities.Printer", "Printer")
@@ -388,11 +328,6 @@ namespace Stockly.Infrastructure.Migrations
                     b.Navigation("Location");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Stockly.Core.Entities.GroceryList", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Stockly.Core.Entities.Printer", b =>

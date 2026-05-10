@@ -32,7 +32,8 @@ public class CategoryService(ICategoryRepository repository) : ICategoryService
             DefaultClosedDays = request.DefaultClosedDays,
             DefaultOpenedDays = request.DefaultOpenedDays,
             DefaultFrozenDays = request.DefaultFrozenDays,
-            FreeText = request.FreeText
+            FreeText = request.FreeText,
+            MinStockUnits = request.MinStockUnits
         };
         var created = await repository.CreateAsync(category);
         return ToResponse(created);
@@ -50,6 +51,7 @@ public class CategoryService(ICategoryRepository repository) : ICategoryService
         existing.DefaultOpenedDays = request.DefaultOpenedDays;
         existing.DefaultFrozenDays = request.DefaultFrozenDays;
         existing.FreeText = request.FreeText;
+        existing.MinStockUnits = request.MinStockUnits;
 
         var updated = await repository.UpdateAsync(existing);
         return ToResponse(updated);
@@ -64,6 +66,6 @@ public class CategoryService(ICategoryRepository repository) : ICategoryService
 
     private static CategoryResponse ToResponse(Category c) => new(
         c.Id, c.Name, c.IsPerishable, c.IsFresh,
-        c.DefaultClosedDays, c.DefaultOpenedDays, c.DefaultFrozenDays, c.FreeText
+        c.DefaultClosedDays, c.DefaultOpenedDays, c.DefaultFrozenDays, c.FreeText, c.MinStockUnits
     );
 }

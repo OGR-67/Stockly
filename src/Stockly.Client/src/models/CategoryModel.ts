@@ -7,4 +7,5 @@ export interface Category {
     defaultOpenedDays: number | null
     defaultFrozenDays: number | null
     freeText: string | null
+    minStockUnits: number | null
 }
