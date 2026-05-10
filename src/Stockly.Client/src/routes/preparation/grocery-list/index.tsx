@@ -7,6 +7,7 @@ import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { EmptyState } from '../../../components/EmptyState'
 import { Card } from '../../../components/Card'
+import type {GroceryListItem } from '../../../models/GroceryListModel.ts'
 import { useCurrentGroceryList, useRemoveGroceryListItem } from '../../../hooks/queries/useGroceryList'
 import type { GroceryListItemSource } from '../../../models/GroceryListModel'
 
@@ -87,7 +88,7 @@ function RouteComponent() {
                         Générée le {new Date(groceryList!.generatedAt).toLocaleDateString('fr-FR', { dateStyle: 'medium' })}
                     </p>
 
-                    {(Object.entries(grouped) as [GroceryListItemSource, typeof groceryList.items][]).map(([source, items]) => (
+                    {(Object.entries(grouped) as [GroceryListItemSource, GroceryListItem[]][]).map(([source, items]) => (
                         <div key={source}>
                             <h2 className="text-sm font-semibold text-bark mb-2">{sourceLabels[source]}</h2>
                             <div className="flex flex-col gap-2">
