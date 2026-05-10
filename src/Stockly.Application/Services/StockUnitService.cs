@@ -75,6 +75,8 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         unit.LocationId = request.LocationId;
 
         var updated = await repository.UpdateAsync(unit);
+        updated.Location = await locationRepository.GetByIdAsync(request.LocationId);
+
         return ToDetailResponse(updated);
     }
 

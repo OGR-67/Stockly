@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { haptic } from "ios-haptics";
 import { StackPage } from "../../../components/layout/StackPage";
 import { LoadingSpinner } from "../../../components/layout/LoadingSpinner";
 import { SearchInput } from "../../../components/SearchInput";
@@ -38,12 +39,14 @@ function RouteComponent() {
     } else {
       await update.mutateAsync({ id: editTarget!.id, ...data });
     }
+    haptic.confirm();
     setEditTarget(null);
   }
 
   async function handleDelete(id: string) {
     if (!window.confirm("Supprimer cette recette ?")) return;
     await remove.mutateAsync(id);
+    haptic.error();
   }
 
   return (
@@ -51,7 +54,7 @@ function RouteComponent() {
       title="Recettes"
       action={
         <button
-          onClick={() => setEditTarget("new")}
+          onClick={() => { haptic(); setEditTarget("new"); }}
           className="text-white/80 hover:text-white"
         >
           <FontAwesomeIcon icon={faPlus} />
@@ -88,7 +91,7 @@ function RouteComponent() {
             </div>
             <IconButton
               icon={faPencil}
-              onClick={() => setEditTarget(recipe)}
+              onClick={() => { haptic(); setEditTarget(recipe); }}
               title="Modifier"
             />
             <IconButton

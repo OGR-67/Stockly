@@ -7,6 +7,7 @@ import { SearchOrCreate } from '../SearchOrCreate'
 import { BarcodeManager } from './BarcodeManager'
 import { CategoryModal } from './CategoryModal'
 import { useCategoryMutations } from '../../hooks/queries/useCategories'
+import { haptic } from 'ios-haptics'
 import type { Product, ProductDetail } from '../../models/ProductModel'
 import type { Category } from '../../models/CategoryModel'
 
@@ -32,6 +33,7 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
 
     async function handleCreateCategory(data: Omit<Category, 'id'>) {
         const created = await createCategory.mutateAsync(data)
+        haptic.confirm()
         const newCat: Category = { id: created.id, ...data }
         setCats(prev => [...prev, newCat])
         setSelectedCategory(newCat)

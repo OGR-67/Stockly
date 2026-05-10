@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { haptic } from "ios-haptics";
 import { StackPage } from "../../components/layout/StackPage";
 import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
 import { Scanner } from "../../components/Scanner";
@@ -57,6 +58,7 @@ function RouteComponent() {
 
   async function handleCreateProduct(data: Omit<Product, 'id'>) {
     const created = await createProduct.mutateAsync(data);
+    haptic.confirm();
     // Fetch the full product detail from the updated cache via refetch
     const fresh = allProducts.find(p => p.id === created.id) ?? {
       ...created,
@@ -83,6 +85,7 @@ function RouteComponent() {
     for (let i = 0; i < quantity; i++) {
       await add.mutateAsync({ productId: selectedProduct!.id, locationId, expirationDate, freeText });
     }
+    haptic.confirm();
     const name = selectedProduct!.name;
     setSelectedProduct(null);
     setPendingBarcode(null);

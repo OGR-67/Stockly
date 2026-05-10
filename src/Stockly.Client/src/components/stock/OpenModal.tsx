@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPrint } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 import { Modal } from '../Modal'
 import { FormField } from '../FormField'
 import { FieldWrapper } from '../FieldWrapper'
@@ -100,6 +101,7 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                 <LocationModal
                     onConfirm={async (data) => {
                         const created = await createLocation.mutateAsync(data)
+                        haptic.confirm()
                         const newLoc = { id: created.id, ...data }
                         setSelectedLocation(newLoc)
                         setShowLocationModal(false)

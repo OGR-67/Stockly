@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
@@ -28,19 +29,21 @@ function RouteComponent() {
         } else {
             await update.mutateAsync({ id: editTarget!.id, data })
         }
+        haptic.confirm()
         setEditTarget(null)
     }
 
     async function handleDelete(id: string) {
         if (!window.confirm('Supprimer cet emplacement ?')) return
         await remove.mutateAsync(id)
+        haptic.error()
     }
 
     return (
         <StackPage
             title="Emplacements"
             action={
-                <button onClick={() => setEditTarget('new')} className="text-white/80 hover:text-white">
+                <button onClick={() => { haptic(); setEditTarget('new'); }} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faPlus} />
                 </button>
             }
@@ -55,7 +58,7 @@ function RouteComponent() {
                     <Card key={location.id}>
                         <IconButton icon={locationIcon(location.type)} variant="primary" />
                         <span className="flex-1 font-medium text-bark">{location.name}</span>
-                        <IconButton icon={faPencil} onClick={() => setEditTarget(location)} title="Modifier" />
+                        <IconButton icon={faPencil} onClick={() => { haptic(); setEditTarget(location); }} title="Modifier" />
                         <IconButton icon={faTrash} onClick={() => handleDelete(location.id)} title="Supprimer" />
                     </Card>
                 ))}

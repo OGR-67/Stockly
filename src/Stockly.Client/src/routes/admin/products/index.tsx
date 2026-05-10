@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
@@ -29,6 +30,7 @@ function RouteComponent() {
         } else {
             await update.mutateAsync({ id: editTarget!.id, data })
         }
+        haptic.confirm()
         setEditTarget(null)
     }
 
@@ -40,13 +42,14 @@ function RouteComponent() {
             : 'Supprimer cet article ?'
         if (!window.confirm(message)) return
         await remove.mutateAsync(id)
+        haptic.error()
     }
 
     return (
         <StackPage
             title="Articles"
             action={
-                <button onClick={() => setEditTarget('new')} className="text-white/80 hover:text-white">
+                <button onClick={() => { haptic(); setEditTarget('new'); }} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faPlus} />
                 </button>
             }
@@ -64,7 +67,7 @@ function RouteComponent() {
                             <p className="text-xs text-stone-500 truncate">{product.category.name}</p>
                             {product.freeText && <p className="text-xs text-stone-400 truncate">{product.freeText}</p>}
                         </div>
-                        <IconButton icon={faPencil} onClick={() => setEditTarget(product)} title="Modifier" />
+                        <IconButton icon={faPencil} onClick={() => { haptic(); setEditTarget(product); }} title="Modifier" />
                         <IconButton icon={faTrash} onClick={() => handleDelete(product.id)} title="Supprimer" />
                     </Card>
                 ))}
@@ -80,11 +83,13 @@ function RouteComponent() {
                     onConfirm={handleSave}
                     onAddBarcode={(barcode) => {
                         if (editTarget !== 'new' && editTarget) {
+                            haptic()
                             addBarcode.mutate({ productId: editTarget.id, barcode })
                             setEditTarget({ ...editTarget, barcodes: [...editTarget.barcodes, { code: barcode, productId: editTarget.id }] })
                         }
                     }}
                     onDeleteBarcode={(barcode) => {
+                        haptic()
                         deleteBarcode.mutate(barcode)
                         if (editTarget !== 'new' && editTarget) {
                             setEditTarget({ ...editTarget, barcodes: editTarget.barcodes.filter(b => b.code !== barcode) })

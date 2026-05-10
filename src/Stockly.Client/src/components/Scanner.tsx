@@ -4,6 +4,7 @@ import type { IScannerControls } from '@zxing/browser'
 import { DecodeHintType } from '@zxing/library'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faBolt, faLightbulb } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 
 interface ScannerProps {
     onScan: (barcode: string) => void
@@ -67,6 +68,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
                         if (result && !hasScannedRef.current) {
                             hasScannedRef.current = true
                             stopCamera()
+                            haptic.confirm()
                             onScanRef.current(result.getText())
                             onCloseRef.current()
                         }

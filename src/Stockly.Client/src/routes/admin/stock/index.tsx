@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { haptic } from "ios-haptics";
 import {
   faChevronDown,
   faChevronRight,
@@ -82,6 +83,7 @@ function RouteComponent() {
   }, [filtered]);
 
   function toggleLocation(id: string) {
+    haptic()
     setExpandedLocations((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -98,6 +100,7 @@ function RouteComponent() {
     await open.mutateAsync(unit.id);
     if (newLocationId)
       await move.mutateAsync({ id: unit.id, targetLocationId: newLocationId });
+    haptic.confirm();
     setOpenModalUnit(null);
   }
 
@@ -108,6 +111,7 @@ function RouteComponent() {
       id: unit.id,
       targetLocationId: destinationLocationId,
     });
+    haptic.confirm();
     setTransferModalUnit(null);
   }
 
@@ -121,17 +125,19 @@ function RouteComponent() {
         />
         <div className="flex gap-2">
           <button
-            onClick={() =>
-              setActiveFilter((f) => (f === "soon" ? undefined : "soon"))
-            }
+            onClick={() => {
+              haptic();
+              setActiveFilter((f) => (f === "soon" ? undefined : "soon"));
+            }}
             className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${activeFilter === "soon" ? "bg-orange-100 text-orange-600 border-orange-200" : "bg-cream border-stone-200 text-stone-500"}`}
           >
             Bientôt périmés
           </button>
           <button
-            onClick={() =>
-              setActiveFilter((f) => (f === "expired" ? undefined : "expired"))
-            }
+            onClick={() => {
+              haptic();
+              setActiveFilter((f) => (f === "expired" ? undefined : "expired"));
+            }}
             className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${activeFilter === "expired" ? "bg-red-100 text-red-600 border-red-200" : "bg-cream border-stone-200 text-stone-500"}`}
           >
             Périmés
@@ -178,7 +184,10 @@ function RouteComponent() {
                       onEdit={setEditModalUnit}
                       onOpen={setOpenModalUnit}
                       onTransfer={setTransferModalUnit}
-                      onConsume={(id) => consume.mutate(id)}
+                      onConsume={(id) => {
+                        haptic()
+                        consume.mutate(id)
+                      }}
                     />
                   ))}
                 </div>
@@ -216,12 +225,14 @@ function RouteComponent() {
               id: editModalUnit.id,
               data: { expirationDate, freeText },
             });
+            haptic.confirm();
           }}
           onOpen={(unit) => {
             setEditModalUnit(null);
             setOpenModalUnit(unit);
           }}
           onConsume={(unit) => {
+            haptic();
             consume.mutate(unit.id);
           }}
           onTransfer={async (destinationLocationId) => {
@@ -229,6 +240,7 @@ function RouteComponent() {
               id: editModalUnit.id,
               targetLocationId: destinationLocationId,
             });
+            haptic.confirm();
           }}
           onClose={() => setEditModalUnit(null)}
         />

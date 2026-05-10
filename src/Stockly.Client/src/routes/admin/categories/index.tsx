@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPencil, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 import { StackPage } from '../../../components/layout/StackPage'
 import { LoadingSpinner } from '../../../components/layout/LoadingSpinner'
 import { SearchInput } from '../../../components/SearchInput'
@@ -27,19 +28,21 @@ function RouteComponent() {
         } else {
             await update.mutateAsync({ id: editTarget!.id, data })
         }
+        haptic.confirm()
         setEditTarget(null)
     }
 
     async function handleDelete(id: string) {
         if (!window.confirm('Supprimer cette catégorie ?')) return
         await remove.mutateAsync(id)
+        haptic.error()
     }
 
     return (
         <StackPage
             title="Catégories"
             action={
-                <button onClick={() => setEditTarget('new')} className="text-white/80 hover:text-white">
+                <button onClick={() => { haptic(); setEditTarget('new'); }} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faPlus} />
                 </button>
             }
@@ -64,7 +67,7 @@ function RouteComponent() {
                                 )}
                             </div>
                         </div>
-                        <IconButton icon={faPencil} onClick={() => setEditTarget(category)} title="Modifier" />
+                        <IconButton icon={faPencil} onClick={() => { haptic(); setEditTarget(category); }} title="Modifier" />
                         <IconButton icon={faTrash} onClick={() => handleDelete(category.id)} title="Supprimer" />
                     </Card>
                 ))}

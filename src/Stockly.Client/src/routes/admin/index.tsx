@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTableList, faBox, faTag, faLocationDot, faGear, faLayerGroup, faUtensils } from '@fortawesome/free-solid-svg-icons'
+import { haptic } from 'ios-haptics'
 import { RootPage } from '../../components/layout/RootPage'
 import { Modal } from '../../components/Modal'
 
@@ -24,14 +25,20 @@ function RouteComponent() {
         <RootPage title="Admin">
             <div className="flex flex-col gap-3">
             <button
-                onClick={() => setModalOpen(true)}
+                onClick={() => {
+                  haptic();
+                  setModalOpen(true);
+                }}
                 className="flex items-center gap-3 w-full p-4 bg-cream rounded-xl border border-sage/30 shadow-sm text-bark font-medium"
             >
                 <FontAwesomeIcon icon={faTableList} className="text-earth text-lg" />
                 Référentiels
             </button>
             <button
-                onClick={() => navigate({ to: '/admin/stock', search: { filter: undefined } })}
+                onClick={() => {
+                  haptic.confirm();
+                  navigate({ to: '/admin/stock', search: { filter: undefined } });
+                }}
                 className="flex items-center gap-3 w-full p-4 bg-cream rounded-xl border border-sage/30 shadow-sm text-bark font-medium"
             >
                 <FontAwesomeIcon icon={faLayerGroup} className="text-earth text-lg" />
@@ -41,7 +48,10 @@ function RouteComponent() {
             <hr className="border-sage/20" />
 
             <button
-                onClick={() => navigate({ to: '/admin/settings' })}
+                onClick={() => {
+                  haptic.confirm();
+                  navigate({ to: '/admin/settings' });
+                }}
                 className="flex items-center gap-3 w-full p-4 bg-cream rounded-xl border border-sage/30 shadow-sm text-bark font-medium"
             >
                 <FontAwesomeIcon icon={faGear} className="text-earth text-lg" />
@@ -55,7 +65,11 @@ function RouteComponent() {
                         {ENTITIES.map(({ label, icon, to }) => (
                             <button
                                 key={to}
-                                onClick={() => { setModalOpen(false); navigate({ to }) }}
+                                onClick={() => {
+                                  haptic.confirm();
+                                  setModalOpen(false);
+                                  navigate({ to });
+                                }}
                                 className="flex items-center gap-3 p-4 bg-cream rounded-xl border border-sage/30 text-bark font-medium active:bg-sage-light/50"
                             >
                                 <FontAwesomeIcon icon={icon} className="text-earth" />
