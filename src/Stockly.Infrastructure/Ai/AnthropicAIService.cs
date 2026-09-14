@@ -260,11 +260,15 @@ public class AnthropicAIService(
                         suggestedLocationId = new { type = new[] { "string", "null" } },
                         suggestedExpiration = new { type = new[] { "string", "null" }, description = "Format yyyy-MM-dd" },
                     },
-                    required = new[] { "productName", "quantity" },
+                    // additionalProperties: false exige que toutes les propriétés soient listées ici
+                    // (Anthropic structured outputs) — les champs optionnels restent nullable via leur type.
+                    required = new[] { "productName", "quantity", "matchedProductId", "suggestedLocationId", "suggestedExpiration" },
+                    additionalProperties = false,
                 },
             },
         }),
         ["required"] = JsonSerializer.SerializeToElement(new[] { "items" }),
+        ["additionalProperties"] = JsonSerializer.SerializeToElement(false),
     };
 
     private static readonly Dictionary<string, JsonElement> ShelfOutputSchema = new()
@@ -283,11 +287,13 @@ public class AnthropicAIService(
                         productName = new { type = "string" },
                         matchedProductId = new { type = new[] { "string", "null" } },
                     },
-                    required = new[] { "productName" },
+                    required = new[] { "productName", "matchedProductId" },
+                    additionalProperties = false,
                 },
             },
         }),
         ["required"] = JsonSerializer.SerializeToElement(new[] { "items" }),
+        ["additionalProperties"] = JsonSerializer.SerializeToElement(false),
     };
 
     private record ReceiptResponseDto(List<ReceiptItemDto> Items);
