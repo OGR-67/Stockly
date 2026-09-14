@@ -18,6 +18,7 @@ import { useCategories } from '../../hooks/queries/useCategories'
 import { useAllStockUnitMutations } from '../../hooks/queries/useStockUnits'
 import { useAiSettings } from '../../hooks/queries/useAiSettings'
 import { useToast } from '../../hooks/useToast'
+import { computeSuggestedDlc } from '../../utils/dateUtils'
 import type { Product } from '../../models/ProductModel'
 
 export const Route = createFileRoute('/store/scan-receipt')({
@@ -54,18 +55,45 @@ function RouteComponent() {
 
     async function handleCapture(file: File) {
         const items = await parseReceipt.mutateAsync(file)
-        setRows(items.map(item => ({
-            key: nextKey(),
-            productName: item.productName,
-            quantity: item.quantity,
-            locationId: item.suggestedLocationId,
-            expirationDate: item.suggestedExpiration ?? '',
-            product: products.find(p => p.id === item.matchedProductId) ?? null,
-        })))
+        setRows(items.map(item => {
+            const product = products.find(p => p.id === item.matchedProductId) ?? null
+            const location = item.suggestedLocationId
+                ? locations.find(l => l.id === item.suggestedLocationId)
+                : undefined
+
+            // Quand on connaît déjà le produit (donc sa catégorie) et l'emplacement suggéré, on
+            // recalcule la DLC nous-mêmes (defaultFrozenDays pour un congélateur, etc.) plutôt que
+            // de garder l'estimation brute de l'IA — celle-ci ne tient pas forcément compte du
+            // congélateur (ex: DLC déjà expirée proposée pour un poulet pourtant surgelé).
+            const expirationDate = product && location
+                ? computeSuggestedDlc(product, location)
+                : (item.suggestedExpiration ?? '')
+
+            return {
+                key: nextKey(),
+                productName: item.productName,
+                quantity: item.quantity,
+                locationId: item.suggestedLocationId,
+                expirationDate,
+                product,
+            }
+        }))
     }
 
     function updateRow(key: string, next: ReceiptDraftRow) {
-        setRows(prev => prev?.map(r => r.key === key ? next : r) ?? null)
+        setRows(prev => prev?.map(r => {
+            if (r.key !== key) return r
+
+            const productChanged = next.product?.id !== r.product?.id
+            const locationChanged = next.locationId !== r.locationId
+            if (next.product && next.locationId && (productChanged || locationChanged)) {
+                const location = locations.find(l => l.id === next.locationId)
+                if (location) {
+                    return { ...next, expirationDate: computeSuggestedDlc(next.product, location) }
+                }
+            }
+            return next
+        }) ?? null)
     }
 
     function removeRow(key: string) {
