@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Stockly.Application.Interfaces.Repositories;
 using Stockly.Application.Interfaces.Services;
+using Stockly.Core.Entities;
+using Stockly.Infrastructure.Ai;
 using Stockly.Infrastructure.Persistence;
 using Stockly.Infrastructure.Printing;
 using Stockly.Infrastructure.Repositories;
@@ -26,6 +28,29 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IPrintingService, CupsPrintingService>();
         services.AddScoped<IPrinterDiscoveryService, CupsDiscoveryService>();
+
+        services.AddAiServices(configuration);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Strategy pattern piloté par <see cref="AiProvider"/> : chaque fournisseur est enregistré comme
+    /// service à clé, et l'implémentation exposée en <see cref="IAIService"/> est résolue une fois selon
+    /// la configuration. Ajouter un fournisseur ne demande qu'un AddKeyedScoped supplémentaire ici.
+    /// </summary>
+    private static IServiceCollection AddAiServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddKeyedScoped<IAIService, NoAIService>(AiProvider.None);
+        // AnthropicAIService sera enregistré ici sous la clé AiProvider.Anthropic (issue #92).
+
+        services.AddScoped<IAIService>(sp =>
+        {
+            var provider = Enum.TryParse<AiProvider>(configuration["Ai:Provider"], ignoreCase: true, out var parsed)
+                ? parsed
+                : AiProvider.None;
+            return sp.GetRequiredKeyedService<IAIService>(provider);
+        });
 
         return services;
     }
