@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using Stockly.API.Controllers;
 using Stockly.Application.DTOs.Ai;
+using Stockly.Application.DTOs.StorageLocations;
+using Stockly.Application.Exceptions;
 using Stockly.Application.Interfaces.Services;
+using Stockly.Core.Entities;
 
 namespace Stockly.Tests.Controllers;
 
@@ -11,11 +14,12 @@ public class AiControllerTests
 {
     private readonly IAIServiceResolver _resolver = Substitute.For<IAIServiceResolver>();
     private readonly IAIService _aiService = Substitute.For<IAIService>();
+    private readonly IStorageLocationService _locationService = Substitute.For<IStorageLocationService>();
     private readonly AiController _sut;
 
     public AiControllerTests()
     {
-        _sut = new AiController(_resolver);
+        _sut = new AiController(_resolver, _locationService);
         _resolver.ResolveAsync(Arg.Any<CancellationToken>()).Returns(_aiService);
     }
 
@@ -54,6 +58,40 @@ public class AiControllerTests
         var result = await _sut.ParseReceipt(CreateImage(length: 0), CancellationToken.None);
 
         Assert.IsType<BadRequestObjectResult>(result);
+        await _resolver.DidNotReceive().ResolveAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RecognizeShelf_WithImageAndKnownLocation_ReturnsOkWithItemsFromResolvedService()
+    {
+        var locationId = Guid.NewGuid();
+        _locationService.GetByIdAsync(locationId).Returns(new StorageLocationResponse(locationId, "Frigo", LocationType.Fridge));
+        IReadOnlyList<ShelfItem> items = [new ShelfItem("Yaourts", null)];
+        _aiService.RecognizeShelfAsync(Arg.Any<Stream>(), locationId, Arg.Any<CancellationToken>()).Returns(items);
+
+        var result = await _sut.RecognizeShelf(CreateImage(), locationId, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Same(items, okResult.Value);
+    }
+
+    [Fact]
+    public async Task RecognizeShelf_WithUnknownLocation_ThrowsNotFoundExceptionWithoutResolvingAiService()
+    {
+        var locationId = Guid.NewGuid();
+        _locationService.GetByIdAsync(locationId).Returns(Task.FromException<StorageLocationResponse>(new NotFoundException("not found")));
+
+        await Assert.ThrowsAsync<NotFoundException>(() => _sut.RecognizeShelf(CreateImage(), locationId, CancellationToken.None));
+        await _resolver.DidNotReceive().ResolveAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RecognizeShelf_WithNullImage_ReturnsBadRequestWithoutCheckingLocationOrResolvingAiService()
+    {
+        var result = await _sut.RecognizeShelf(null, Guid.NewGuid(), CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+        await _locationService.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
         await _resolver.DidNotReceive().ResolveAsync(Arg.Any<CancellationToken>());
     }
 }
