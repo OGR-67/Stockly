@@ -25,8 +25,18 @@ cd Stockly
 
 Ce script configure automatiquement :
 - Le pre-commit hook (commit lint + formatage)
-- L'API + Postgres (migrations auto)
+- L'API + Postgres (migrations auto, + données de démo en environnement Development si la base
+  est vide — catégories, produits, emplacements, stock, recettes)
 - Le frontend (npm install + dev server)
+
+Pour repartir sur une base vierge (ex: après avoir cassé des données en testant) :
+
+```bash
+./scripts/start-dev.sh --fresh
+```
+
+Supprime le volume Postgres avant de redémarrer — les migrations et le seed de démo se
+réappliquent automatiquement.
 
 **Ou manuellement** :
 
