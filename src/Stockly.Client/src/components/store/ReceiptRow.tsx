@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faXmark, faCheck, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faCheck, faPlus, faMinus, faArrowsSplitUpAndLeft } from '@fortawesome/free-solid-svg-icons'
 import { FieldWrapper } from '../FieldWrapper'
 import { FormField } from '../FormField'
 import { SearchOrCreate } from '../SearchOrCreate'
@@ -22,9 +22,10 @@ interface ReceiptRowProps {
     onChange: (row: ReceiptDraftRow) => void
     onRemove: () => void
     onCreateProduct: () => void
+    onSplit: () => void
 }
 
-export function ReceiptRow({ row, products, locations, onChange, onRemove, onCreateProduct }: ReceiptRowProps) {
+export function ReceiptRow({ row, products, locations, onChange, onRemove, onCreateProduct, onSplit }: ReceiptRowProps) {
     function adjustQuantity(delta: number) {
         onChange({ ...row, quantity: Math.max(1, row.quantity + delta) })
     }
@@ -104,6 +105,16 @@ export function ReceiptRow({ row, products, locations, onChange, onRemove, onCre
                     </button>
                 </div>
             </FieldWrapper>
+
+            {row.quantity > 1 && (
+                <button
+                    onClick={onSplit}
+                    className="flex items-center justify-center gap-2 text-xs text-earth py-1"
+                >
+                    <FontAwesomeIcon icon={faArrowsSplitUpAndLeft} />
+                    Séparer 1 unité (emplacement/DLC différents)
+                </button>
+            )}
         </div>
     )
 }

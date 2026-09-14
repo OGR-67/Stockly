@@ -73,6 +73,24 @@ function RouteComponent() {
         setRows(prev => prev?.filter(r => r.key !== key) ?? null)
     }
 
+    // Détache 1 unité de la ligne vers une nouvelle ligne indépendante -- utile quand un même
+    // article (ex: 2 bières) doit finir dans deux emplacements différents.
+    function splitRow(key: string) {
+        haptic()
+        setRows(prev => {
+            if (!prev) return prev
+            const index = prev.findIndex(r => r.key === key)
+            if (index === -1) return prev
+            const row = prev[index]
+            if (row.quantity <= 1) return prev
+
+            const next = [...prev]
+            next[index] = { ...row, quantity: row.quantity - 1 }
+            next.splice(index + 1, 0, { ...row, key: nextKey(), quantity: 1 })
+            return next
+        })
+    }
+
     async function handleCreateProduct(data: Omit<Product, 'id'>) {
         const created = await createProduct.mutateAsync(data)
         haptic.confirm()
@@ -167,6 +185,7 @@ function RouteComponent() {
                             onChange={(next) => { updateRow(row.key, next) }}
                             onRemove={() => { removeRow(row.key) }}
                             onCreateProduct={() => { setProductModalRowKey(row.key) }}
+                            onSplit={() => { splitRow(row.key) }}
                         />
                     ))}
 
