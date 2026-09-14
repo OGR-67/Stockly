@@ -1,3 +1,4 @@
+using Anthropic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,7 +43,14 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddAiServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddKeyedScoped<IAIService, NoAIService>(AiProvider.None);
-        // AnthropicAIService sera enregistré ici sous la clé AiProvider.Anthropic (issue #92).
+
+        services.AddSingleton(_ =>
+        {
+            var apiKey = configuration["Ai:Anthropic:ApiKey"];
+            return string.IsNullOrWhiteSpace(apiKey) ? new AnthropicClient() : new AnthropicClient { ApiKey = apiKey };
+        });
+        services.AddSingleton(sp => sp.GetRequiredService<AnthropicClient>().Messages);
+        services.AddKeyedScoped<IAIService, AnthropicAIService>(AiProvider.Anthropic);
 
         services.AddScoped<IAIService>(sp =>
         {
