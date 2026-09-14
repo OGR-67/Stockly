@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCamera } from '@fortawesome/free-solid-svg-icons'
@@ -44,6 +44,13 @@ function RouteComponent() {
     const [rows, setRows] = useState<ReceiptDraftRow[] | null>(null)
     const [productModalRowKey, setProductModalRowKey] = useState<string | null>(null)
     const [submitting, setSubmitting] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    // Ouvre directement le sélecteur de fichier/caméra à l'arrivée sur la page, pour éviter un
+    // clic supplémentaire ("Prendre en photo" puis re-cliquer sur l'input caché).
+    useEffect(() => {
+        fileInputRef.current?.click()
+    }, [])
 
     async function handleCapture(file: File) {
         const items = await parseReceipt.mutateAsync(file)
@@ -125,6 +132,7 @@ function RouteComponent() {
                         </div>
                         <span className="text-sm text-earth font-medium">Prendre en photo le ticket</span>
                         <input
+                            ref={fileInputRef}
                             type="file"
                             accept="image/*"
                             capture="environment"
