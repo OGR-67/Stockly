@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCamera } from '@fortawesome/free-solid-svg-icons'
 import { haptic } from 'ios-haptics'
@@ -112,7 +112,11 @@ function RouteComponent() {
                 <div className="flex flex-col items-center gap-4 py-12">
                     {aiSettings?.aiProvider === 'none' && (
                         <div className="p-3 bg-earth/10 rounded-xl text-sm text-earth text-center">
-                            Aucun fournisseur IA configuré — rendez-vous dans Réglages pour en activer un.
+                            Aucun fournisseur IA configuré — rendez-vous dans{' '}
+                            <Link to="/admin/settings" className="underline font-medium">
+                                Réglages
+                            </Link>
+                            {' '}pour en activer un.
                         </div>
                     )}
                     <label className="flex flex-col items-center gap-2 cursor-pointer">
