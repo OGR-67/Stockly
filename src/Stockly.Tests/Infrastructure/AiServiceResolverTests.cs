@@ -17,6 +17,9 @@ public class AiServiceResolverTests
 
         public Task<IReadOnlyList<ShelfItem>> RecognizeShelfAsync(Stream imageStream, Guid locationId, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<ShelfItem>>([]);
+
+        public Task<AiConnectionTestResult> TestConnectionAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(new AiConnectionTestResult(true, null));
     }
 
     private static IAIServiceResolver BuildResolver(Settings settings, bool registerAnthropic)

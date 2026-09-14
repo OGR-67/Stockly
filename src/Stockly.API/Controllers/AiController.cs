@@ -38,4 +38,12 @@ public class AiController(IAIServiceResolver aiServiceResolver, IStorageLocation
 
         return Ok(items);
     }
+
+    [HttpPost("test-connection")]
+    public async Task<IActionResult> TestConnection(CancellationToken cancellationToken)
+    {
+        var aiService = await aiServiceResolver.ResolveAsync(cancellationToken);
+        var result = await aiService.TestConnectionAsync(cancellationToken);
+        return Ok(result);
+    }
 }

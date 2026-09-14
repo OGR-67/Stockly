@@ -94,4 +94,28 @@ public class AiControllerTests
         await _locationService.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
         await _resolver.DidNotReceive().ResolveAsync(Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task TestConnection_ReturnsOkWithResultFromResolvedService()
+    {
+        var testResult = new AiConnectionTestResult(true, null);
+        _aiService.TestConnectionAsync(Arg.Any<CancellationToken>()).Returns(testResult);
+
+        var result = await _sut.TestConnection(CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Same(testResult, okResult.Value);
+    }
+
+    [Fact]
+    public async Task TestConnection_WithFailure_ReturnsOkWithFailureResult()
+    {
+        var testResult = new AiConnectionTestResult(false, "Clé API invalide.");
+        _aiService.TestConnectionAsync(Arg.Any<CancellationToken>()).Returns(testResult);
+
+        var result = await _sut.TestConnection(CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Same(testResult, okResult.Value);
+    }
 }

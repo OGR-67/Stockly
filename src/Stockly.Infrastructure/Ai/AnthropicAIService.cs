@@ -106,6 +106,33 @@ public class AnthropicAIService(
         return parsed.Items.Select(i => new ShelfItem(i.ProductName, TryParseGuid(i.MatchedProductId))).ToList();
     }
 
+    public async Task<AiConnectionTestResult> TestConnectionAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await messages.Create(new MessageCreateParams
+            {
+                Model = Model,
+                MaxTokens = 8,
+                Messages = [new() { Role = Role.User, Content = "Réponds uniquement par OK." }],
+            }, cancellationToken);
+
+            return new AiConnectionTestResult(true, null);
+        }
+        catch (AnthropicRateLimitException)
+        {
+            return new AiConnectionTestResult(false, "L'API Anthropic est temporairement limitée en débit (rate limit).");
+        }
+        catch (AnthropicUnauthorizedException)
+        {
+            return new AiConnectionTestResult(false, "Clé API Anthropic invalide ou manquante.");
+        }
+        catch (AnthropicApiException ex)
+        {
+            return new AiConnectionTestResult(false, $"Échec de l'appel à l'API Anthropic : {ex.Message}");
+        }
+    }
+
     private async Task<Message> CreateMessageAsync(string systemPrompt, string userText, Stream imageStream, Dictionary<string, JsonElement> outputSchema, CancellationToken cancellationToken)
     {
         var imageData = await ToBase64Async(imageStream, cancellationToken);

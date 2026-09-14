@@ -35,4 +35,13 @@ public class NoAIServiceTests
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public async Task TestConnectionAsync_ReturnsFailureWithoutThrowing()
+    {
+        var result = await _sut.TestConnectionAsync();
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.ErrorMessage);
+    }
 }

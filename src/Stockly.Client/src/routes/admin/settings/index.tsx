@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch, faTrash, faPlus, faSpinner, faRobot } from '@fortawesome/free-solid-svg-icons'
+import { faSearch, faTrash, faPlus, faSpinner, faRobot, faCircleCheck, faCircleXmark } from '@fortawesome/free-solid-svg-icons'
 import { haptic } from 'ios-haptics'
 import { StackPage } from '../../../components/layout/StackPage'
 import { FieldWrapper } from '../../../components/FieldWrapper'
@@ -9,6 +9,7 @@ import { Toggle } from '../../../components/Toggle'
 import { useSettings } from '../../../hooks/useSettings'
 import { usePrinters, usePrinterFormats, usePrinterMutations } from '../../../hooks/queries/usePrinter'
 import { useAiSettings, useAiSettingsMutations } from '../../../hooks/queries/useAiSettings'
+import { useAiConnectionTest } from '../../../hooks/queries/useAiConnectionTest'
 import { printerService } from '../../../services'
 import type { DiscoveredPrinter } from '../../../models/PrinterModel'
 import type { AiProvider } from '../../../models/SettingsModel'
@@ -30,6 +31,7 @@ function RouteComponent() {
     const { register, remove } = usePrinterMutations()
     const { data: aiSettings } = useAiSettings()
     const { update: updateAiSettings } = useAiSettingsMutations()
+    const testConnection = useAiConnectionTest()
 
     const [discovering, setDiscovering] = useState(false)
     const [discovered, setDiscovered] = useState<DiscoveredPrinter[]>([])
@@ -43,11 +45,13 @@ function RouteComponent() {
 
     function handleAiProviderChange(provider: AiProvider) {
         haptic()
+        testConnection.reset()
         updateAiSettings.mutate({ aiProvider: provider })
     }
 
     function handleSaveApiKey() {
         if (!apiKeyInput.trim()) return
+        testConnection.reset()
         updateAiSettings.mutate({ aiProvider, aiApiKey: apiKeyInput.trim() })
         haptic.confirm()
         setApiKeyInput('')
@@ -55,8 +59,14 @@ function RouteComponent() {
 
     function handleClearApiKey() {
         if (!window.confirm('Supprimer la clé API enregistrée ?')) return
+        testConnection.reset()
         updateAiSettings.mutate({ aiProvider, aiApiKey: '' })
         haptic.error()
+    }
+
+    function handleTestConnection() {
+        haptic()
+        testConnection.mutate()
     }
 
     useEffect(() => {
@@ -160,6 +170,26 @@ function RouteComponent() {
                                 </button>
                             )}
                         </FieldWrapper>
+                    )}
+
+                    {aiProvider !== 'none' && aiSettings?.hasAiApiKey && (
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={handleTestConnection}
+                                disabled={testConnection.isPending}
+                                className="flex items-center justify-center gap-2 py-2 rounded-lg border border-stone-300 text-sm text-bark disabled:opacity-50"
+                            >
+                                <FontAwesomeIcon icon={faSpinner} spin={testConnection.isPending} className={testConnection.isPending ? '' : 'hidden'} />
+                                Tester la connexion
+                            </button>
+
+                            {testConnection.data && (
+                                <div className={`flex items-start gap-2 text-xs px-3 py-2 rounded-lg ${testConnection.data.success ? 'bg-sage-light/40 text-bark' : 'bg-red-50 text-red-700'}`}>
+                                    <FontAwesomeIcon icon={testConnection.data.success ? faCircleCheck : faCircleXmark} className="mt-0.5" />
+                                    <span>{testConnection.data.success ? 'Connexion réussie.' : (testConnection.data.errorMessage ?? 'Échec de la connexion.')}</span>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
 
