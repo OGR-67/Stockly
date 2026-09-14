@@ -9,6 +9,22 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: stockly
+          POSTGRES_PASSWORD: stockly
+          POSTGRES_DB: stockly
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      ConnectionStrings__Default: "Host=localhost;Port=5432;Database=stockly;Username=stockly;Password=stockly"
     steps:
       - uses: actions/checkout@v4
 
@@ -24,3 +40,18 @@ jobs:
 
       - name: Test
         run: dotnet test Stockly.sln --no-build --configuration Release
+
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Check for model changes missing a migration
+        run: >-
+          dotnet ef migrations has-pending-model-changes
+          --project src/Stockly.Infrastructure
+          --startup-project src/Stockly.API
+
+      - name: Apply migrations against a real database
+        run: >-
+          dotnet ef database update
+          --project src/Stockly.Infrastructure
+          --startup-project src/Stockly.API
