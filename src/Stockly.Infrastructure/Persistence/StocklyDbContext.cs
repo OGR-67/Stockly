@@ -16,6 +16,7 @@ public class StocklyDbContext(DbContextOptions<StocklyDbContext> options) : DbCo
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<GroceryList> GroceryLists => Set<GroceryList>();
     public DbSet<GroceryListItem> GroceryListItems => Set<GroceryListItem>();
+    public DbSet<Settings> Settings => Set<Settings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,5 +30,6 @@ public class StocklyDbContext(DbContextOptions<StocklyDbContext> options) : DbCo
         modelBuilder.ApplyConfiguration(new RecipeConfiguration());
         modelBuilder.ApplyConfiguration(new GroceryListConfiguration());
         modelBuilder.ApplyConfiguration(new GroceryListItemConfiguration());
+        modelBuilder.ApplyConfiguration(new SettingsConfiguration());
     }
 }

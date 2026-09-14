@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPrinterService, PrinterService>();
         services.AddScoped<IRecipeService, RecipeService>();
         services.AddScoped<IGroceryListService, GroceryListService>();
+        services.AddScoped<ISettingsService, SettingsService>();
 
         return services;
     }
