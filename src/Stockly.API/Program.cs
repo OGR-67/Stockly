@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Stockly.API.Exceptions;
 using Stockly.API.Middleware;
 using Stockly.DI;
+using Stockly.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ await app.Services.ApplyMigrationsAsync();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    await app.Services.SeedDevDataAsync();
 }
 
 app.UseExceptionHandler();

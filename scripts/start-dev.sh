@@ -1,5 +1,7 @@
 #!/bin/sh
 # Démarre l'environnement de développement (API + Frontend)
+# Usage: ./scripts/start-dev.sh [--fresh]
+#   --fresh : supprime le volume Postgres avant de redémarrer (base vierge, reseedée au démarrage)
 
 set -e
 
@@ -12,8 +14,14 @@ if [ ! -d "$PROJECT_ROOT/.husky/_" ]; then
   npx github:OGR-67/setup-git-flow
 fi
 
-echo "Démarrage de l'API et PostgreSQL..."
 cd "$PROJECT_ROOT"
+
+if [ "$1" = "--fresh" ]; then
+  echo "Suppression du volume Postgres (--fresh)..."
+  docker compose down -v
+fi
+
+echo "Démarrage de l'API et PostgreSQL..."
 docker compose up --build -d
 
 echo "Attente du démarrage complet..."
