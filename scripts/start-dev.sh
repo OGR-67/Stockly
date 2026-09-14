@@ -50,16 +50,17 @@ if [ -n "$PORT_PID" ]; then
 fi
 
 echo "Démarrage de l'API (dotnet watch, hot reload sur localhost:5050)..."
-# set -m : donne à dotnet watch (et ses enfants : MSBuild, l'appli compilée) son propre groupe de
-# processus, pour pouvoir tous les tuer d'un coup à l'arrêt -- sinon `kill $API_PID` ne tue que le
-# wrapper dotnet watch et laisse l'appli tourner en orphelin, squattant le port au prochain lancement.
-set -m
 dotnet watch run --project src/Stockly.API --no-launch-profile --non-interactive &
 API_PID=$!
-set +m
-# TERM d'abord (arrêt propre), puis KILL de secours -- le wrapper "dotnet watch run" survit
-# parfois à un simple SIGTERM même quand ses enfants (l'appli compilée) meurent bien.
-trap 'kill -TERM -$API_PID 2>/dev/null; sleep 1; kill -KILL -$API_PID 2>/dev/null' EXIT INT TERM
+# `kill $API_PID` seul ne tue que le wrapper "dotnet watch run", pas l'appli compilée qu'il
+# lance -- elle reste orpheline et garde le port 5050 occupé au prochain lancement. On la cible
+# directement par son chemin plutôt que de jouer avec les groupes de processus (set -m casse le
+# lancement de dotnet watch en arrière-plan dans ce shell non interactif).
+trap '
+  pkill -f "bin/Debug/net10.0/Stockly.API$" 2>/dev/null
+  pkill -f "dotnet-watch.dll run --project src/Stockly.API" 2>/dev/null
+  kill $API_PID 2>/dev/null
+' EXIT INT TERM
 
 echo "Démarrage du frontend..."
 cd src/Stockly.Client
