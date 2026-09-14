@@ -20,6 +20,12 @@ const AI_PROVIDER_LABELS: Record<AiProvider, string> = {
     openAi: 'OpenAI',
 }
 
+const ANTHROPIC_MODEL_LABELS: Record<string, string> = {
+    'claude-sonnet-5': 'Sonnet — équilibré (recommandé)',
+    'claude-opus-5': 'Opus — le plus capable, plus cher',
+    'claude-haiku-4-5': 'Haiku — le plus rapide/économique',
+}
+
 export const Route = createFileRoute('/admin/settings/')({
     component: RouteComponent,
 })
@@ -47,6 +53,12 @@ function RouteComponent() {
         haptic()
         testConnection.reset()
         updateAiSettings.mutate({ aiProvider: provider })
+    }
+
+    function handleAiModelChange(model: string) {
+        haptic()
+        testConnection.reset()
+        updateAiSettings.mutate({ aiProvider, aiModel: model })
     }
 
     function handleSaveApiKey() {
@@ -172,12 +184,26 @@ function RouteComponent() {
                         </FieldWrapper>
                     )}
 
+                    {aiProvider === 'anthropic' && (
+                        <FieldWrapper label="Modèle">
+                            <select
+                                value={aiSettings?.aiModel ?? 'claude-sonnet-5'}
+                                onChange={(e) => handleAiModelChange(e.target.value)}
+                                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
+                            >
+                                {Object.entries(ANTHROPIC_MODEL_LABELS).map(([value, label]) => (
+                                    <option key={value} value={value}>{label}</option>
+                                ))}
+                            </select>
+                        </FieldWrapper>
+                    )}
+
                     {aiProvider !== 'none' && aiSettings?.hasAiApiKey && (
                         <div className="flex flex-col gap-2">
                             <button
                                 onClick={handleTestConnection}
                                 disabled={testConnection.isPending}
-                                className="flex items-center justify-center gap-2 py-2 rounded-lg border border-stone-300 text-sm text-bark disabled:opacity-50"
+                                className="flex items-center justify-center gap-2 py-2 rounded-lg border border-stone-300 text-sm text-bark disabled:opacity-50 cursor-pointer disabled:cursor-default"
                             >
                                 <FontAwesomeIcon icon={faSpinner} spin={testConnection.isPending} className={testConnection.isPending ? '' : 'hidden'} />
                                 Tester la connexion

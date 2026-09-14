@@ -2,7 +2,6 @@ using System.Text.Json;
 using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
 using Anthropic.Services;
-using Microsoft.Extensions.Configuration;
 using Stockly.Application.DTOs.Ai;
 using Stockly.Application.Exceptions;
 using Stockly.Application.Interfaces.Repositories;
@@ -20,11 +19,15 @@ public class AnthropicAIService(
     IProductRepository productRepository,
     IStorageLocationRepository locationRepository,
     IStockUnitRepository stockUnitRepository,
-    IConfiguration configuration) : IAIService
+    ISettingsRepository settingsRepository) : IAIService
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    private string Model => configuration["Ai:Anthropic:Model"] ?? "claude-opus-5";
+    private async Task<string> GetModelAsync()
+    {
+        var settings = await settingsRepository.GetAsync();
+        return settings.AiModel;
+    }
 
     public async Task<IReadOnlyList<ReceiptItem>> ParseReceiptAsync(Stream imageStream, CancellationToken cancellationToken = default)
     {
@@ -112,7 +115,7 @@ public class AnthropicAIService(
         {
             await messages.Create(new MessageCreateParams
             {
-                Model = Model,
+                Model = await GetModelAsync(),
                 MaxTokens = 8,
                 Messages = [new() { Role = Role.User, Content = "Réponds uniquement par OK." }],
             }, cancellationToken);
@@ -141,7 +144,7 @@ public class AnthropicAIService(
         {
             return await messages.Create(new MessageCreateParams
             {
-                Model = Model,
+                Model = await GetModelAsync(),
                 MaxTokens = 4096,
                 System = systemPrompt,
                 Messages =

@@ -9,4 +9,5 @@ public class Settings
     public Guid Id { get; set; }
     public AiProvider AiProvider { get; set; } = AiProvider.None;
     public string? AiApiKey { get; set; }
+    public string AiModel { get; set; } = "claude-sonnet-5";
 }

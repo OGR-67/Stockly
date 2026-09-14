@@ -20,11 +20,13 @@ public class SettingsService(ISettingsRepository repository) : ISettingsService
         existing.AiProvider = request.AiProvider;
         if (request.AiApiKey is not null)
             existing.AiApiKey = request.AiApiKey.Length == 0 ? null : request.AiApiKey;
+        if (!string.IsNullOrEmpty(request.AiModel))
+            existing.AiModel = request.AiModel;
 
         var updated = await repository.UpdateAsync(existing);
         return ToResponse(updated);
     }
 
     private static SettingsResponse ToResponse(Settings s) =>
-        new(s.Id, s.AiProvider, !string.IsNullOrEmpty(s.AiApiKey));
+        new(s.Id, s.AiProvider, !string.IsNullOrEmpty(s.AiApiKey), s.AiModel);
 }
