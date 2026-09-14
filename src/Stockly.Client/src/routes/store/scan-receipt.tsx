@@ -130,11 +130,11 @@ function RouteComponent() {
                         <div className="w-20 h-20 rounded-full bg-sage-light flex items-center justify-center text-2xl text-earth">
                             <FontAwesomeIcon icon={faCamera} />
                         </div>
-                        <span className="text-sm text-earth font-medium">Prendre en photo le ticket</span>
+                        <span className="text-sm text-earth font-medium">Photo ou PDF du ticket</span>
                         <input
                             ref={fileInputRef}
                             type="file"
-                            accept="image/*"
+                            accept="image/*,application/pdf"
                             capture="environment"
                             className="hidden"
                             onChange={(e) => {

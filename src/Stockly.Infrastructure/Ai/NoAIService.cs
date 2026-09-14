@@ -5,10 +5,10 @@ namespace Stockly.Infrastructure.Ai;
 
 public class NoAIService : IAIService
 {
-    public Task<IReadOnlyList<ReceiptItem>> ParseReceiptAsync(Stream imageStream, CancellationToken cancellationToken = default) =>
+    public Task<IReadOnlyList<ReceiptItem>> ParseReceiptAsync(Stream imageStream, string imageContentType, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<ReceiptItem>>([]);
 
-    public Task<IReadOnlyList<ShelfItem>> RecognizeShelfAsync(Stream imageStream, Guid locationId, CancellationToken cancellationToken = default) =>
+    public Task<IReadOnlyList<ShelfItem>> RecognizeShelfAsync(Stream imageStream, string imageContentType, Guid locationId, CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<ShelfItem>>([]);
 
     public Task<AiConnectionTestResult> TestConnectionAsync(CancellationToken cancellationToken = default) =>

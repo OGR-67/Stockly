@@ -11,7 +11,7 @@ public class NoAIServiceTests
     {
         using var stream = new MemoryStream();
 
-        var result = await _sut.ParseReceiptAsync(stream);
+        var result = await _sut.ParseReceiptAsync(stream, "image/jpeg");
 
         Assert.Empty(result);
     }
@@ -21,7 +21,7 @@ public class NoAIServiceTests
     {
         using var stream = new MemoryStream([]);
 
-        var exception = await Record.ExceptionAsync(() => _sut.ParseReceiptAsync(stream));
+        var exception = await Record.ExceptionAsync(() => _sut.ParseReceiptAsync(stream, "image/jpeg"));
 
         Assert.Null(exception);
     }
@@ -31,7 +31,7 @@ public class NoAIServiceTests
     {
         using var stream = new MemoryStream();
 
-        var result = await _sut.RecognizeShelfAsync(stream, Guid.NewGuid());
+        var result = await _sut.RecognizeShelfAsync(stream, "image/jpeg", Guid.NewGuid());
 
         Assert.Empty(result);
     }

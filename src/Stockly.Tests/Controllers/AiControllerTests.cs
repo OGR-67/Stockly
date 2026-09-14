@@ -35,7 +35,7 @@ public class AiControllerTests
     public async Task ParseReceipt_WithImage_ReturnsOkWithItemsFromResolvedService()
     {
         IReadOnlyList<ReceiptItem> items = [new ReceiptItem("Camembert", 1, null, null, null)];
-        _aiService.ParseReceiptAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>()).Returns(items);
+        _aiService.ParseReceiptAsync(Arg.Any<Stream>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(items);
 
         var result = await _sut.ParseReceipt(CreateImage(), CancellationToken.None);
 
@@ -67,7 +67,7 @@ public class AiControllerTests
         var locationId = Guid.NewGuid();
         _locationService.GetByIdAsync(locationId).Returns(new StorageLocationResponse(locationId, "Frigo", LocationType.Fridge, null));
         IReadOnlyList<ShelfItem> items = [new ShelfItem("Yaourts", null)];
-        _aiService.RecognizeShelfAsync(Arg.Any<Stream>(), locationId, Arg.Any<CancellationToken>()).Returns(items);
+        _aiService.RecognizeShelfAsync(Arg.Any<Stream>(), Arg.Any<string>(), locationId, Arg.Any<CancellationToken>()).Returns(items);
 
         var result = await _sut.RecognizeShelf(CreateImage(), locationId, CancellationToken.None);
 

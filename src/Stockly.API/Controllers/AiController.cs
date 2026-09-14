@@ -16,7 +16,7 @@ public class AiController(IAIServiceResolver aiServiceResolver, IStorageLocation
         var aiService = await aiServiceResolver.ResolveAsync(cancellationToken);
 
         await using var stream = image.OpenReadStream();
-        var items = await aiService.ParseReceiptAsync(stream, cancellationToken);
+        var items = await aiService.ParseReceiptAsync(stream, image.ContentType, cancellationToken);
 
         return Ok(items);
     }
@@ -34,7 +34,7 @@ public class AiController(IAIServiceResolver aiServiceResolver, IStorageLocation
         var aiService = await aiServiceResolver.ResolveAsync(cancellationToken);
 
         await using var stream = image.OpenReadStream();
-        var items = await aiService.RecognizeShelfAsync(stream, locationId, cancellationToken);
+        var items = await aiService.RecognizeShelfAsync(stream, image.ContentType, locationId, cancellationToken);
 
         return Ok(items);
     }
