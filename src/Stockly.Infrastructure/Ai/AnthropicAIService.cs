@@ -41,7 +41,12 @@ public class AnthropicAIService(
         });
 
         var systemPrompt = $"""
-            Tu analyses la photo d'un ticket de caisse pour une application de gestion de stock alimentaire.
+            Tu analyses la photo ou le PDF d'un ticket de caisse/bon de commande pour une application
+            de gestion de stock alimentaire. Le document peut faire plusieurs pages et contenir 30+
+            lignes distinctes, parfois avec des noms de produits proches (ex: deux sauces différentes)
+            — relis le document ligne par ligne, page par page, jusqu'à la dernière, et vérifie que
+            chaque ligne d'article a bien un article correspondant en sortie avant de conclure. Ne
+            fusionne jamais deux lignes distinctes en une seule même si leurs noms se ressemblent.
             Référentiel existant (JSON) : {catalog}
             Pour chaque article du ticket, déduis un nom de produit, une quantité, un emplacement de
             rangement suggéré et une date de péremption suggérée (format yyyy-MM-dd) selon ta
@@ -54,7 +59,7 @@ public class AnthropicAIService(
             vides (null) si tu n'es pas sûr.
             """;
 
-        var response = await CreateMessageAsync(systemPrompt, "Analyse ce ticket de caisse et liste les articles achetés.", imageStream, imageContentType, ReceiptOutputSchema, cancellationToken);
+        var response = await CreateMessageAsync(systemPrompt, "Analyse ce ticket de caisse et liste tous les articles achetés, sans en oublier un seul.", imageStream, imageContentType, ReceiptOutputSchema, cancellationToken);
 
         return MapReceiptResponse(ExtractText(response));
     }
@@ -149,7 +154,9 @@ public class AnthropicAIService(
             return await messages.Create(new MessageCreateParams
             {
                 Model = await GetModelAsync(),
-                MaxTokens = 4096,
+                // Un bon de commande volumineux (multi-pages, 30+ articles) peut produire une
+                // sortie structurée conséquente -- marge confortable pour éviter une troncature.
+                MaxTokens = 8192,
                 System = systemPrompt,
                 Messages =
                 [
