@@ -12,6 +12,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         {
             NotFoundException => (StatusCodes.Status404NotFound, "Not Found"),
             NotImplementedException => (StatusCodes.Status501NotImplemented, "Not Implemented"),
+            AiServiceException => (StatusCodes.Status502BadGateway, "AI Service Error"),
             _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
         };
 
