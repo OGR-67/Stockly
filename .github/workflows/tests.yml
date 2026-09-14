@@ -1,0 +1,26 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore Stockly.sln
+
+      - name: Build
+        run: dotnet build Stockly.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Stockly.sln --no-build --configuration Release
