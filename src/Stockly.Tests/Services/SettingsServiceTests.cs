@@ -53,7 +53,7 @@ public class SettingsServiceTests
         _repository.GetAsync().Returns(settings);
         _repository.UpdateAsync(Arg.Any<Settings>()).Returns(ci => ci.Arg<Settings>());
 
-        var result = await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, null));
+        var result = await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, null, null));
 
         Assert.Equal(AiProvider.Anthropic, result.AiProvider);
     }
@@ -65,7 +65,7 @@ public class SettingsServiceTests
         _repository.GetAsync().Returns(settings);
         _repository.UpdateAsync(Arg.Any<Settings>()).Returns(ci => ci.Arg<Settings>());
 
-        await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, null));
+        await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, null, null));
 
         Assert.Equal("sk-existing", settings.AiApiKey);
     }
@@ -77,7 +77,7 @@ public class SettingsServiceTests
         _repository.GetAsync().Returns(settings);
         _repository.UpdateAsync(Arg.Any<Settings>()).Returns(ci => ci.Arg<Settings>());
 
-        var result = await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, "sk-new"));
+        var result = await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, "sk-new", null));
 
         Assert.Equal("sk-new", settings.AiApiKey);
         Assert.True(result.HasAiApiKey);
@@ -90,9 +90,34 @@ public class SettingsServiceTests
         _repository.GetAsync().Returns(settings);
         _repository.UpdateAsync(Arg.Any<Settings>()).Returns(ci => ci.Arg<Settings>());
 
-        var result = await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, ""));
+        var result = await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, "", null));
 
         Assert.Null(settings.AiApiKey);
         Assert.False(result.HasAiApiKey);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WithNewModel_ChangesModel()
+    {
+        var settings = CreateSettings(AiProvider.Anthropic);
+        _repository.GetAsync().Returns(settings);
+        _repository.UpdateAsync(Arg.Any<Settings>()).Returns(ci => ci.Arg<Settings>());
+
+        var result = await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, null, "claude-opus-5"));
+
+        Assert.Equal("claude-opus-5", result.AiModel);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WithNullOrEmptyModel_KeepsExistingModel()
+    {
+        var settings = CreateSettings(AiProvider.Anthropic);
+        settings.AiModel = "claude-sonnet-5";
+        _repository.GetAsync().Returns(settings);
+        _repository.UpdateAsync(Arg.Any<Settings>()).Returns(ci => ci.Arg<Settings>());
+
+        await _sut.UpdateAsync(new SaveSettingsRequest(AiProvider.Anthropic, null, null));
+
+        Assert.Equal("claude-sonnet-5", settings.AiModel);
     }
 }

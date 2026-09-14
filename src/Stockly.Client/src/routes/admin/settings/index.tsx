@@ -1,15 +1,30 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch, faTrash, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faSearch, faTrash, faPlus, faSpinner, faRobot, faCircleCheck, faCircleXmark } from '@fortawesome/free-solid-svg-icons'
 import { haptic } from 'ios-haptics'
 import { StackPage } from '../../../components/layout/StackPage'
 import { FieldWrapper } from '../../../components/FieldWrapper'
 import { Toggle } from '../../../components/Toggle'
 import { useSettings } from '../../../hooks/useSettings'
 import { usePrinters, usePrinterFormats, usePrinterMutations } from '../../../hooks/queries/usePrinter'
+import { useAiSettings, useAiSettingsMutations } from '../../../hooks/queries/useAiSettings'
+import { useAiConnectionTest } from '../../../hooks/queries/useAiConnectionTest'
 import { printerService } from '../../../services'
 import type { DiscoveredPrinter } from '../../../models/PrinterModel'
+import type { AiProvider } from '../../../models/SettingsModel'
+
+const AI_PROVIDER_LABELS: Record<AiProvider, string> = {
+    none: 'Aucune (désactivée)',
+    anthropic: 'Anthropic (Claude)',
+    openAi: 'OpenAI',
+}
+
+const ANTHROPIC_MODEL_LABELS: Record<string, string> = {
+    'claude-sonnet-5': 'Sonnet — équilibré (recommandé)',
+    'claude-opus-5': 'Opus — le plus capable, plus cher',
+    'claude-haiku-4-5': 'Haiku — le plus rapide/économique',
+}
 
 export const Route = createFileRoute('/admin/settings/')({
     component: RouteComponent,
@@ -20,6 +35,9 @@ function RouteComponent() {
     const { data: printers = [] } = usePrinters()
     const { data: formats = [] } = usePrinterFormats(settings.defaultPrinterId)
     const { register, remove } = usePrinterMutations()
+    const { data: aiSettings } = useAiSettings()
+    const { update: updateAiSettings } = useAiSettingsMutations()
+    const testConnection = useAiConnectionTest()
 
     const [discovering, setDiscovering] = useState(false)
     const [discovered, setDiscovered] = useState<DiscoveredPrinter[]>([])
@@ -27,6 +45,41 @@ function RouteComponent() {
     const [manualName, setManualName] = useState('')
     const [manualQueueName, setManualQueueName] = useState('')
     const [manualPort, setManualPort] = useState('631')
+    const [apiKeyInput, setApiKeyInput] = useState('')
+
+    const aiProvider = aiSettings?.aiProvider ?? 'none'
+
+    function handleAiProviderChange(provider: AiProvider) {
+        haptic()
+        testConnection.reset()
+        updateAiSettings.mutate({ aiProvider: provider })
+    }
+
+    function handleAiModelChange(model: string) {
+        haptic()
+        testConnection.reset()
+        updateAiSettings.mutate({ aiProvider, aiModel: model })
+    }
+
+    function handleSaveApiKey() {
+        if (!apiKeyInput.trim()) return
+        testConnection.reset()
+        updateAiSettings.mutate({ aiProvider, aiApiKey: apiKeyInput.trim() })
+        haptic.confirm()
+        setApiKeyInput('')
+    }
+
+    function handleClearApiKey() {
+        if (!window.confirm('Supprimer la clé API enregistrée ?')) return
+        testConnection.reset()
+        updateAiSettings.mutate({ aiProvider, aiApiKey: '' })
+        haptic.error()
+    }
+
+    function handleTestConnection() {
+        haptic()
+        testConnection.mutate()
+    }
 
     useEffect(() => {
         if (formats.length > 0 && settings.defaultPrinterId && !settings.defaultFormatId) {
@@ -82,6 +135,88 @@ function RouteComponent() {
                             Désactiver si vous utilisez une douchette Bluetooth
                         </p>
                     </div>
+                </div>
+
+                <div className="bg-cream rounded-xl border border-sage/30 px-4 py-3 flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={faRobot} className="text-earth" />
+                        <p className="text-sm font-medium text-bark">Intelligence artificielle</p>
+                    </div>
+
+                    <FieldWrapper label="Fournisseur">
+                        <select
+                            value={aiProvider}
+                            onChange={(e) => handleAiProviderChange(e.target.value as AiProvider)}
+                            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
+                        >
+                            {Object.entries(AI_PROVIDER_LABELS).map(([value, label]) => (
+                                <option key={value} value={value}>{label}</option>
+                            ))}
+                        </select>
+                    </FieldWrapper>
+
+                    {aiProvider !== 'none' && (
+                        <FieldWrapper label="Clé API">
+                            <div className="flex gap-2">
+                                <input
+                                    type="password"
+                                    value={apiKeyInput}
+                                    onChange={(e) => setApiKeyInput(e.target.value)}
+                                    placeholder={aiSettings?.hasAiApiKey ? 'Clé déjà configurée — laisser vide pour la conserver' : 'Coller votre clé API'}
+                                    className="flex-1 min-w-0 border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none font-mono"
+                                />
+                                <button
+                                    onClick={handleSaveApiKey}
+                                    disabled={!apiKeyInput.trim() || updateAiSettings.isPending}
+                                    className="px-3 py-2 rounded-lg bg-earth text-white text-sm disabled:opacity-50"
+                                >
+                                    Enregistrer
+                                </button>
+                            </div>
+                            {aiSettings?.hasAiApiKey && (
+                                <button
+                                    onClick={handleClearApiKey}
+                                    className="text-xs text-stone-400 hover:text-stone-600 mt-1"
+                                >
+                                    Supprimer la clé enregistrée
+                                </button>
+                            )}
+                        </FieldWrapper>
+                    )}
+
+                    {aiProvider === 'anthropic' && (
+                        <FieldWrapper label="Modèle">
+                            <select
+                                value={aiSettings?.aiModel ?? 'claude-sonnet-5'}
+                                onChange={(e) => handleAiModelChange(e.target.value)}
+                                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
+                            >
+                                {Object.entries(ANTHROPIC_MODEL_LABELS).map(([value, label]) => (
+                                    <option key={value} value={value}>{label}</option>
+                                ))}
+                            </select>
+                        </FieldWrapper>
+                    )}
+
+                    {aiProvider !== 'none' && aiSettings?.hasAiApiKey && (
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={handleTestConnection}
+                                disabled={testConnection.isPending}
+                                className="flex items-center justify-center gap-2 py-2 rounded-lg border border-stone-300 text-sm text-bark disabled:opacity-50 cursor-pointer disabled:cursor-default"
+                            >
+                                <FontAwesomeIcon icon={faSpinner} spin={testConnection.isPending} className={testConnection.isPending ? '' : 'hidden'} />
+                                Tester la connexion
+                            </button>
+
+                            {testConnection.data && (
+                                <div className={`flex items-start gap-2 text-xs px-3 py-2 rounded-lg ${testConnection.data.success ? 'bg-sage-light/40 text-bark' : 'bg-red-50 text-red-700'}`}>
+                                    <FontAwesomeIcon icon={testConnection.data.success ? faCircleCheck : faCircleXmark} className="mt-0.5" />
+                                    <span>{testConnection.data.success ? 'Connexion réussie.' : (testConnection.data.errorMessage ?? 'Échec de la connexion.')}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-cream rounded-xl border border-sage/30 px-4 py-3 flex flex-col gap-3">

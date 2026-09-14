@@ -11,5 +11,6 @@ public class SettingsConfiguration : IEntityTypeConfiguration<Settings>
         builder.HasKey(s => s.Id);
         builder.Property(s => s.AiProvider).HasConversion<string>().IsRequired();
         builder.Property(s => s.AiApiKey).HasMaxLength(500);
+        builder.Property(s => s.AiModel).IsRequired().HasMaxLength(100).HasDefaultValue("claude-sonnet-5");
     }
 }
