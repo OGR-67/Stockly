@@ -5,5 +5,6 @@ namespace Stockly.Application.DTOs.StorageLocations;
 public record StorageLocationResponse(
     Guid Id,
     string Name,
-    LocationType Type
+    LocationType Type,
+    string? Description
 );

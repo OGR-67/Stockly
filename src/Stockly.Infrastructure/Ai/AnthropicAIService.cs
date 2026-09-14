@@ -37,7 +37,7 @@ public class AnthropicAIService(
         var catalog = JsonSerializer.Serialize(new
         {
             products = products.Select(p => new { id = p.Id, name = p.Name }),
-            locations = locations.Select(l => new { id = l.Id, name = l.Name, type = l.Type.ToString() }),
+            locations = locations.Select(l => new { id = l.Id, name = l.Name, type = l.Type.ToString(), description = l.Description }),
         });
 
         var systemPrompt = $"""
@@ -48,7 +48,10 @@ public class AnthropicAIService(
             connaissance du produit — n'utilise pas forcément une valeur par défaut, décide selon le
             produit réel. Si l'article correspond à un produit du référentiel, renseigne son id exact
             dans matchedProductId ; si un emplacement du référentiel convient, renseigne son id exact
-            dans suggestedLocationId. Laisse les champs vides (null) si tu n'es pas sûr.
+            dans suggestedLocationId — appuie-toi sur la description de chaque emplacement quand elle
+            existe (ex: "étagères buanderie : stock longue durée, PQ, conserves") pour choisir le
+            bon emplacement plutôt que de te fier uniquement au nom ou au type. Laisse les champs
+            vides (null) si tu n'es pas sûr.
             """;
 
         var response = await CreateMessageAsync(systemPrompt, "Analyse ce ticket de caisse et liste les articles achetés.", imageStream, ReceiptOutputSchema, cancellationToken);

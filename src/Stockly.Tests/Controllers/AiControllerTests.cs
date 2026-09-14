@@ -65,7 +65,7 @@ public class AiControllerTests
     public async Task RecognizeShelf_WithImageAndKnownLocation_ReturnsOkWithItemsFromResolvedService()
     {
         var locationId = Guid.NewGuid();
-        _locationService.GetByIdAsync(locationId).Returns(new StorageLocationResponse(locationId, "Frigo", LocationType.Fridge));
+        _locationService.GetByIdAsync(locationId).Returns(new StorageLocationResponse(locationId, "Frigo", LocationType.Fridge, null));
         IReadOnlyList<ShelfItem> items = [new ShelfItem("Yaourts", null)];
         _aiService.RecognizeShelfAsync(Arg.Any<Stream>(), locationId, Arg.Any<CancellationToken>()).Returns(items);
 
