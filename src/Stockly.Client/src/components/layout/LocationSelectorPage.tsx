@@ -12,9 +12,10 @@ import { useLocations } from '../../hooks/queries/useLocations'
 interface LocationSelectorPageProps {
     title: string
     onSelect: (locationId: string) => void
+    topContent?: React.ReactNode
 }
 
-export function LocationSelectorPage({ title, onSelect }: LocationSelectorPageProps) {
+export function LocationSelectorPage({ title, onSelect, topContent }: LocationSelectorPageProps) {
     const { data: locations = [], isLoading, isError } = useLocations()
     const [query, setQuery] = useState('')
 
@@ -23,6 +24,8 @@ export function LocationSelectorPage({ title, onSelect }: LocationSelectorPagePr
 
     return (
         <RootPage title={title}>
+            {topContent}
+
             <SearchInput
                 value={query}
                 onChange={setQuery}

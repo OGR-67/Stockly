@@ -1,13 +1,6 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? ''
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const response = await fetch(`${BASE_URL}${path}`, {
-        method,
-        credentials: 'include',
-        headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-    })
-
+async function handleResponse<T>(response: Response): Promise<T> {
     if (response.status === 401) {
         window.dispatchEvent(new CustomEvent('auth-required'))
         const error = new Error('Non authentifié') as Error & { status: number }
@@ -32,9 +25,31 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     return response.json() as Promise<T>
 }
 
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const response = await fetch(`${BASE_URL}${path}`, {
+        method,
+        credentials: 'include',
+        headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+    })
+
+    return handleResponse<T>(response)
+}
+
+async function requestForm<T>(method: string, path: string, formData: FormData): Promise<T> {
+    const response = await fetch(`${BASE_URL}${path}`, {
+        method,
+        credentials: 'include',
+        body: formData,
+    })
+
+    return handleResponse<T>(response)
+}
+
 export const apiClient = {
     get: <T>(path: string) => request<T>('GET', path),
     post: <T>(path: string, body: unknown) => request<T>('POST', path, body),
+    postForm: <T>(path: string, formData: FormData) => requestForm<T>('POST', path, formData),
     put: <T>(path: string, body: unknown) => request<T>('PUT', path, body),
     patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
     del: (path: string) => request<void>('DELETE', path),
