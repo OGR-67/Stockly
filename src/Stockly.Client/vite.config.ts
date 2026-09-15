@@ -31,13 +31,10 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      devOptions: { enabled: true },
+      devOptions: { enabled: true, type: 'module' },
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.ts',
-      injectManifest: {
-        injectionPoint: undefined,
-      },
       manifest: {
         name: 'Stockly',
         short_name: 'Stockly',
