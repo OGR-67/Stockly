@@ -32,9 +32,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: { enabled: true },
-      workbox: {
-        globPatterns: [],
-        runtimeCaching: [],
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      injectManifest: {
+        injectionPoint: undefined,
       },
       manifest: {
         name: 'Stockly',
@@ -57,6 +59,14 @@ export default defineConfig({
             type: 'image/png',
           },
         ],
+        share_target: {
+          action: '/share-target',
+          method: 'POST',
+          enctype: 'multipart/form-data',
+          params: {
+            files: [{ name: 'file', accept: ['image/*', 'application/pdf'] }],
+          },
+        },
       },
     }),
     mkcert({ hosts: ['localhost', '192.168.1.28'] }),

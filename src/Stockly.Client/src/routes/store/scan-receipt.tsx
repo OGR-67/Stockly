@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCamera } from '@fortawesome/free-solid-svg-icons'
+import { faCamera, faFolderOpen } from '@fortawesome/free-solid-svg-icons'
 import { haptic } from 'ios-haptics'
 import { StackPage } from '../../components/layout/StackPage'
 import { LoadingSpinner } from '../../components/layout/LoadingSpinner'
@@ -22,6 +22,9 @@ import { computeSuggestedDlc } from '../../utils/dateUtils'
 import type { Product } from '../../models/ProductModel'
 
 export const Route = createFileRoute('/store/scan-receipt')({
+    validateSearch: (search: Record<string, unknown>) => {
+        return { shared: search.shared === '1' || search.shared === true ? true : undefined }
+    },
     component: RouteComponent,
 })
 
@@ -33,6 +36,7 @@ function nextKey() {
 
 function RouteComponent() {
     const navigate = useNavigate()
+    const { shared } = Route.useSearch()
     const { data: aiSettings } = useAiSettings()
     const { data: products = [] } = useProducts()
     const { data: locations = [] } = useLocations()
@@ -45,13 +49,24 @@ function RouteComponent() {
     const [rows, setRows] = useState<ReceiptDraftRow[] | null>(null)
     const [productModalRowKey, setProductModalRowKey] = useState<string | null>(null)
     const [submitting, setSubmitting] = useState(false)
-    const fileInputRef = useRef<HTMLInputElement>(null)
 
-    // Ouvre directement le sélecteur de fichier/caméra à l'arrivée sur la page, pour éviter un
-    // clic supplémentaire ("Prendre en photo" puis re-cliquer sur l'input caché).
+    // Récupère le fichier déposé dans le Cache API par le service worker lors d'un partage
+    // depuis une autre app (Web Share Target API) — voir sw.ts pour le pourquoi de ce relais.
     useEffect(() => {
-        fileInputRef.current?.click()
-    }, [])
+        if (!shared) return
+        void (async () => {
+            const cache = await caches.open('shared-files')
+            const response = await cache.match('/shared-file')
+            if (response) {
+                const blob = await response.blob()
+                const extension = blob.type === 'application/pdf' ? '.pdf' : '.jpg'
+                const file = new File([blob], `ticket-partage${extension}`, { type: blob.type })
+                await cache.delete('/shared-file')
+                await handleCapture(file)
+            }
+            await navigate({ to: '/store/scan-receipt', search: { shared: undefined }, replace: true })
+        })()
+    }, [shared])
 
     async function handleCapture(file: File) {
         const items = await parseReceipt.mutateAsync(file)
@@ -172,23 +187,40 @@ function RouteComponent() {
                             {' '}pour en activer un.
                         </div>
                     )}
-                    <label className="flex flex-col items-center gap-2 cursor-pointer">
-                        <div className="w-20 h-20 rounded-full bg-sage-light flex items-center justify-center text-2xl text-earth">
-                            <FontAwesomeIcon icon={faCamera} />
-                        </div>
-                        <span className="text-sm text-earth font-medium">Photo ou PDF du ticket</span>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*,application/pdf"
-                            capture="environment"
-                            className="hidden"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) void handleCapture(file)
-                            }}
-                        />
-                    </label>
+                    <div className="flex items-start gap-6">
+                        <label className="flex flex-col items-center gap-2 cursor-pointer">
+                            <div className="w-20 h-20 rounded-full bg-sage-light flex items-center justify-center text-2xl text-earth">
+                                <FontAwesomeIcon icon={faCamera} />
+                            </div>
+                            <span className="text-sm text-earth font-medium">Prendre en photo</span>
+                            <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                capture="environment"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file) void handleCapture(file)
+                                }}
+                            />
+                        </label>
+
+                        <label className="flex flex-col items-center gap-2 cursor-pointer">
+                            <div className="w-20 h-20 rounded-full bg-sage-light flex items-center justify-center text-2xl text-earth">
+                                <FontAwesomeIcon icon={faFolderOpen} />
+                            </div>
+                            <span className="text-sm text-earth font-medium">Choisir un fichier</span>
+                            <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file) void handleCapture(file)
+                                }}
+                            />
+                        </label>
+                    </div>
                 </div>
             )}
 

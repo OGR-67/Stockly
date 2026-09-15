@@ -21,7 +21,7 @@ function RouteComponent() {
         <button
           onClick={() => {
             haptic.confirm();
-            void navigate({ to: "/store/scan-receipt" });
+            void navigate({ to: "/store/scan-receipt", search: { shared: undefined } });
           }}
           className="flex items-center justify-center gap-2 w-full py-3 mb-4 rounded-lg bg-earth text-white font-medium"
         >
