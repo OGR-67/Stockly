@@ -5,5 +5,6 @@ namespace Stockly.Application.DTOs.StorageLocations;
 
 public record SaveStorageLocationRequest(
     [Required, MinLength(1)] string Name,
-    LocationType Type
+    LocationType Type,
+    string? Description
 );

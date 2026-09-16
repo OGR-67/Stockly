@@ -27,7 +27,8 @@ public class StorageLocationService(IStorageLocationRepository repository) : ISt
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
-            Type = request.Type
+            Type = request.Type,
+            Description = request.Description
         };
         var created = await repository.CreateAsync(location);
         return ToResponse(created);
@@ -40,6 +41,7 @@ public class StorageLocationService(IStorageLocationRepository repository) : ISt
 
         existing.Name = request.Name;
         existing.Type = request.Type;
+        existing.Description = request.Description;
 
         var updated = await repository.UpdateAsync(existing);
         return ToResponse(updated);
@@ -52,5 +54,5 @@ public class StorageLocationService(IStorageLocationRepository repository) : ISt
         await repository.DeleteAsync(id);
     }
 
-    private static StorageLocationResponse ToResponse(StorageLocation l) => new(l.Id, l.Name, l.Type);
+    private static StorageLocationResponse ToResponse(StorageLocation l) => new(l.Id, l.Name, l.Type, l.Description);
 }

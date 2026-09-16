@@ -16,7 +16,7 @@ interface StockUnitCardProps {
 export function StockUnitCard({ unit, onEdit, onOpen, onTransfer, onConsume }: StockUnitCardProps) {
     return (
         <Card>
-            <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(unit)}>
+            <div className="flex-1 min-w-0 cursor-pointer" onClick={() => { onEdit(unit); }}>
                 <p className="font-medium text-bark truncate">{unit.product.name}</p>
                 {(unit.freeText ?? unit.product.freeText) && (
                     <p className="text-sm text-stone-400 truncate">
@@ -37,11 +37,11 @@ export function StockUnitCard({ unit, onEdit, onOpen, onTransfer, onConsume }: S
                 </div>
             </div>
             <div className="flex gap-2">
-                <IconButton icon={faArrowUpFromBracket} onClick={() => onConsume(unit.id)} title="Sortir du stock" />
+                <IconButton icon={faArrowUpFromBracket} onClick={() => { onConsume(unit.id); }} title="Sortir du stock" />
                 {!unit.isOpened && unit.product.category.defaultOpenedDays !== null && (
-                    <IconButton icon={faBoxOpen} onClick={() => onOpen(unit)} variant="primary" title="Ouvrir" />
+                    <IconButton icon={faBoxOpen} onClick={() => { onOpen(unit); }} variant="primary" title="Ouvrir" />
                 )}
-                <IconButton icon={faArrowRightArrowLeft} onClick={() => onTransfer(unit)} variant="primary" title="Transférer" />
+                <IconButton icon={faArrowRightArrowLeft} onClick={() => { onTransfer(unit); }} variant="primary" title="Transférer" />
             </div>
         </Card>
     )

@@ -1,3 +1,4 @@
+using Anthropic.Models.Messages;
 using Stockly.Application.Exceptions;
 using Stockly.Infrastructure.Ai;
 
@@ -91,5 +92,29 @@ public class AnthropicAIServiceTests
     public void MapShelfResponse_WithInvalidOrIncompletePayload_ThrowsAiServiceException(string json)
     {
         Assert.Throws<AiServiceException>(() => AnthropicAIService.MapShelfResponse(json));
+    }
+
+    [Theory]
+    [InlineData("image/jpeg", MediaType.ImageJpeg)]
+    [InlineData("image/jpg", MediaType.ImageJpeg)]
+    [InlineData("image/png", MediaType.ImagePng)]
+    [InlineData("image/gif", MediaType.ImageGif)]
+    [InlineData("image/webp", MediaType.ImageWebP)]
+    [InlineData("IMAGE/PNG", MediaType.ImagePng)]
+    [InlineData(null, MediaType.ImageJpeg)]
+    [InlineData("", MediaType.ImageJpeg)]
+    [InlineData("application/octet-stream", MediaType.ImageJpeg)]
+    public void ResolveMediaType_MapsKnownContentTypes(string? contentType, MediaType expected)
+    {
+        Assert.Equal(expected, AnthropicAIService.ResolveMediaType(contentType));
+    }
+
+    [Theory]
+    [InlineData("image/heic")]
+    [InlineData("image/heif")]
+    public void ResolveMediaType_WithHeic_ThrowsAiServiceExceptionWithActionableMessage(string contentType)
+    {
+        var ex = Assert.Throws<AiServiceException>(() => AnthropicAIService.ResolveMediaType(contentType));
+        Assert.Contains("HEIC", ex.Message);
     }
 }

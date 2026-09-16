@@ -12,9 +12,10 @@ import { useLocations } from '../../hooks/queries/useLocations'
 interface LocationSelectorPageProps {
     title: string
     onSelect: (locationId: string) => void
+    topContent?: React.ReactNode
 }
 
-export function LocationSelectorPage({ title, onSelect }: LocationSelectorPageProps) {
+export function LocationSelectorPage({ title, onSelect, topContent }: LocationSelectorPageProps) {
     const { data: locations = [], isLoading, isError } = useLocations()
     const [query, setQuery] = useState('')
 
@@ -23,6 +24,8 @@ export function LocationSelectorPage({ title, onSelect }: LocationSelectorPagePr
 
     return (
         <RootPage title={title}>
+            {topContent}
+
             <SearchInput
                 value={query}
                 onChange={setQuery}
@@ -37,7 +40,7 @@ export function LocationSelectorPage({ title, onSelect }: LocationSelectorPagePr
                 {filtered.map(location => (
                     <Card
                         key={location.id}
-                        onClick={() => onSelect(location.id)}
+                        onClick={() => { onSelect(location.id); }}
                         className="gap-4 p-4 active:bg-sage-light/50 transition-colors text-left"
                     >
                         <div className="w-10 h-10 rounded-full bg-sage-light flex items-center justify-center shrink-0">

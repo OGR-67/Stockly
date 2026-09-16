@@ -39,10 +39,28 @@ export ASPNETCORE_ENVIRONMENT=Development
 export ASPNETCORE_URLS="http://localhost:5050"
 export ConnectionStrings__Default="Host=localhost;Port=5432;Database=stockly;Username=${POSTGRES_USER:-stockly};Password=${POSTGRES_PASSWORD:-stockly}"
 
+# Filet de sécurité : un arrêt précédent (fermeture du terminal, crash) peut avoir laissé le
+# processus Stockly.API orphelin (dotnet watch tué sans que son enfant le soit) et squattant le
+# port. On le libère avant de relancer plutôt que d'échouer sur "address already in use".
+PORT_PID=$(lsof -ti :5050 2>/dev/null || true)
+if [ -n "$PORT_PID" ]; then
+  echo "Port 5050 déjà occupé (process $PORT_PID, probablement orphelin d'un précédent arrêt) — libération..."
+  kill -9 $PORT_PID 2>/dev/null || true
+  sleep 1
+fi
+
 echo "Démarrage de l'API (dotnet watch, hot reload sur localhost:5050)..."
 dotnet watch run --project src/Stockly.API --no-launch-profile --non-interactive &
 API_PID=$!
-trap 'kill $API_PID 2>/dev/null' EXIT INT TERM
+# `kill $API_PID` seul ne tue que le wrapper "dotnet watch run", pas l'appli compilée qu'il
+# lance -- elle reste orpheline et garde le port 5050 occupé au prochain lancement. On la cible
+# directement par son chemin plutôt que de jouer avec les groupes de processus (set -m casse le
+# lancement de dotnet watch en arrière-plan dans ce shell non interactif).
+trap '
+  pkill -f "bin/Debug/net10.0/Stockly.API$" 2>/dev/null
+  pkill -f "dotnet-watch.dll run --project src/Stockly.API" 2>/dev/null
+  kill $API_PID 2>/dev/null
+' EXIT INT TERM
 
 echo "Démarrage du frontend..."
 cd src/Stockly.Client

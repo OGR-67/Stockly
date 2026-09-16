@@ -4,9 +4,9 @@ namespace Stockly.Application.Interfaces.Services;
 
 public interface IAIService
 {
-    Task<IReadOnlyList<ReceiptItem>> ParseReceiptAsync(Stream imageStream, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ReceiptItem>> ParseReceiptAsync(Stream imageStream, string imageContentType, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<ShelfItem>> RecognizeShelfAsync(Stream imageStream, Guid locationId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ShelfItem>> RecognizeShelfAsync(Stream imageStream, string imageContentType, Guid locationId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Vérifie qu'on peut effectivement joindre le fournisseur configuré (ex: clé API valide),

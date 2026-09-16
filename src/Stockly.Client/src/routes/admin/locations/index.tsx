@@ -26,8 +26,8 @@ function RouteComponent() {
     async function handleSave(data: Omit<StorageLocation, 'id'>) {
         if (editTarget === 'new') {
             await create.mutateAsync(data)
-        } else {
-            await update.mutateAsync({ id: editTarget!.id, data })
+        } else if (editTarget) {
+            await update.mutateAsync({ id: editTarget.id, data })
         }
         haptic.confirm()
         setEditTarget(null)
@@ -57,9 +57,14 @@ function RouteComponent() {
                 {filtered.map(location => (
                     <Card key={location.id}>
                         <IconButton icon={locationIcon(location.type)} variant="primary" />
-                        <span className="flex-1 font-medium text-bark">{location.name}</span>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-medium text-bark">{location.name}</p>
+                            {location.description && (
+                                <p className="text-xs text-stone-400 truncate">{location.description}</p>
+                            )}
+                        </div>
                         <IconButton icon={faPencil} onClick={() => { haptic(); setEditTarget(location); }} title="Modifier" />
-                        <IconButton icon={faTrash} onClick={() => handleDelete(location.id)} title="Supprimer" />
+                        <IconButton icon={faTrash} onClick={() => { void handleDelete(location.id); }} title="Supprimer" />
                     </Card>
                 ))}
                 {!isLoading && filtered.length === 0 && (
@@ -70,8 +75,8 @@ function RouteComponent() {
             {editTarget && (
                 <LocationModal
                     initial={editTarget === 'new' ? undefined : editTarget}
-                    onConfirm={handleSave}
-                    onClose={() => setEditTarget(null)}
+                    onConfirm={(data) => { void handleSave(data); }}
+                    onClose={() => { setEditTarget(null); }}
                 />
             )}
         </StackPage>

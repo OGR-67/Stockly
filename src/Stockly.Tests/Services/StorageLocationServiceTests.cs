@@ -59,11 +59,22 @@ public class StorageLocationServiceTests
     {
         _repository.CreateAsync(Arg.Any<StorageLocation>()).Returns(ci => ci.Arg<StorageLocation>());
 
-        var result = await _sut.CreateAsync(new SaveStorageLocationRequest("Congélateur", LocationType.Freezer));
+        var result = await _sut.CreateAsync(new SaveStorageLocationRequest("Congélateur", LocationType.Freezer, null));
 
         Assert.NotEqual(Guid.Empty, result.Id);
         Assert.Equal("Congélateur", result.Name);
         Assert.Equal(LocationType.Freezer, result.Type);
+    }
+
+    [Fact]
+    public async Task CreateAsync_PersistsDescription()
+    {
+        _repository.CreateAsync(Arg.Any<StorageLocation>()).Returns(ci => ci.Arg<StorageLocation>());
+
+        var result = await _sut.CreateAsync(new SaveStorageLocationRequest(
+            "Étagères buanderie", LocationType.Normal, "Stock longue durée : PQ, conserves"));
+
+        Assert.Equal("Stock longue durée : PQ, conserves", result.Description);
     }
 
     [Fact]
@@ -73,10 +84,11 @@ public class StorageLocationServiceTests
         _repository.GetByIdAsync(id).Returns(CreateLocation(id));
         _repository.UpdateAsync(Arg.Any<StorageLocation>()).Returns(ci => ci.Arg<StorageLocation>());
 
-        var result = await _sut.UpdateAsync(id, new SaveStorageLocationRequest("Placard", LocationType.Normal));
+        var result = await _sut.UpdateAsync(id, new SaveStorageLocationRequest("Placard", LocationType.Normal, "Épicerie sèche"));
 
         Assert.Equal("Placard", result.Name);
         Assert.Equal(LocationType.Normal, result.Type);
+        Assert.Equal("Épicerie sèche", result.Description);
     }
 
     [Fact]
@@ -85,7 +97,7 @@ public class StorageLocationServiceTests
         _repository.GetByIdAsync(Arg.Any<Guid>()).Returns((StorageLocation?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(
-            () => _sut.UpdateAsync(Guid.NewGuid(), new SaveStorageLocationRequest("Placard", LocationType.Normal)));
+            () => _sut.UpdateAsync(Guid.NewGuid(), new SaveStorageLocationRequest("Placard", LocationType.Normal, null)));
     }
 
     [Fact]

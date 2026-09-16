@@ -17,11 +17,11 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [showLogin, setShowLogin] = useState(false);
-  useWindowEvent('auth-required', () => setShowLogin(true));
+  useWindowEvent('auth-required', () => { setShowLogin(true); });
 
   return (
     <div className="flex flex-col h-screen bg-sage-light/40">
-      {showLogin && <LoginModal onSuccess={() => setShowLogin(false)} />}
+      {showLogin && <LoginModal onSuccess={() => { setShowLogin(false); }} />}
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>

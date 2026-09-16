@@ -39,7 +39,9 @@ function RouteComponent() {
         initialized.current = true
 
         const recipeIds = new Set(
-            currentList.items.filter(i => i.source === 'recipe' && i.recipeId).map(i => i.recipeId!)
+            currentList.items
+                .filter((i): i is typeof i & { recipeId: string } => i.source === 'recipe' && i.recipeId != null)
+                .map(i => i.recipeId)
         )
         const manualProductIds = new Set(
             currentList.items.filter(i => i.source === 'manual').map(i => i.product.id)
@@ -88,7 +90,7 @@ function RouteComponent() {
             manualProductIds: manualProducts.map(p => p.id),
         })
         haptic.confirm()
-        navigate({ to: '/preparation/grocery-list', replace: true })
+        void navigate({ to: '/preparation/grocery-list', replace: true })
     }
 
     return (
@@ -116,7 +118,7 @@ function RouteComponent() {
                                         <FontAwesomeIcon icon={faUtensils} />
                                     </div>
                                     <p className="flex-1 text-bark text-sm font-medium">{recipe.name}</p>
-                                    <button onClick={() => removeRecipe(recipe.id)} className="text-stone-400 hover:text-red-400">
+                                    <button onClick={() => { removeRecipe(recipe.id); }} className="text-stone-400 hover:text-red-400">
                                         <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </Card>
@@ -145,7 +147,7 @@ function RouteComponent() {
                                         <FontAwesomeIcon icon={faBoxOpen} />
                                     </div>
                                     <p className="flex-1 text-bark text-sm font-medium">{product.name}</p>
-                                    <button onClick={() => removeProduct(product.id)} className="text-stone-400 hover:text-red-400">
+                                    <button onClick={() => { removeProduct(product.id); }} className="text-stone-400 hover:text-red-400">
                                         <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 </Card>
@@ -155,7 +157,7 @@ function RouteComponent() {
 
                     {currentList && (
                         <button
-                            onClick={handleClear}
+                            onClick={() => { void handleClear() }}
                             disabled={clear.isPending}
                             className="w-full py-3 border border-red-400 text-red-400 rounded-lg text-sm font-medium disabled:opacity-50"
                         >
@@ -164,7 +166,7 @@ function RouteComponent() {
                     )}
 
                     <button
-                        onClick={handleGenerate}
+                        onClick={() => { void handleGenerate() }}
                         disabled={generate.isPending}
                         className="w-full py-3 bg-earth text-white rounded-lg font-medium disabled:opacity-50"
                     >
@@ -174,13 +176,14 @@ function RouteComponent() {
             </StackPage>
 
             {showRecipePicker && (
-                <Modal title="Ajouter une recette" onClose={() => setShowRecipePicker(false)}>
+                <Modal title="Ajouter une recette" onClose={() => { setShowRecipePicker(false); }}>
                     <FieldWrapper label="Recette">
                         <SearchOrCreate
                             items={availableRecipes}
                             displayKey="name"
                             searchKeys={['name']}
                             onSelect={addRecipe}
+                            // eslint-disable-next-line @typescript-eslint/no-empty-function -- pas d'action à effectuer au clear, prop requise par SearchOrCreate
                             onClear={() => {}}
                             placeholder="Rechercher une recette..."
                             autoFocus
@@ -190,13 +193,14 @@ function RouteComponent() {
             )}
 
             {showProductPicker && (
-                <Modal title="Ajouter un article" onClose={() => setShowProductPicker(false)}>
+                <Modal title="Ajouter un article" onClose={() => { setShowProductPicker(false); }}>
                     <FieldWrapper label="Article">
                         <SearchOrCreate
                             items={availableProducts}
                             displayKey="name"
                             searchKeys={['name']}
                             onSelect={addProduct}
+                            // eslint-disable-next-line @typescript-eslint/no-empty-function -- pas d'action à effectuer au clear, prop requise par SearchOrCreate
                             onClear={() => {}}
                             placeholder="Rechercher un article..."
                             autoFocus

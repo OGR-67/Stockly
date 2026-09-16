@@ -30,7 +30,7 @@ export function BarcodeManager({ barcodes, onAdd, onDelete }: BarcodeManagerProp
                 {barcodes.map((b) => (
                     <div key={b.code} className="flex items-center gap-2 px-3 py-2 bg-stone-50 rounded-lg border border-stone-200">
                         <span className="flex-1 font-mono text-sm text-stone-700">{b.code}</span>
-                        <button onClick={() => onDelete(b.code)}>
+                        <button onClick={() => { onDelete(b.code); }}>
                             <FontAwesomeIcon icon={faXmark} className="text-stone-400 hover:text-stone-600" />
                         </button>
                     </div>
@@ -39,20 +39,20 @@ export function BarcodeManager({ barcodes, onAdd, onDelete }: BarcodeManagerProp
                     <input
                         type="text"
                         value={newBarcode}
-                        onChange={(e) => setNewBarcode(e.target.value)}
+                        onChange={(e) => { setNewBarcode(e.target.value); }}
                         placeholder="Ajouter un code-barres"
                         className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none font-mono"
                         onKeyDown={(e) => { if (e.key === 'Enter') handleAdd() }}
                     />
                     {settings.cameraEnabled && (
-                        <IconButton icon={faBarcode} onClick={() => setShowScanner(true)} variant="primary" shape="tile" />
+                        <IconButton icon={faBarcode} onClick={() => { setShowScanner(true); }} variant="primary" shape="tile" />
                     )}
                     <IconButton icon={faPlus} onClick={handleAdd} variant="primary" shape="tile" />
                 </div>
                 {showScanner && (
                     <Scanner
                         onScan={(code) => { onAdd(code); setShowScanner(false) }}
-                        onClose={() => setShowScanner(false)}
+                        onClose={() => { setShowScanner(false); }}
                     />
                 )}
             </div>

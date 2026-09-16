@@ -27,8 +27,8 @@ function RouteComponent() {
     async function handleSave(data: Omit<import('../../../models/ProductModel').Product, 'id'>) {
         if (editTarget === 'new') {
             await create.mutateAsync(data)
-        } else {
-            await update.mutateAsync({ id: editTarget!.id, data })
+        } else if (editTarget) {
+            await update.mutateAsync({ id: editTarget.id, data })
         }
         haptic.confirm()
         setEditTarget(null)
@@ -38,7 +38,7 @@ function RouteComponent() {
         const units = await stockUnitService.getAll()
         const count = units.filter(u => u.productId === id).length
         const message = count > 0
-            ? `Cet article a ${count} unité${count > 1 ? 's' : ''} en stock. Supprimer quand même ?`
+            ? `Cet article a ${String(count)} unité${count > 1 ? 's' : ''} en stock. Supprimer quand même ?`
             : 'Supprimer cet article ?'
         if (!window.confirm(message)) return
         await remove.mutateAsync(id)
@@ -68,7 +68,7 @@ function RouteComponent() {
                             {product.freeText && <p className="text-xs text-stone-400 truncate">{product.freeText}</p>}
                         </div>
                         <IconButton icon={faPencil} onClick={() => { haptic(); setEditTarget(product); }} title="Modifier" />
-                        <IconButton icon={faTrash} onClick={() => handleDelete(product.id)} title="Supprimer" />
+                        <IconButton icon={faTrash} onClick={() => { void handleDelete(product.id); }} title="Supprimer" />
                     </Card>
                 ))}
                 {!isLoading && filtered.length === 0 && (
@@ -80,9 +80,9 @@ function RouteComponent() {
                 <ProductModal
                     initial={editTarget === 'new' ? undefined : editTarget}
                     categories={categories}
-                    onConfirm={handleSave}
+                    onConfirm={(data) => { void handleSave(data); }}
                     onAddBarcode={(barcode) => {
-                        if (editTarget !== 'new' && editTarget) {
+                        if (editTarget !== 'new') {
                             haptic()
                             addBarcode.mutate({ productId: editTarget.id, barcode })
                             setEditTarget({ ...editTarget, barcodes: [...editTarget.barcodes, { code: barcode, productId: editTarget.id }] })
@@ -91,11 +91,11 @@ function RouteComponent() {
                     onDeleteBarcode={(barcode) => {
                         haptic()
                         deleteBarcode.mutate(barcode)
-                        if (editTarget !== 'new' && editTarget) {
+                        if (editTarget !== 'new') {
                             setEditTarget({ ...editTarget, barcodes: editTarget.barcodes.filter(b => b.code !== barcode) })
                         }
                     }}
-                    onClose={() => setEditTarget(null)}
+                    onClose={() => { setEditTarget(null); }}
                 />
             )}
         </StackPage>

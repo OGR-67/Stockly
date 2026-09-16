@@ -29,7 +29,7 @@ public class AnthropicAIService(
         return settings.AiModel;
     }
 
-    public async Task<IReadOnlyList<ReceiptItem>> ParseReceiptAsync(Stream imageStream, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ReceiptItem>> ParseReceiptAsync(Stream imageStream, string imageContentType, CancellationToken cancellationToken = default)
     {
         var products = await productRepository.GetAllWithDetailsAsync();
         var locations = await locationRepository.GetAllAsync();
@@ -37,21 +37,29 @@ public class AnthropicAIService(
         var catalog = JsonSerializer.Serialize(new
         {
             products = products.Select(p => new { id = p.Id, name = p.Name }),
-            locations = locations.Select(l => new { id = l.Id, name = l.Name, type = l.Type.ToString() }),
+            locations = locations.Select(l => new { id = l.Id, name = l.Name, type = l.Type.ToString(), description = l.Description }),
         });
 
         var systemPrompt = $"""
-            Tu analyses la photo d'un ticket de caisse pour une application de gestion de stock alimentaire.
+            Tu analyses la photo ou le PDF d'un ticket de caisse/bon de commande pour une application
+            de gestion de stock alimentaire. Le document peut faire plusieurs pages et contenir 30+
+            lignes distinctes, parfois avec des noms de produits proches (ex: deux sauces différentes)
+            — relis le document ligne par ligne, page par page, jusqu'à la dernière, et vérifie que
+            chaque ligne d'article a bien un article correspondant en sortie avant de conclure. Ne
+            fusionne jamais deux lignes distinctes en une seule même si leurs noms se ressemblent.
             Référentiel existant (JSON) : {catalog}
             Pour chaque article du ticket, déduis un nom de produit, une quantité, un emplacement de
             rangement suggéré et une date de péremption suggérée (format yyyy-MM-dd) selon ta
             connaissance du produit — n'utilise pas forcément une valeur par défaut, décide selon le
             produit réel. Si l'article correspond à un produit du référentiel, renseigne son id exact
             dans matchedProductId ; si un emplacement du référentiel convient, renseigne son id exact
-            dans suggestedLocationId. Laisse les champs vides (null) si tu n'es pas sûr.
+            dans suggestedLocationId — appuie-toi sur la description de chaque emplacement quand elle
+            existe (ex: "étagères buanderie : stock longue durée, PQ, conserves") pour choisir le
+            bon emplacement plutôt que de te fier uniquement au nom ou au type. Laisse les champs
+            vides (null) si tu n'es pas sûr.
             """;
 
-        var response = await CreateMessageAsync(systemPrompt, "Analyse ce ticket de caisse et liste les articles achetés.", imageStream, ReceiptOutputSchema, cancellationToken);
+        var response = await CreateMessageAsync(systemPrompt, "Analyse ce ticket de caisse et liste tous les articles achetés, sans en oublier un seul.", imageStream, imageContentType, ReceiptOutputSchema, cancellationToken);
 
         return MapReceiptResponse(ExtractText(response));
     }
@@ -76,7 +84,7 @@ public class AnthropicAIService(
         )).ToList();
     }
 
-    public async Task<IReadOnlyList<ShelfItem>> RecognizeShelfAsync(Stream imageStream, Guid locationId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ShelfItem>> RecognizeShelfAsync(Stream imageStream, string imageContentType, Guid locationId, CancellationToken cancellationToken = default)
     {
         var products = await productRepository.GetAllWithDetailsAsync();
         var currentStock = await stockUnitRepository.GetByLocationWithDetailsAsync(locationId);
@@ -95,7 +103,7 @@ public class AnthropicAIService(
             produit du référentiel, renseigne son id exact dans matchedProductId, sinon laisse-le vide.
             """;
 
-        var response = await CreateMessageAsync(systemPrompt, "Liste les produits visibles sur cette photo.", imageStream, ShelfOutputSchema, cancellationToken);
+        var response = await CreateMessageAsync(systemPrompt, "Liste les produits visibles sur cette photo.", imageStream, imageContentType, ShelfOutputSchema, cancellationToken);
 
         return MapShelfResponse(ExtractText(response));
     }
@@ -136,16 +144,19 @@ public class AnthropicAIService(
         }
     }
 
-    private async Task<Message> CreateMessageAsync(string systemPrompt, string userText, Stream imageStream, Dictionary<string, JsonElement> outputSchema, CancellationToken cancellationToken)
+    private async Task<Message> CreateMessageAsync(string systemPrompt, string userText, Stream imageStream, string imageContentType, Dictionary<string, JsonElement> outputSchema, CancellationToken cancellationToken)
     {
-        var imageData = await ToBase64Async(imageStream, cancellationToken);
+        var fileData = await ToBase64Async(imageStream, cancellationToken);
+        var fileBlock = BuildFileBlock(fileData, imageContentType);
 
         try
         {
             return await messages.Create(new MessageCreateParams
             {
                 Model = await GetModelAsync(),
-                MaxTokens = 4096,
+                // Un bon de commande volumineux (multi-pages, 30+ articles) peut produire une
+                // sortie structurée conséquente -- marge confortable pour éviter une troncature.
+                MaxTokens = 8192,
                 System = systemPrompt,
                 Messages =
                 [
@@ -154,7 +165,7 @@ public class AnthropicAIService(
                         Role = Role.User,
                         Content = new List<ContentBlockParam>
                         {
-                            new ImageBlockParam { Source = new Base64ImageSource { Data = imageData, MediaType = MediaType.ImageJpeg } },
+                            fileBlock,
                             new TextBlockParam { Text = userText },
                         },
                     },
@@ -175,9 +186,33 @@ public class AnthropicAIService(
         }
         catch (AnthropicApiException ex)
         {
-            throw new AiServiceException("Échec de l'appel à l'API Anthropic.", ex);
+            throw new AiServiceException($"Échec de l'appel à l'API Anthropic : {ex.Message}", ex);
         }
     }
+
+    /// <summary>
+    /// Les bons de commande arrivent parfois en PDF plutôt qu'en photo — Anthropic supporte les
+    /// deux nativement (bloc image ou bloc document), pas besoin de convertir.
+    /// </summary>
+    private static ContentBlockParam BuildFileBlock(string base64Data, string? contentType) =>
+        contentType?.Trim().ToLowerInvariant() == "application/pdf"
+            ? new DocumentBlockParam { Source = new Base64PdfSource { Data = base64Data } }
+            : new ImageBlockParam { Source = new Base64ImageSource { Data = base64Data, MediaType = ResolveMediaType(contentType) } };
+
+    /// <summary>
+    /// Anthropic rejette une image si le type MIME déclaré ne correspond pas au contenu réel — on
+    /// ne peut donc pas se contenter de toujours déclarer JPEG. Repli sur JPEG pour un type
+    /// inconnu/absent plutôt que d'échouer : la plupart des captures mobiles sont déjà du JPEG.
+    /// </summary>
+    internal static MediaType ResolveMediaType(string? contentType) => contentType?.Trim().ToLowerInvariant() switch
+    {
+        "image/png" => MediaType.ImagePng,
+        "image/gif" => MediaType.ImageGif,
+        "image/webp" => MediaType.ImageWebP,
+        "image/heic" or "image/heif" => throw new AiServiceException(
+            "Format HEIC/HEIF non supporté par l'IA — reprenez la photo directement depuis l'appareil (et non depuis la pellicule/un fichier partagé) ou convertissez-la en JPEG avant l'envoi."),
+        _ => MediaType.ImageJpeg,
+    };
 
     private static async Task<string> ToBase64Async(Stream imageStream, CancellationToken cancellationToken)
     {
@@ -232,11 +267,15 @@ public class AnthropicAIService(
                         suggestedLocationId = new { type = new[] { "string", "null" } },
                         suggestedExpiration = new { type = new[] { "string", "null" }, description = "Format yyyy-MM-dd" },
                     },
-                    required = new[] { "productName", "quantity" },
+                    // additionalProperties: false exige que toutes les propriétés soient listées ici
+                    // (Anthropic structured outputs) — les champs optionnels restent nullable via leur type.
+                    required = new[] { "productName", "quantity", "matchedProductId", "suggestedLocationId", "suggestedExpiration" },
+                    additionalProperties = false,
                 },
             },
         }),
         ["required"] = JsonSerializer.SerializeToElement(new[] { "items" }),
+        ["additionalProperties"] = JsonSerializer.SerializeToElement(false),
     };
 
     private static readonly Dictionary<string, JsonElement> ShelfOutputSchema = new()
@@ -255,11 +294,13 @@ public class AnthropicAIService(
                         productName = new { type = "string" },
                         matchedProductId = new { type = new[] { "string", "null" } },
                     },
-                    required = new[] { "productName" },
+                    required = new[] { "productName", "matchedProductId" },
+                    additionalProperties = false,
                 },
             },
         }),
         ["required"] = JsonSerializer.SerializeToElement(new[] { "items" }),
+        ["additionalProperties"] = JsonSerializer.SerializeToElement(false),
     };
 
     private record ReceiptResponseDto(List<ReceiptItemDto> Items);

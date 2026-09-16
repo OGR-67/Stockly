@@ -30,7 +30,7 @@ export function FormField({
           ref={inputRef}
           type={type}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => { onChange(e.target.value); }}
           onFocus={() => {
             if (isDate && inputRef.current?.showPicker) {
               inputRef.current.showPicker();
@@ -45,7 +45,7 @@ export function FormField({
         />
         {value && (
           <button
-            onClick={() => onChange("")}
+            onClick={() => { onChange(""); }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors"
             title="Effacer"
           >

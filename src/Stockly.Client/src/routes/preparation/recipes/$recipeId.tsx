@@ -72,7 +72,7 @@ function RouteComponent() {
                 <LabeledSection title="Ingrédients">
                     <div className="space-y-2">
                         {recipe.products.map(product => {
-                            const available = availability && availability.availableProductIds.includes(product.id)
+                            const available = availability?.availableProductIds.includes(product.id)
                             return (
                                 <div
                                     key={product.id}

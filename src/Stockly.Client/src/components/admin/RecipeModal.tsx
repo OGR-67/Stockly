@@ -51,7 +51,7 @@ export function RecipeModal({ initial, onConfirm, onClose }: RecipeModalProps) {
     setProducts(products.filter((p) => p.id !== productId));
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!name.trim()) return;
     setIsLoading(true);
     try {
@@ -93,7 +93,7 @@ export function RecipeModal({ initial, onConfirm, onClose }: RecipeModalProps) {
         <FieldWrapper label="Préparation (optionnel)">
           <textarea
             value={freeText}
-            onChange={(e) => setFreeText(e.target.value)}
+            onChange={(e) => { setFreeText(e.target.value); }}
             placeholder="Détails de préparation..."
             className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none font-sans min-h-24"
           />

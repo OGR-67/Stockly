@@ -4,4 +4,5 @@ export interface StorageLocation {
     id: string
     name: string
     type: LocationType
+    description: string | null
 }

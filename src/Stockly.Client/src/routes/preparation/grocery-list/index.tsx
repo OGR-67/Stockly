@@ -60,7 +60,7 @@ function RouteComponent() {
             title="Liste de courses"
             action={
                 <button
-                    onClick={() => { haptic(); navigate({ to: '/preparation/grocery-list/prepare' }) }}
+                    onClick={() => { haptic(); void navigate({ to: '/preparation/grocery-list/prepare' }) }}
                     className="text-white/80 hover:text-white"
                 >
                     <FontAwesomeIcon icon={faPlus} />
@@ -74,7 +74,7 @@ function RouteComponent() {
                 <div className="flex flex-col items-center">
                     <EmptyState message="Aucune liste générée" />
                     <button
-                        onClick={() => { haptic.confirm(); navigate({ to: '/preparation/grocery-list/prepare' }) }}
+                        onClick={() => { haptic.confirm(); void navigate({ to: '/preparation/grocery-list/prepare' }) }}
                         className="mt-2 px-4 py-2 bg-earth text-white rounded-lg text-sm font-medium"
                     >
                         Préparer la liste
@@ -82,17 +82,17 @@ function RouteComponent() {
                 </div>
             )}
 
-            {grouped && (
+            {grouped && groceryList && (
                 <div className="flex flex-col gap-6">
                     <p className="text-xs text-stone-400">
-                        Générée le {new Date(groceryList!.generatedAt).toLocaleDateString('fr-FR', { dateStyle: 'medium' })}
+                        Générée le {new Date(groceryList.generatedAt).toLocaleDateString('fr-FR', { dateStyle: 'medium' })}
                     </p>
 
                     {(Object.entries(grouped) as [GroceryListItemSource, GroceryListItem[]][]).map(([source, items]) => (
                         <div key={source}>
                             <h2 className="text-sm font-semibold text-bark mb-2">{sourceLabels[source]}</h2>
                             <div className="flex flex-col gap-2">
-                                {items?.map(item => (
+                                {items.map(item => (
                                     <Card key={item.id}>
                                         <div className="text-earth">
                                             <FontAwesomeIcon icon={faListCheck} />
@@ -110,7 +110,7 @@ function RouteComponent() {
                                         )}
                                         {item.source === 'manual' && (
                                             <button
-                                                onClick={() => handleRemoveItem(item.id)}
+                                                onClick={() => { void handleRemoveItem(item.id) }}
                                                 disabled={deletingId === item.id}
                                                 className="text-stone-400 hover:text-red-400 disabled:opacity-40"
                                             >
@@ -124,7 +124,7 @@ function RouteComponent() {
                     ))}
 
                     <button
-                        onClick={() => { haptic(); navigate({ to: '/preparation/grocery-list/prepare' }) }}
+                        onClick={() => { haptic(); void navigate({ to: '/preparation/grocery-list/prepare' }) }}
                         className="w-full py-3 border border-earth text-earth rounded-lg text-sm font-medium"
                     >
                         Préparer la liste

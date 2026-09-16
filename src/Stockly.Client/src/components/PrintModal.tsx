@@ -38,15 +38,15 @@ export function PrintModal({
   const { settings } = useSettings();
   const previewRef = useRef<HTMLDivElement>(null);
 
-  const [barcode, setBarcode] = useState<string | null>(
+  const [barcode, setBarcode] = useState(
     product.barcodes.length > 0 ? product.barcodes[0].code : null,
   );
   const [note, setNote] = useState(product.freeText ?? "");
-  const [selectedPrinterId, setSelectedPrinterId] = useState<string | null>(
+  const [selectedPrinterId, setSelectedPrinterId] = useState(
     settings.defaultPrinterId,
   );
   const [printing, setPrinting] = useState(false);
-  const [selectedFormatId, setSelectedFormatId] = useState<string | null>(
+  const [selectedFormatId, setSelectedFormatId] = useState(
     settings.defaultFormatId,
   );
 
@@ -58,9 +58,11 @@ export function PrintModal({
   useEffect(() => {
     if (product.barcodes.length === 0) {
       const generated = String(Math.floor(Math.random() * 9_000_000_000_000) + 1_000_000_000_000);
-      productService.addBarcode(product.id, generated).then(() => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      void productService.addBarcode(product.id, generated).then(() => {
         setBarcode(generated);
+        void queryClient.invalidateQueries({ queryKey: queryKeys.products });
+      }).catch((e: unknown) => {
+        window.dispatchEvent(new CustomEvent('api-error', { detail: e instanceof Error ? e.message : String(e) }));
       });
     }
   }, []);
@@ -102,7 +104,7 @@ export function PrintModal({
       haptic.confirm();
       onClose();
     } catch (e) {
-      window.dispatchEvent(new CustomEvent('api-error', { detail: (e as Error).message }));
+      window.dispatchEvent(new CustomEvent('api-error', { detail: e instanceof Error ? e.message : String(e) }));
     } finally {
       setPrinting(false);
     }
@@ -119,7 +121,7 @@ export function PrintModal({
               width: previewWidth,
               minHeight: previewHeight,
               transformOrigin: 'top left',
-              transform: `scale(${scale})`,
+              transform: `scale(${String(scale)})`,
               position: 'absolute',
               top: 0,
               left: 0,
@@ -181,7 +183,7 @@ export function PrintModal({
           <FieldWrapper label="Format">
             <select
               value={selectedFormatId ?? ""}
-              onChange={(e) => setSelectedFormatId(e.target.value)}
+              onChange={(e) => { setSelectedFormatId(e.target.value); }}
               className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
             >
               {formats.map((f) => (
@@ -194,7 +196,7 @@ export function PrintModal({
         )}
 
         <button
-          onClick={handlePrint}
+          onClick={() => { void handlePrint(); }}
           disabled={
             !barcode ||
             !selectedPrinterId ||
@@ -204,7 +206,7 @@ export function PrintModal({
           className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium disabled:opacity-50"
         >
           <FontAwesomeIcon icon={faPrint} />
-          {printing ? "Impression..." : copies > 1 ? `Imprimer ×${copies}` : "Imprimer"}
+          {printing ? "Impression..." : copies > 1 ? `Imprimer ×${String(copies)}` : "Imprimer"}
         </button>
       </div>
     </Modal>

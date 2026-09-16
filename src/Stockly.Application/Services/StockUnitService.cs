@@ -127,7 +127,7 @@ public class StockUnitService(IStockUnitRepository repository, IStorageLocationR
         c.DefaultClosedDays, c.DefaultOpenedDays, c.DefaultFrozenDays, c.FreeText, c.MinStockUnits
     );
 
-    private static StorageLocationResponse ToLocationResponse(StorageLocation l) => new(l.Id, l.Name, l.Type);
+    private static StorageLocationResponse ToLocationResponse(StorageLocation l) => new(l.Id, l.Name, l.Type, l.Description);
 
     private async Task UpdateDLC(StockUnit unit, MoveStockUnitRequest request)
     {

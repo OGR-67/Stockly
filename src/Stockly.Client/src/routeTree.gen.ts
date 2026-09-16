@@ -14,6 +14,7 @@ import { Route as StoreIndexRouteImport } from './routes/store/index'
 import { Route as StockIndexRouteImport } from './routes/stock/index'
 import { Route as PreparationIndexRouteImport } from './routes/preparation/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as StoreScanReceiptRouteImport } from './routes/store/scan-receipt'
 import { Route as StoreLocationIdRouteImport } from './routes/store/$locationId'
 import { Route as StockLocationIdRouteImport } from './routes/stock/$locationId'
 import { Route as PreparationRecipesIndexRouteImport } from './routes/preparation/recipes/index'
@@ -50,6 +51,11 @@ const PreparationIndexRoute = PreparationIndexRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StoreScanReceiptRoute = StoreScanReceiptRouteImport.update({
+  id: '/store/scan-receipt',
+  path: '/store/scan-receipt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StoreLocationIdRoute = StoreLocationIdRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
   '/store/$locationId': typeof StoreLocationIdRoute
+  '/store/scan-receipt': typeof StoreScanReceiptRoute
   '/admin/': typeof AdminIndexRoute
   '/preparation/': typeof PreparationIndexRoute
   '/stock/': typeof StockIndexRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
   '/store/$locationId': typeof StoreLocationIdRoute
+  '/store/scan-receipt': typeof StoreScanReceiptRoute
   '/admin': typeof AdminIndexRoute
   '/preparation': typeof PreparationIndexRoute
   '/stock': typeof StockIndexRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/stock/$locationId': typeof StockLocationIdRoute
   '/store/$locationId': typeof StoreLocationIdRoute
+  '/store/scan-receipt': typeof StoreScanReceiptRoute
   '/admin/': typeof AdminIndexRoute
   '/preparation/': typeof PreparationIndexRoute
   '/stock/': typeof StockIndexRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/'
     | '/stock/$locationId'
     | '/store/$locationId'
+    | '/store/scan-receipt'
     | '/admin/'
     | '/preparation/'
     | '/stock/'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/'
     | '/stock/$locationId'
     | '/store/$locationId'
+    | '/store/scan-receipt'
     | '/admin'
     | '/preparation'
     | '/stock'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/'
     | '/stock/$locationId'
     | '/store/$locationId'
+    | '/store/scan-receipt'
     | '/admin/'
     | '/preparation/'
     | '/stock/'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StockLocationIdRoute: typeof StockLocationIdRoute
   StoreLocationIdRoute: typeof StoreLocationIdRoute
+  StoreScanReceiptRoute: typeof StoreScanReceiptRoute
   AdminIndexRoute: typeof AdminIndexRoute
   PreparationIndexRoute: typeof PreparationIndexRoute
   StockIndexRoute: typeof StockIndexRoute
@@ -289,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/store/scan-receipt': {
+      id: '/store/scan-receipt'
+      path: '/store/scan-receipt'
+      fullPath: '/store/scan-receipt'
+      preLoaderRoute: typeof StoreScanReceiptRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/store/$locationId': {
@@ -382,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StockLocationIdRoute: StockLocationIdRoute,
   StoreLocationIdRoute: StoreLocationIdRoute,
+  StoreScanReceiptRoute: StoreScanReceiptRoute,
   AdminIndexRoute: AdminIndexRoute,
   PreparationIndexRoute: PreparationIndexRoute,
   StockIndexRoute: StockIndexRoute,

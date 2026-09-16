@@ -64,8 +64,8 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                         searchKeys={['name']}
                         value={selectedLocation}
                         onSelect={setSelectedLocation}
-                        onClear={() => setSelectedLocation(stockUnit.location)}
-                        onCreate={() => setShowLocationModal(true)}
+                        onClear={() => { setSelectedLocation(stockUnit.location); }}
+                        onCreate={() => { setShowLocationModal(true); }}
                         placeholder="Rechercher un emplacement..."
                     />
                 </FieldWrapper>
@@ -73,7 +73,7 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                 <div className="mt-4 flex flex-col gap-3">
                     {settings.defaultPrinterId && (
                         <button
-                            onClick={() => setShowPrintModal(true)}
+                            onClick={() => { setShowPrintModal(true); }}
                             className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border border-stone-200 text-earth hover:bg-sage-light/50"
                         >
                             <FontAwesomeIcon icon={faPrint} />
@@ -81,10 +81,10 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                         </button>
                     )}
                     <ConfirmButton
-                        onClick={() => onConfirm(
+                        onClick={() => { onConfirm(
                             dateValue ? new Date(dateValue) : null,
                             movedToNewLocation ? selectedLocation.id : null,
-                        )}
+                        ); }}
                     />
                 </div>
             </Modal>
@@ -93,20 +93,22 @@ export function OpenModal({ stockUnit, locations, onConfirm, onClose }: OpenModa
                 <PrintModal
                     product={stockUnit.product}
                     expirationDate={dateValue ? new Date(dateValue) : null}
-                    onClose={() => setShowPrintModal(false)}
+                    onClose={() => { setShowPrintModal(false); }}
                 />
             )}
 
             {showLocationModal && (
                 <LocationModal
-                    onConfirm={async (data) => {
-                        const created = await createLocation.mutateAsync(data)
-                        haptic.confirm()
-                        const newLoc = { id: created.id, ...data }
-                        setSelectedLocation(newLoc)
-                        setShowLocationModal(false)
+                    onConfirm={(data) => {
+                        void (async () => {
+                            const created = await createLocation.mutateAsync(data)
+                            haptic.confirm()
+                            const newLoc = { id: created.id, ...data }
+                            setSelectedLocation(newLoc)
+                            setShowLocationModal(false)
+                        })()
                     }}
-                    onClose={() => setShowLocationModal(false)}
+                    onClose={() => { setShowLocationModal(false); }}
                 />
             )}
         </>

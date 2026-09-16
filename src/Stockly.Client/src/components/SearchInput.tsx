@@ -16,11 +16,11 @@ export function SearchInput({ value, onChange, placeholder = 'Rechercher...', cl
                 className="flex-1 min-w-0 outline-none text-sm bg-transparent"
                 placeholder={placeholder}
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => { onChange(e.target.value); }}
             />
             {value && (
                 <button
-                    onClick={() => onChange('')}
+                    onClick={() => { onChange(''); }}
                     className="text-stone-400 hover:text-stone-600 transition-colors"
                     title="Effacer"
                 >

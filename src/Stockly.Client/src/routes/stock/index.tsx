@@ -34,7 +34,7 @@ function RouteComponent() {
         <button
           onClick={() => {
             haptic.confirm();
-            navigate({ to: "/admin/stock", search: { filter: "expired" } });
+            void navigate({ to: "/admin/stock", search: { filter: "expired" } });
           }}
           className="flex items-center justify-between w-full mb-3 px-4 py-3 rounded-xl bg-red-100 border border-red-200 text-red-600 text-sm font-medium"
         >
@@ -49,7 +49,7 @@ function RouteComponent() {
         <button
           onClick={() => {
             haptic.confirm();
-            navigate({ to: "/admin/stock", search: { filter: "soon" } });
+            void navigate({ to: "/admin/stock", search: { filter: "soon" } });
           }}
           className="flex items-center justify-between w-full mb-3 px-4 py-3 rounded-xl bg-orange-100 border border-orange-200 text-orange-600 text-sm font-medium"
         >
@@ -85,7 +85,7 @@ function RouteComponent() {
               key={location.id}
               onClick={() => {
                 haptic.confirm();
-                navigate({
+                void navigate({
                   to: "/stock/$locationId",
                   params: { locationId: location.id },
                 });

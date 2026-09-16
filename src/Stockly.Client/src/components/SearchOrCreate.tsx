@@ -44,7 +44,7 @@ export function SearchOrCreate<T extends object>({
         ? fuse.search(query).map((r) => r.item)
         : items
 
-    useClickOutside(containerRef, () => setIsOpen(false))
+    useClickOutside(containerRef, () => { setIsOpen(false); })
 
     function handleSelect(item: T) {
         onSelect(item)
@@ -62,7 +62,7 @@ export function SearchOrCreate<T extends object>({
         <div ref={containerRef} className="relative w-full">
             <div className="flex items-center border border-stone-300 rounded-lg px-3 py-2 gap-2 bg-cream">
                 {onScan && onScanRequest && (
-                    <button onClick={() => onScanRequest()} className="text-stone-400 hover:text-earth">
+                    <button onClick={() => { onScanRequest(); }} className="text-stone-400 hover:text-earth">
                         <FontAwesomeIcon icon={faBarcode} />
                     </button>
                 )}
@@ -75,7 +75,7 @@ export function SearchOrCreate<T extends object>({
                         setQuery(e.target.value)
                         setIsOpen(true)
                     }}
-                    onFocus={() => setIsOpen(true)}
+                    onFocus={() => { setIsOpen(true); }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && query.trim()) {
                             if (results.length > 0) {
@@ -98,7 +98,7 @@ export function SearchOrCreate<T extends object>({
                         {results.map((item, index) => (
                             <li
                                 key={index}
-                                onClick={() => handleSelect(item)}
+                                onClick={() => { handleSelect(item); }}
                                 className="px-4 py-2 text-sm hover:bg-sage-light cursor-pointer"
                             >
                                 {String(item[displayKey])}

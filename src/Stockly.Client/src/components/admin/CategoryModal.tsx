@@ -16,11 +16,11 @@ export function CategoryModal({ initial, onConfirm, onClose }: CategoryModalProp
     const [name, setName] = useState(initial?.name ?? '')
     const [isPerishable, setIsPerishable] = useState(initial?.isPerishable ?? true)
     const [isFresh, setIsFresh] = useState(initial?.isFresh ?? false)
-    const [defaultClosedDays, setDefaultClosedDays] = useState<number | null>(initial?.defaultClosedDays ?? null)
-    const [defaultOpenedDays, setDefaultOpenedDays] = useState<number | null>(initial?.defaultOpenedDays ?? null)
-    const [defaultFrozenDays, setDefaultFrozenDays] = useState<number | null>(initial?.defaultFrozenDays ?? null)
+    const [defaultClosedDays, setDefaultClosedDays] = useState(initial?.defaultClosedDays ?? null)
+    const [defaultOpenedDays, setDefaultOpenedDays] = useState(initial?.defaultOpenedDays ?? null)
+    const [defaultFrozenDays, setDefaultFrozenDays] = useState(initial?.defaultFrozenDays ?? null)
     const [freeText, setFreeText] = useState(initial?.freeText ?? '')
-    const [minStockUnits, setMinStockUnits] = useState<number | null>(initial?.minStockUnits ?? null)
+    const [minStockUnits, setMinStockUnits] = useState(initial?.minStockUnits ?? null)
 
     return (
         <Modal title={initial ? 'Modifier la catégorie' : 'Nouvelle catégorie'} onClose={onClose}>
@@ -40,7 +40,7 @@ export function CategoryModal({ initial, onConfirm, onClose }: CategoryModalProp
                 <FormField label="Note (optionnel)" value={freeText} onChange={setFreeText} />
 
                 <ConfirmButton
-                    onClick={() => onConfirm({ name, isPerishable, isFresh, defaultClosedDays, defaultOpenedDays, defaultFrozenDays, freeText: freeText || null, minStockUnits })}
+                    onClick={() => { onConfirm({ name, isPerishable, isFresh, defaultClosedDays, defaultOpenedDays, defaultFrozenDays, freeText: freeText || null, minStockUnits }); }}
                     disabled={!name.trim()}
                 />
             </div>

@@ -11,7 +11,10 @@ export function usePrinters() {
 export function usePrinterFormats(printerId: string | null) {
     return useQuery({
         queryKey: ['printerFormats', printerId],
-        queryFn: () => printerService.getFormats(printerId!),
+        queryFn: () => {
+            if (!printerId) throw new Error('printerId is required')
+            return printerService.getFormats(printerId)
+        },
         enabled: !!printerId,
     })
 }

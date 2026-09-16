@@ -60,7 +60,7 @@ export function StockUnitEditModal({
                     <div className="flex flex-col gap-2 mt-1">
                         {settings.defaultPrinterId && (
                             <button
-                                onClick={() => setShowPrintModal(true)}
+                                onClick={() => { setShowPrintModal(true); }}
                                 className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border border-stone-200 text-earth hover:bg-sage-light/50"
                             >
                                 <FontAwesomeIcon icon={faPrint} />
@@ -77,7 +77,7 @@ export function StockUnitEditModal({
                             </button>
                         )}
                         <button
-                            onClick={() => setShowTransferModal(true)}
+                            onClick={() => { setShowTransferModal(true); }}
                             className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border border-stone-200 text-earth hover:bg-sage-light/50"
                         >
                             <FontAwesomeIcon icon={faArrowRightArrowLeft} />
@@ -106,7 +106,7 @@ export function StockUnitEditModal({
                 <PrintModal
                     product={stockUnit.product}
                     expirationDate={dateValue ? new Date(dateValue) : null}
-                    onClose={() => setShowPrintModal(false)}
+                    onClose={() => { setShowPrintModal(false); }}
                 />
             )}
 
@@ -118,7 +118,7 @@ export function StockUnitEditModal({
                         onTransfer(destinationLocationId)
                         onClose()
                     }}
-                    onClose={() => setShowTransferModal(false)}
+                    onClose={() => { setShowTransferModal(false); }}
                 />
             )}
         </>

@@ -13,5 +13,6 @@ public class StorageLocationConfiguration : IEntityTypeConfiguration<StorageLoca
         builder.Property(l => l.Type)
             .IsRequired()
             .HasConversion<string>();
+        builder.Property(l => l.Description).HasMaxLength(2000);
     }
 }

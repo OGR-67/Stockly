@@ -13,7 +13,14 @@ export function useAllStockUnits() {
 export function useAllStockUnitMutations() {
     const qc = useQueryClient()
     const invalidate = () => qc.invalidateQueries({ queryKey: queryKeys.allStockUnits })
+    // Invalide aussi les listes par emplacement (préfixe ['stockUnits']) puisque add() n'est pas
+    // rattaché à un emplacement unique — utile pour le flux de scan de ticket (#97).
+    const invalidateAll = () => qc.invalidateQueries({ queryKey: ['stockUnits'] })
 
+    const add = useMutation({
+        mutationFn: (data: Omit<StockUnit, 'id' | 'createdAt' | 'isOpened' | 'openedAt' | 'consumedAt'>) => stockUnitService.add(data),
+        onSuccess: invalidateAll,
+    })
     const update = useMutation({
         mutationFn: ({ id, data }: { id: string; data: { expirationDate: Date | null; freeText: string | null } }) =>
             stockUnitService.update(id, data),
@@ -33,7 +40,7 @@ export function useAllStockUnitMutations() {
         onSuccess: invalidate,
     })
 
-    return { update, open, move, consume }
+    return { add, update, open, move, consume }
 }
 
 export function useStockUnits(locationId: string) {
