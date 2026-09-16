@@ -5,7 +5,7 @@ export function useToast(duration = 3000) {
 
     function showToast(message: string) {
         setToast(message)
-        setTimeout(() => setToast(null), duration)
+        setTimeout(() => { setToast(null); }, duration)
     }
 
     return { toast, showToast }

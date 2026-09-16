@@ -270,8 +270,8 @@ function RouteComponent() {
                 <ProductModal
                     categories={categories}
                     onConfirm={(data) => { void handleCreateProduct(data) }}
-                    onAddBarcode={() => {}}
-                    onDeleteBarcode={() => {}}
+                    onAddBarcode={() => undefined}
+                    onDeleteBarcode={() => undefined}
                     onClose={() => { setProductModalRowKey(null) }}
                 />
             )}

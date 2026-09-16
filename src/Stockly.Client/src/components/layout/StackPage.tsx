@@ -14,7 +14,7 @@ export function StackPage({ title, children, action }: StackPageProps) {
     return (
         <div className="flex flex-col h-full">
             <header className="flex items-center gap-3 px-4 py-4 bg-earth">
-                <button onClick={() => router.history.back()} className="text-white/80 hover:text-white">
+                <button onClick={() => { router.history.back(); }} className="text-white/80 hover:text-white">
                     <FontAwesomeIcon icon={faChevronLeft} />
                 </button>
                 <h1 className="flex-1 text-xl font-semibold text-white">{title}</h1>

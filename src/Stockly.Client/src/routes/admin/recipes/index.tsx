@@ -36,8 +36,8 @@ function RouteComponent() {
   }) {
     if (editTarget === "new") {
       await create.mutateAsync(data);
-    } else {
-      await update.mutateAsync({ id: editTarget!.id, ...data });
+    } else if (editTarget) {
+      await update.mutateAsync({ id: editTarget.id, ...data });
     }
     haptic.confirm();
     setEditTarget(null);
@@ -96,7 +96,7 @@ function RouteComponent() {
             />
             <IconButton
               icon={faTrash}
-              onClick={() => handleDelete(recipe.id)}
+              onClick={() => { void handleDelete(recipe.id); }}
               title="Supprimer"
             />
           </Card>
@@ -109,8 +109,8 @@ function RouteComponent() {
       {editTarget && (
         <RecipeModal
           initial={editTarget === "new" ? undefined : editTarget}
-          onConfirm={handleSave}
-          onClose={() => setEditTarget(null)}
+          onConfirm={(data) => { void handleSave(data); }}
+          onClose={() => { setEditTarget(null); }}
         />
       )}
     </StackPage>

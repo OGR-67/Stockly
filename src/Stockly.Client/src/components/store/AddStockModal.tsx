@@ -44,30 +44,30 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                 <div className="mt-4 flex flex-col gap-3">
                     <FieldWrapper label="Quantité">
                         <div className="flex items-center gap-2">
-                            <button onClick={() => adjust(-5)} disabled={quantity <= 5} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 text-sm disabled:opacity-30">-5</button>
-                            <button onClick={() => adjust(-1)} disabled={quantity <= 1} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 disabled:opacity-30">
+                            <button onClick={() => { adjust(-5); }} disabled={quantity <= 5} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 text-sm disabled:opacity-30">-5</button>
+                            <button onClick={() => { adjust(-1); }} disabled={quantity <= 1} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 disabled:opacity-30">
                                 <FontAwesomeIcon icon={faMinus} />
                             </button>
                             <span className="flex-1 text-center font-semibold text-lg text-bark">{quantity}</span>
-                            <button onClick={() => adjust(1)} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600">
+                            <button onClick={() => { adjust(1); }} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600">
                                 <FontAwesomeIcon icon={faPlus} />
                             </button>
-                            <button onClick={() => adjust(5)} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 text-sm">+5</button>
+                            <button onClick={() => { adjust(5); }} className="px-3 py-2 rounded-lg bg-stone-100 text-stone-600 text-sm">+5</button>
                         </div>
                     </FieldWrapper>
 
                     {settings.defaultPrinterId && (
                         <button
-                            onClick={() => setShowPrintModal(true)}
+                            onClick={() => { setShowPrintModal(true); }}
                             className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border border-stone-200 text-earth hover:bg-sage-light/50"
                         >
                             <FontAwesomeIcon icon={faPrint} />
-                            Imprimer {quantity > 1 ? `${quantity} étiquettes` : "l'étiquette"}
+                            Imprimer {quantity > 1 ? `${String(quantity)} étiquettes` : "l'étiquette"}
                         </button>
                     )}
                     <ConfirmButton
-                        onClick={() => onConfirm(dateValue ? new Date(dateValue) : null, quantity, freeText || null)}
-                        label={`Confirmer${quantity > 1 ? ` (×${quantity})` : ''}`}
+                        onClick={() => { onConfirm(dateValue ? new Date(dateValue) : null, quantity, freeText || null); }}
+                        label={`Confirmer${quantity > 1 ? ` (×${String(quantity)})` : ''}`}
                     />
                 </div>
             </Modal>
@@ -77,7 +77,7 @@ export function AddStockModal({ product, location, onConfirm, onClose }: AddStoc
                     product={product}
                     expirationDate={dateValue ? new Date(dateValue) : null}
                     copies={quantity}
-                    onClose={() => setShowPrintModal(false)}
+                    onClose={() => { setShowPrintModal(false); }}
                 />
             )}
         </>

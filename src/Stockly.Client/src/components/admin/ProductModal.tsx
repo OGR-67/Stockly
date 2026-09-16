@@ -24,12 +24,12 @@ interface ProductModalProps {
 
 export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onDeleteBarcode, onCategoryCreated, onClose }: ProductModalProps) {
     const [name, setName] = useState(initial?.name ?? '')
-    const [cats, setCats] = useState<Category[]>(categories)
-    const [selectedCategory, setSelectedCategory] = useState<Category | undefined>(
+    const [cats, setCats] = useState(categories)
+    const [selectedCategory, setSelectedCategory] = useState(
         initial ? categories.find(c => c.id === initial.categoryId) : undefined
     )
     const [freeText, setFreeText] = useState(initial?.freeText ?? '')
-    const [minStockUnits, setMinStockUnits] = useState<number | null>(initial?.minStockUnits ?? null)
+    const [minStockUnits, setMinStockUnits] = useState(initial?.minStockUnits ?? null)
     const [showCategoryModal, setShowCategoryModal] = useState(false)
     const { create: createCategory } = useCategoryMutations()
 
@@ -59,8 +59,8 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                                 setSelectedCategory(cat)
                                 if (!freeText && cat.freeText) setFreeText(cat.freeText)
                             }}
-                            onClear={() => setSelectedCategory(undefined)}
-                            onCreate={() => setShowCategoryModal(true)}
+                            onClear={() => { setSelectedCategory(undefined); }}
+                            onCreate={() => { setShowCategoryModal(true); }}
                             placeholder="Rechercher une catégorie..."
                         />
                     </FieldWrapper>
@@ -77,7 +77,10 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
                     )}
 
                     <ConfirmButton
-                        onClick={() => onConfirm({ name, categoryId: selectedCategory!.id, freeText: freeText || null, minStockUnits })}
+                        onClick={() => {
+                            if (!selectedCategory) return
+                            onConfirm({ name, categoryId: selectedCategory.id, freeText: freeText || null, minStockUnits })
+                        }}
                         disabled={!name.trim() || !selectedCategory}
                     />
                 </div>
@@ -85,8 +88,8 @@ export function ProductModal({ initial, categories, onConfirm, onAddBarcode, onD
 
             {showCategoryModal && (
                 <CategoryModal
-                    onConfirm={handleCreateCategory}
-                    onClose={() => setShowCategoryModal(false)}
+                    onConfirm={(data) => { void handleCreateCategory(data); }}
+                    onClose={() => { setShowCategoryModal(false); }}
                 />
             )}
         </>

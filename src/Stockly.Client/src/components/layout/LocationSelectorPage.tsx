@@ -40,7 +40,7 @@ export function LocationSelectorPage({ title, onSelect, topContent }: LocationSe
                 {filtered.map(location => (
                     <Card
                         key={location.id}
-                        onClick={() => onSelect(location.id)}
+                        onClick={() => { onSelect(location.id); }}
                         className="gap-4 p-4 active:bg-sage-light/50 transition-colors text-left"
                     >
                         <div className="w-10 h-10 rounded-full bg-sage-light flex items-center justify-center shrink-0">

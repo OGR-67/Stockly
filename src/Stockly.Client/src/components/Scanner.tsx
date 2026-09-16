@@ -60,10 +60,11 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
         }
 
         async function startScan() {
+            if (!videoRef.current) return
             try {
                 controlsRef.current = await reader.decodeFromVideoDevice(
                     undefined,
-                    videoRef.current!,
+                    videoRef.current,
                     (result) => {
                         if (result && !hasScannedRef.current) {
                             hasScannedRef.current = true
@@ -75,10 +76,10 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
                     }
                 )
 
-                const stream = videoRef.current?.srcObject as MediaStream
+                const stream = videoRef.current.srcObject as MediaStream | null
                 streamRef.current = stream
                 const track = stream?.getVideoTracks()[0]
-                const capabilities = track?.getCapabilities() as MediaTrackCapabilities & { torch?: boolean }
+                const capabilities = track?.getCapabilities() as (MediaTrackCapabilities & { torch?: boolean }) | undefined
                 if (capabilities?.torch) {
                     setTorchAvailable(true)
                 }
@@ -92,7 +93,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
             }
         }
 
-        startScan()
+        void startScan()
 
         return () => {
             hasScannedRef.current = true
@@ -101,7 +102,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
     }, [])
 
     async function toggleTorch() {
-        const stream = videoRef.current?.srcObject as MediaStream
+        const stream = videoRef.current?.srcObject as MediaStream | null
         const track = stream?.getVideoTracks()[0]
         await track?.applyConstraints({ advanced: [{ torch: !torchOn } as MediaTrackConstraintSet] })
         setTorchOn(!torchOn)
@@ -114,7 +115,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
                     L'accès à la caméra est nécessaire pour scanner.
                 </p>
                 <button
-                    onClick={() => window.location.reload()}
+                    onClick={() => { window.location.reload(); }}
                     className="px-4 py-2 bg-earth text-white rounded-lg"
                 >
                     Autoriser la caméra
@@ -156,7 +157,7 @@ export function Scanner({ onScan, onClose }: ScannerProps) {
 
             {torchAvailable && (
                 <button
-                    onClick={toggleTorch}
+                    onClick={() => { void toggleTorch(); }}
                     className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white text-2xl w-12 h-12 flex items-center justify-center rounded-full bg-black/40"
                 >
                     <FontAwesomeIcon icon={torchOn ? faBolt : faLightbulb} />

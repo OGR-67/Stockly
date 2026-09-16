@@ -36,7 +36,7 @@ export function TransferModal({
         {destinations.map((loc) => (
           <button
             key={loc.id}
-            onClick={() => setSelectedId(loc.id)}
+            onClick={() => { setSelectedId(loc.id); }}
             className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
               selectedId === loc.id
                 ? "border-earth bg-sage-light/30"
@@ -53,7 +53,7 @@ export function TransferModal({
       </div>
 
       <ConfirmButton
-        onClick={() => selectedId && onConfirm(selectedId)}
+        onClick={() => { if (selectedId) onConfirm(selectedId); }}
         disabled={!selectedId}
       />
     </Modal>

@@ -129,7 +129,7 @@ function RouteComponent() {
                         <Toggle
                             label="Caméra intégrée"
                             checked={settings.cameraEnabled}
-                            onChange={(v) => update({ cameraEnabled: v })}
+                            onChange={(v) => { update({ cameraEnabled: v }); }}
                         />
                         <p className="text-xs text-stone-400 pb-2">
                             Désactiver si vous utilisez une douchette Bluetooth
@@ -146,7 +146,7 @@ function RouteComponent() {
                     <FieldWrapper label="Fournisseur">
                         <select
                             value={aiProvider}
-                            onChange={(e) => handleAiProviderChange(e.target.value as AiProvider)}
+                            onChange={(e) => { handleAiProviderChange(e.target.value as AiProvider); }}
                             className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
                         >
                             {Object.entries(AI_PROVIDER_LABELS).map(([value, label]) => (
@@ -161,7 +161,7 @@ function RouteComponent() {
                                 <input
                                     type="password"
                                     value={apiKeyInput}
-                                    onChange={(e) => setApiKeyInput(e.target.value)}
+                                    onChange={(e) => { setApiKeyInput(e.target.value); }}
                                     placeholder={aiSettings?.hasAiApiKey ? 'Clé déjà configurée — laisser vide pour la conserver' : 'Coller votre clé API'}
                                     className="flex-1 min-w-0 border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none font-mono"
                                 />
@@ -188,7 +188,7 @@ function RouteComponent() {
                         <FieldWrapper label="Modèle">
                             <select
                                 value={aiSettings?.aiModel ?? 'claude-sonnet-5'}
-                                onChange={(e) => handleAiModelChange(e.target.value)}
+                                onChange={(e) => { handleAiModelChange(e.target.value); }}
                                 className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
                             >
                                 {Object.entries(ANTHROPIC_MODEL_LABELS).map(([value, label]) => (
@@ -223,7 +223,7 @@ function RouteComponent() {
                     <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-bark">Imprimantes</p>
                         <button
-                            onClick={handleDiscover}
+                            onClick={() => { void handleDiscover(); }}
                             disabled={discovering}
                             className="flex items-center gap-2 text-sm text-earth disabled:opacity-50"
                         >
@@ -240,7 +240,7 @@ function RouteComponent() {
                                         <p className="text-sm font-medium text-bark truncate">{p.name}</p>
                                         <p className="text-xs text-stone-400 font-mono">{p.queueName}:{p.port}</p>
                                     </div>
-                                    <button onClick={() => handleDelete(p.id)}>
+                                    <button onClick={() => { void handleDelete(p.id); }}>
                                         <FontAwesomeIcon icon={faTrash} className="text-stone-400 hover:text-stone-600" />
                                     </button>
                                 </div>
@@ -257,7 +257,7 @@ function RouteComponent() {
                                         <p className="text-sm text-bark truncate">{d.name}</p>
                                         <p className="text-xs text-stone-400 font-mono">{d.queueName}:{d.port}</p>
                                     </div>
-                                    <button onClick={() => handleRegister(d)} className="text-earth">
+                                    <button onClick={() => { void handleRegister(d); }} className="text-earth">
                                         <FontAwesomeIcon icon={faPlus} />
                                     </button>
                                 </div>
@@ -276,7 +276,7 @@ function RouteComponent() {
                             <input
                                 type="text"
                                 value={manualName}
-                                onChange={e => setManualName(e.target.value)}
+                                onChange={e => { setManualName(e.target.value); }}
                                 placeholder="Nom (ex: Brother QL-810W)"
                                 className="border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none"
                             />
@@ -284,26 +284,26 @@ function RouteComponent() {
                                 <input
                                     type="text"
                                     value={manualQueueName}
-                                    onChange={e => setManualQueueName(e.target.value)}
+                                    onChange={e => { setManualQueueName(e.target.value); }}
                                     placeholder="Nom de queue CUPS"
                                     className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none font-mono"
                                 />
                                 <input
                                     type="number"
                                     value={manualPort}
-                                    onChange={e => setManualPort(e.target.value)}
+                                    onChange={e => { setManualPort(e.target.value); }}
                                     className="w-20 border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none font-mono"
                                 />
                             </div>
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => setShowManualForm(false)}
+                                    onClick={() => { setShowManualForm(false); }}
                                     className="flex-1 py-2 rounded-lg border border-stone-300 text-stone-500 text-sm"
                                 >
                                     Annuler
                                 </button>
                                 <button
-                                    onClick={handleManualRegister}
+                                    onClick={() => { void handleManualRegister(); }}
                                     disabled={!manualName.trim() || !manualQueueName.trim() || register.isPending}
                                     className="flex-1 py-2 rounded-lg bg-earth text-white text-sm disabled:opacity-50"
                                 >
@@ -313,7 +313,7 @@ function RouteComponent() {
                         </div>
                     ) : (
                         <button
-                            onClick={() => setShowManualForm(true)}
+                            onClick={() => { setShowManualForm(true); }}
                             className="text-sm text-stone-400 text-center w-full py-1"
                         >
                             + Ajouter manuellement
@@ -328,7 +328,7 @@ function RouteComponent() {
                         <FieldWrapper label="Imprimante">
                             <select
                                 value={settings.defaultPrinterId ?? ''}
-                                onChange={(e) => update({ defaultPrinterId: e.target.value || null, defaultFormatId: null })}
+                                onChange={(e) => { update({ defaultPrinterId: e.target.value || null, defaultFormatId: null }); }}
                                 className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
                             >
                                 <option value="">Aucune</option>
@@ -342,7 +342,7 @@ function RouteComponent() {
                             <FieldWrapper label="Format">
                                 <select
                                     value={settings.defaultFormatId ?? ''}
-                                    onChange={(e) => update({ defaultFormatId: e.target.value })}
+                                    onChange={(e) => { update({ defaultFormatId: e.target.value }); }}
                                     className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none bg-cream"
                                 >
                                     {formats.map(f => (

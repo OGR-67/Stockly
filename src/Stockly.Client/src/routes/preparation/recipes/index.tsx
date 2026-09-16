@@ -92,7 +92,7 @@ function RouteComponent() {
                             { value: 'dessert', label: 'Desserts' },
                         ]}
                         value={typeFilter}
-                        onChange={(value) => setTypeFilter(value as typeof typeFilter)}
+                        onChange={(value) => { setTypeFilter(value); }}
                     />
                 </div>
             </div>
@@ -113,7 +113,7 @@ function RouteComponent() {
                             key={recipe.id}
                             onClick={() => {
                               haptic.confirm();
-                              navigate({ to: '/preparation/recipes/$recipeId', params: { recipeId: recipe.id } });
+                              void navigate({ to: '/preparation/recipes/$recipeId', params: { recipeId: recipe.id } });
                             }}
                         >
                             <div className="flex-1 min-w-0">
@@ -141,8 +141,8 @@ function RouteComponent() {
             {editTarget && (
                 <RecipeModal
                     initial={editTarget === 'new' ? undefined : editTarget}
-                    onConfirm={handleSave}
-                    onClose={() => setEditTarget(null)}
+                    onConfirm={(data) => { void handleSave(data) }}
+                    onClose={() => { setEditTarget(null); }}
                 />
             )}
         </StackPage>

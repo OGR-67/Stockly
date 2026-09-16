@@ -13,7 +13,7 @@ const defaults: AppSettings = { cameraEnabled: true, defaultPrinterId: null, def
 function loadSettings(): AppSettings {
     try {
         const raw = localStorage.getItem(STORAGE_KEY)
-        return raw ? { ...defaults, ...JSON.parse(raw) } : defaults
+        return raw ? { ...defaults, ...(JSON.parse(raw) as Partial<AppSettings>) } : defaults
     } catch {
         return defaults
     }

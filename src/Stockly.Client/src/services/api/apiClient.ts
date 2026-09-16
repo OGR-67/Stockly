@@ -11,7 +11,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
         let message = response.statusText
         try {
-            const problem = await response.json()
+            const problem = await response.json() as { detail?: string; title?: string }
             message = problem.detail ?? problem.title ?? message
         } catch {
             // ignore
@@ -52,7 +52,7 @@ export const apiClient = {
     postForm: <T>(path: string, formData: FormData) => requestForm<T>('POST', path, formData),
     put: <T>(path: string, body: unknown) => request<T>('PUT', path, body),
     patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
-    del: (path: string) => request<void>('DELETE', path),
+    del: (path: string): Promise<void> => request('DELETE', path),
 }
 
 export function toDate(value: string | null | undefined): Date | null {

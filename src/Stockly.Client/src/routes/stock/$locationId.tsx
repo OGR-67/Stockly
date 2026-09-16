@@ -60,7 +60,7 @@ function RouteComponent() {
   const [editModalUnit, setEditModalUnit] = useState<StockUnitDetail | null>(
     null,
   );
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [expandedGroups, setExpandedGroups] = useState(new Set<string>());
 
   const productOptions: ProductOption[] = [
     ...new Map(
@@ -108,7 +108,8 @@ function RouteComponent() {
     _newExpirationDate: Date | null,
     newLocationId: string | null,
   ) {
-    const unit = openModalUnit!;
+    if (!openModalUnit) return;
+    const unit = openModalUnit;
     await open.mutateAsync(unit.id);
     if (newLocationId) {
       await move.mutateAsync({ id: unit.id, targetLocationId: newLocationId });
@@ -143,7 +144,7 @@ function RouteComponent() {
   return (
     <StackPage title={location?.name ?? "..."}>
       {scannerOpen && (
-        <Scanner onScan={handleScan} onClose={() => setScannerOpen(false)} />
+        <Scanner onScan={(barcode) => { void handleScan(barcode); }} onClose={() => { setScannerOpen(false); }} />
       )}
 
       <Toast message={toast} />
@@ -165,11 +166,11 @@ function RouteComponent() {
           searchKeys={["name"]}
           value={selectedProduct}
           onSelect={setSelectedProduct}
-          onClear={() => setSelectedProduct(undefined)}
+          onClear={() => { setSelectedProduct(undefined); }}
           onScanRequest={
-            settings.cameraEnabled ? () => setScannerOpen(true) : undefined
+            settings.cameraEnabled ? () => { setScannerOpen(true); } : undefined
           }
-          onScan={handleScan}
+          onScan={(barcode) => { void handleScan(barcode); }}
           autoFocus={!settings.cameraEnabled}
           placeholder="Rechercher un article..."
         />
@@ -193,7 +194,7 @@ function RouteComponent() {
               key={group.key}
               group={group}
               expanded={effectiveExpanded.has(group.key)}
-              onToggle={() => toggleGroup(group.key)}
+              onToggle={() => { toggleGroup(group.key); }}
               {...unitCardHandlers}
             />
           ),
@@ -207,28 +208,30 @@ function RouteComponent() {
         <OpenModal
           stockUnit={openModalUnit}
           locations={allLocations}
-          onConfirm={handleOpen}
-          onClose={() => setOpenModalUnit(null)}
+          onConfirm={(newExpirationDate, newLocationId) => { void handleOpen(newExpirationDate, newLocationId); }}
+          onClose={() => { setOpenModalUnit(null); }}
         />
       )}
       {transferModalUnit && (
         <TransferModal
           stockUnit={transferModalUnit}
           locations={allLocations}
-          onConfirm={handleTransfer}
-          onClose={() => setTransferModalUnit(null)}
+          onConfirm={(destinationLocationId) => { void handleTransfer(destinationLocationId); }}
+          onClose={() => { setTransferModalUnit(null); }}
         />
       )}
       {editModalUnit && (
         <StockUnitEditModal
           stockUnit={editModalUnit}
           locations={allLocations}
-          onSave={async (expirationDate, freeText) => {
-            await update.mutateAsync({
-              id: editModalUnit.id,
-              data: { expirationDate, freeText },
-            });
-            haptic.confirm();
+          onSave={(expirationDate, freeText) => {
+            void (async () => {
+              await update.mutateAsync({
+                id: editModalUnit.id,
+                data: { expirationDate, freeText },
+              });
+              haptic.confirm();
+            })();
           }}
           onOpen={(unit) => {
             setEditModalUnit(null);
@@ -238,14 +241,16 @@ function RouteComponent() {
             haptic();
             consume.mutate(unit.id);
           }}
-          onTransfer={async (destinationLocationId) => {
-            await move.mutateAsync({
-              id: editModalUnit.id,
-              targetLocationId: destinationLocationId,
-            });
-            haptic.confirm();
+          onTransfer={(destinationLocationId) => {
+            void (async () => {
+              await move.mutateAsync({
+                id: editModalUnit.id,
+                targetLocationId: destinationLocationId,
+              });
+              haptic.confirm();
+            })();
           }}
-          onClose={() => setEditModalUnit(null)}
+          onClose={() => { setEditModalUnit(null); }}
         />
       )}
     </StackPage>

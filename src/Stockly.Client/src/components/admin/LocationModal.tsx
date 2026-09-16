@@ -52,7 +52,7 @@ export function LocationModal({ initial, onConfirm, onClose }: LocationModalProp
                 </FieldWrapper>
 
                 <ConfirmButton
-                    onClick={() => onConfirm({ name, type, description: description.trim() || null })}
+                    onClick={() => { onConfirm({ name, type, description: description.trim() || null }); }}
                     disabled={!name.trim()}
                 />
             </div>

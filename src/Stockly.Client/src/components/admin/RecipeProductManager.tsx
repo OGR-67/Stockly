@@ -33,7 +33,7 @@ export function RecipeProductManager({
           searchKeys={["name"]}
           value={undefined}
           onSelect={onAddProduct}
-          onClear={() => {}}
+          onClear={() => undefined}
           placeholder="Ajouter un article..."
         />
       </div>
@@ -47,7 +47,7 @@ export function RecipeProductManager({
               </div>
               <IconButton
                 icon={faTrash}
-                onClick={() => onRemoveProduct(product.id)}
+                onClick={() => { onRemoveProduct(product.id); }}
                 title="Supprimer"
               />
             </Card>

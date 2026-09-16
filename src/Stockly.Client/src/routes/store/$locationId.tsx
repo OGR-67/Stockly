@@ -10,7 +10,7 @@ import { SearchOrCreate } from "../../components/SearchOrCreate";
 import { Toast } from "../../components/Toast";
 import { AddStockModal } from "../../components/store/AddStockModal";
 import { ProductModal } from "../../components/admin/ProductModal";
-import { productService } from "../../services";
+import { productService, categoryService } from "../../services";
 import { useLocation } from "../../hooks/queries/useLocations";
 import { useProducts, useProductMutations } from "../../hooks/queries/useProducts";
 import { useCategories } from "../../hooks/queries/useCategories";
@@ -60,9 +60,18 @@ function RouteComponent() {
     const created = await createProduct.mutateAsync(data);
     haptic.confirm();
     // Fetch the full product detail from the updated cache via refetch
-    const fresh = allProducts.find(p => p.id === created.id) ?? {
+    const existing = allProducts.find(p => p.id === created.id);
+    // La catégorie peut avoir été créée à la volée dans la modale et ne pas
+    // encore être dans le cache local : on va la chercher au besoin.
+    const category = categories.find(c => c.id === data.categoryId)
+      ?? await categoryService.getById(data.categoryId);
+    if (!category) {
+      setShowProductModal(false);
+      return;
+    }
+    const fresh = existing ?? {
       ...created,
-      category: categories.find(c => c.id === data.categoryId)!,
+      category,
       barcodes: [],
     } as ProductDetail;
     if (pendingBarcode) {
@@ -82,21 +91,22 @@ function RouteComponent() {
   }
 
   async function handleConfirm(expirationDate: Date | null, quantity: number, freeText: string | null) {
+    if (!selectedProduct) return;
+    const { id, name } = selectedProduct;
     for (let i = 0; i < quantity; i++) {
-      await add.mutateAsync({ productId: selectedProduct!.id, locationId, expirationDate, freeText });
+      await add.mutateAsync({ productId: id, locationId, expirationDate, freeText });
     }
     haptic.confirm();
-    const name = selectedProduct!.name;
     setSelectedProduct(null);
     setPendingBarcode(null);
     setScannerOpen(settings.cameraEnabled);
-    showToast(`${quantity > 1 ? `${quantity}× ` : ''}${name} rangé`);
+    showToast(`${quantity > 1 ? `${String(quantity)}× ` : ''}${name} rangé`);
   }
 
   return (
     <StackPage title={location?.name ?? "..."}>
       {scannerOpen && (
-        <Scanner onScan={handleScan} onClose={() => setScannerOpen(false)} />
+        <Scanner onScan={(barcode) => { void handleScan(barcode); }} onClose={() => { setScannerOpen(false); }} />
       )}
 
       <Toast message={toast} />
@@ -113,11 +123,12 @@ function RouteComponent() {
               items={allProducts}
               displayKey="name"
               searchKeys={["name"]}
-              onSelect={handleProductSelect}
+              onSelect={(product) => { void handleProductSelect(product); }}
+              // eslint-disable-next-line @typescript-eslint/no-empty-function -- pas d'action à effectuer au clear, prop requise par SearchOrCreate
               onClear={() => {}}
-              onCreate={() => setShowProductModal(true)}
-              onScanRequest={settings.cameraEnabled ? () => setScannerOpen(true) : undefined}
-              onScan={handleScan}
+              onCreate={() => { setShowProductModal(true); }}
+              onScanRequest={settings.cameraEnabled ? () => { setScannerOpen(true); } : undefined}
+              onScan={(barcode) => { void handleScan(barcode); }}
               autoFocus={!settings.cameraEnabled}
               placeholder="Rechercher un article..."
             />
@@ -137,10 +148,12 @@ function RouteComponent() {
       {showProductModal && (
         <ProductModal
           categories={categories}
-          onConfirm={handleCreateProduct}
+          onConfirm={(data) => { void handleCreateProduct(data); }}
+          // eslint-disable-next-line @typescript-eslint/no-empty-function -- pas de gestion de code-barres dans ce flux, prop requise par ProductModal
           onAddBarcode={() => {}}
+          // eslint-disable-next-line @typescript-eslint/no-empty-function -- pas de gestion de code-barres dans ce flux, prop requise par ProductModal
           onDeleteBarcode={() => {}}
-          onClose={() => setShowProductModal(false)}
+          onClose={() => { setShowProductModal(false); }}
         />
       )}
 
@@ -148,7 +161,7 @@ function RouteComponent() {
         <AddStockModal
           product={selectedProduct}
           location={location}
-          onConfirm={handleConfirm}
+          onConfirm={(expirationDate, quantity, freeText) => { void handleConfirm(expirationDate, quantity, freeText); }}
           onClose={cancelAndRescan}
         />
       )}

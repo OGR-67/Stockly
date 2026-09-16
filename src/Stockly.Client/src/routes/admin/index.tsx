@@ -37,7 +37,7 @@ function RouteComponent() {
             <button
                 onClick={() => {
                   haptic.confirm();
-                  navigate({ to: '/admin/stock', search: { filter: undefined } });
+                  void navigate({ to: '/admin/stock', search: { filter: undefined } });
                 }}
                 className="flex items-center gap-3 w-full p-4 bg-cream rounded-xl border border-sage/30 shadow-sm text-bark font-medium"
             >
@@ -50,7 +50,7 @@ function RouteComponent() {
             <button
                 onClick={() => {
                   haptic.confirm();
-                  navigate({ to: '/admin/settings' });
+                  void navigate({ to: '/admin/settings' });
                 }}
                 className="flex items-center gap-3 w-full p-4 bg-cream rounded-xl border border-sage/30 shadow-sm text-bark font-medium"
             >
@@ -60,7 +60,7 @@ function RouteComponent() {
             </div>
 
             {modalOpen && (
-                <Modal title="Référentiels" onClose={() => setModalOpen(false)}>
+                <Modal title="Référentiels" onClose={() => { setModalOpen(false); }}>
                     <div className="flex flex-col gap-3">
                         {ENTITIES.map(({ label, icon, to }) => (
                             <button
@@ -68,7 +68,7 @@ function RouteComponent() {
                                 onClick={() => {
                                   haptic.confirm();
                                   setModalOpen(false);
-                                  navigate({ to });
+                                  void navigate({ to });
                                 }}
                                 className="flex items-center gap-3 p-4 bg-cream rounded-xl border border-sage/30 text-bark font-medium active:bg-sage-light/50"
                             >

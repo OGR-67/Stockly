@@ -15,7 +15,7 @@ function RouteComponent() {
       title="Ranger"
       onSelect={(locationId) => {
         haptic.confirm();
-        navigate({ to: "/store/$locationId", params: { locationId } });
+        void navigate({ to: "/store/$locationId", params: { locationId } });
       }}
       topContent={
         <button

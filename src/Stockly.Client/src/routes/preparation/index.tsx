@@ -18,7 +18,7 @@ function RouteComponent() {
                 <Card
                   onClick={() => {
                     haptic.confirm();
-                    navigate({ to: '/preparation/recipes' });
+                    void navigate({ to: '/preparation/recipes' });
                   }}
                 >
                     <div className="text-2xl text-earth">
@@ -33,7 +33,7 @@ function RouteComponent() {
                 <Card
                     onClick={() => {
                         haptic.confirm();
-                        navigate({ to: '/preparation/grocery-list' });
+                        void navigate({ to: '/preparation/grocery-list' });
                     }}
                 >
                     <div className="text-2xl text-earth">

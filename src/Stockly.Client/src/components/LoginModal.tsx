@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faKey } from "@fortawesome/free-solid-svg-icons";
 import { ConfirmButton } from "./ConfirmButton";
@@ -7,12 +7,16 @@ interface LoginModalProps {
   onSuccess: () => void;
 }
 
+interface LoginErrorBody {
+  detail?: string;
+}
+
 export function LoginModal({ onSuccess }: LoginModalProps) {
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!apiKey.trim()) return;
     setLoading(true);
@@ -25,7 +29,12 @@ export function LoginModal({ onSuccess }: LoginModalProps) {
         body: JSON.stringify({ apiKey: apiKey.trim() }),
       });
       if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
+        let body: LoginErrorBody = {};
+        try {
+          body = (await response.json()) as LoginErrorBody;
+        } catch {
+          // corps de réponse non-JSON : on garde le message générique ci-dessous
+        }
         setError(body.detail ?? "Clé API invalide.");
       } else {
         onSuccess();
@@ -50,11 +59,11 @@ export function LoginModal({ onSuccess }: LoginModalProps) {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form onSubmit={(e) => { void handleSubmit(e); }} className="flex flex-col gap-3">
           <input
             type="password"
             value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            onChange={(e) => { setApiKey(e.target.value); }}
             placeholder="Clé API"
             autoFocus
             className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none font-mono"

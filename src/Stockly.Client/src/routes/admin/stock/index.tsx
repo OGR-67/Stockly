@@ -42,8 +42,8 @@ function RouteComponent() {
   const [activeFilter, setActiveFilter] = useState<
     "soon" | "expired" | undefined
   >(initialFilter as "soon" | "expired" | undefined);
-  const [expandedLocations, setExpandedLocations] = useState<Set<string>>(
-    new Set(),
+  const [expandedLocations, setExpandedLocations] = useState(
+    new Set<string>(),
   );
   const [openModalUnit, setOpenModalUnit] = useState<StockUnitDetail | null>(
     null,
@@ -73,11 +73,12 @@ function RouteComponent() {
   const byLocation = useMemo(() => {
     const map = new Map<string, StockUnitDetail[]>();
     for (const unit of filtered) {
-      if (!map.has(unit.locationId)) map.set(unit.locationId, []);
-      map.get(unit.locationId)!.push(unit);
+      const list = map.get(unit.locationId) ?? [];
+      list.push(unit);
+      map.set(unit.locationId, list);
     }
-    for (const key of map.keys()) {
-      map.set(key, sortByExpiryDate(map.get(key)!));
+    for (const [key, units] of map.entries()) {
+      map.set(key, sortByExpiryDate(units));
     }
     return map;
   }, [filtered]);
@@ -96,7 +97,8 @@ function RouteComponent() {
     _newExpirationDate: Date | null,
     newLocationId: string | null,
   ) {
-    const unit = openModalUnit!;
+    if (!openModalUnit) return;
+    const unit = openModalUnit;
     await open.mutateAsync(unit.id);
     if (newLocationId)
       await move.mutateAsync({ id: unit.id, targetLocationId: newLocationId });
@@ -113,6 +115,15 @@ function RouteComponent() {
     });
     haptic.confirm();
     setTransferModalUnit(null);
+  }
+
+  async function handleSaveEdit(expirationDate: Date | null, freeText: string | null) {
+    if (!editModalUnit) return;
+    await update.mutateAsync({
+      id: editModalUnit.id,
+      data: { expirationDate, freeText },
+    });
+    haptic.confirm();
   }
 
   return (
@@ -155,7 +166,7 @@ function RouteComponent() {
           return (
             <div key={locationId}>
               <div
-                onClick={() => toggleLocation(locationId)}
+                onClick={() => { toggleLocation(locationId); }}
                 className="flex items-center gap-3 p-3 bg-cream rounded-xl shadow-sm border-2 border-sage/50 cursor-pointer"
               >
                 <div className="flex-1 min-w-0">
@@ -204,29 +215,23 @@ function RouteComponent() {
         <OpenModal
           stockUnit={openModalUnit}
           locations={allLocations}
-          onConfirm={handleOpen}
-          onClose={() => setOpenModalUnit(null)}
+          onConfirm={(newExpirationDate, newLocationId) => { void handleOpen(newExpirationDate, newLocationId); }}
+          onClose={() => { setOpenModalUnit(null); }}
         />
       )}
       {transferModalUnit && (
         <TransferModal
           stockUnit={transferModalUnit}
           locations={allLocations}
-          onConfirm={handleTransfer}
-          onClose={() => setTransferModalUnit(null)}
+          onConfirm={(destinationLocationId) => { void handleTransfer(destinationLocationId); }}
+          onClose={() => { setTransferModalUnit(null); }}
         />
       )}
       {editModalUnit && (
         <StockUnitEditModal
           stockUnit={editModalUnit}
           locations={allLocations}
-          onSave={async (expirationDate, freeText) => {
-            await update.mutateAsync({
-              id: editModalUnit.id,
-              data: { expirationDate, freeText },
-            });
-            haptic.confirm();
-          }}
+          onSave={(expirationDate, freeText) => { void handleSaveEdit(expirationDate, freeText); }}
           onOpen={(unit) => {
             setEditModalUnit(null);
             setOpenModalUnit(unit);
@@ -235,14 +240,8 @@ function RouteComponent() {
             haptic();
             consume.mutate(unit.id);
           }}
-          onTransfer={async (destinationLocationId) => {
-            await move.mutateAsync({
-              id: editModalUnit.id,
-              targetLocationId: destinationLocationId,
-            });
-            haptic.confirm();
-          }}
-          onClose={() => setEditModalUnit(null)}
+          onTransfer={(destinationLocationId) => { void handleTransfer(destinationLocationId); }}
+          onClose={() => { setEditModalUnit(null); }}
         />
       )}
     </StackPage>

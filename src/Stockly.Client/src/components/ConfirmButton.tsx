@@ -14,7 +14,7 @@ export function ConfirmButton({ onClick, disabled, loading, label = 'Confirmer',
         <button
             type={type}
             onClick={onClick}
-            disabled={disabled || loading}
+            disabled={Boolean(disabled) || Boolean(loading)}
             className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-earth text-white font-medium disabled:opacity-50"
         >
             <FontAwesomeIcon icon={loading ? faSpinner : faCheck} spin={loading} />

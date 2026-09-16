@@ -8,8 +8,12 @@ export function groupUnits(units: StockUnitDetail[]): StockGroup[] {
       ? new Date(unit.expirationDate).toDateString()
       : "null";
     const key = `${unit.productId}__${dateStr}`;
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(unit);
+    const group = map.get(key);
+    if (group) {
+      group.push(unit);
+    } else {
+      map.set(key, [unit]);
+    }
   }
 
   const groups = [...map.entries()].map(([key, units]) => ({ key, units }));
