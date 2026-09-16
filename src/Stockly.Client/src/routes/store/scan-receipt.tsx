@@ -99,6 +99,7 @@ function RouteComponent() {
                 locationId: item.suggestedLocationId,
                 expirationDate,
                 product,
+                note: item.productName,
             }
         }))
     }
@@ -165,7 +166,7 @@ function RouteComponent() {
                         productId: row.product.id,
                         locationId: row.locationId,
                         expirationDate: row.expirationDate ? new Date(row.expirationDate) : null,
-                        freeText: null,
+                        freeText: row.note || null,
                     })
                 }
             }

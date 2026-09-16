@@ -13,6 +13,7 @@ export interface ReceiptDraftRow {
     locationId: string | null
     expirationDate: string
     product: ProductDetail | null
+    note: string
 }
 
 interface ReceiptRowProps {
@@ -89,6 +90,12 @@ export function ReceiptRow({ row, products, locations, onChange, onRemove, onCre
                     className="flex-1"
                 />
             </div>
+
+            <FormField
+                label="Note"
+                value={row.note}
+                onChange={(v) => { onChange({ ...row, note: v }) }}
+            />
 
             <FieldWrapper label="Quantité">
                 <div className="flex items-center gap-2">
