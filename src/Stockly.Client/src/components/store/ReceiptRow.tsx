@@ -92,9 +92,10 @@ export function ReceiptRow({ row, products, locations, onChange, onRemove, onCre
             </div>
 
             <FormField
-                label="Note"
+                label="Note (optionnel)"
                 value={row.note}
                 onChange={(v) => { onChange({ ...row, note: v }) }}
+                placeholder="Note sur l'unité..."
             />
 
             <FieldWrapper label="Quantité">

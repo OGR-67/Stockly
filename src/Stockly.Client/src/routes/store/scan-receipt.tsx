@@ -166,7 +166,7 @@ function RouteComponent() {
                         productId: row.product.id,
                         locationId: row.locationId,
                         expirationDate: row.expirationDate ? new Date(row.expirationDate) : null,
-                        freeText: row.note || null,
+                        freeText: row.note.trim() || null,
                     })
                 }
             }
